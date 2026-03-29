@@ -8,7 +8,8 @@ struct ContentView: View {
     @StateObject private var episodePlayback = EpisodePlaybackController()
     @StateObject private var sleepTimer = SleepTimerStore()
     @StateObject private var episodeDownloads = EpisodeDownloadStore()
-    @State private var showPodcasts = false
+    @StateObject private var newsletterHome = HomeViewModel()
+    @State private var showAddFeeds = false
 
     var body: some View {
         TabView {
@@ -17,7 +18,7 @@ struct ContentView: View {
                     catalog: catalog,
                     feedFilters: feedFilters,
                     model: home,
-                    showPodcasts: $showPodcasts,
+                    showAddFeeds: $showAddFeeds,
                     episodePlayback: episodePlayback,
                     sleepTimer: sleepTimer,
                     episodeDownloads: episodeDownloads
@@ -28,13 +29,28 @@ struct ContentView: View {
             }
 
             NavigationStack {
+                NewsletterFeedView(
+                    catalog: catalog,
+                    feedFilters: feedFilters,
+                    model: newsletterHome,
+                    showAddFeeds: $showAddFeeds,
+                    episodePlayback: episodePlayback,
+                    sleepTimer: sleepTimer,
+                    episodeDownloads: episodeDownloads
+                )
+            }
+            .tabItem {
+                Label("Newsletters", systemImage: "newspaper")
+            }
+
+            NavigationStack {
                 FavoritesView()
             }
             .tabItem {
                 Label("Saved", systemImage: "star.fill")
             }
         }
-        .sheet(isPresented: $showPodcasts) {
+        .sheet(isPresented: $showAddFeeds) {
             NavigationStack {
                 AddPodcastView(catalog: catalog, onFeedsChanged: feedsChanged)
             }
@@ -46,7 +62,8 @@ struct ContentView: View {
 
     private func feedsChanged() {
         Task {
-            await home.refresh(feeds: catalog.allFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
+            await home.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
+            await newsletterHome.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)
         }
     }
 }

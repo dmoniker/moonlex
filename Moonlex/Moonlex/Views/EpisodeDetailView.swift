@@ -15,6 +15,7 @@ struct EpisodeDetailView: View {
     @State private var noteDraft = ""
     @State private var showManualHighlight = false
     @State private var toast: String?
+    @State private var newsletterAttributedBody: NSAttributedString?
 
     private var existingFavorite: SavedItem? {
         saved.first { $0.episodeKey == episode.stableKey && $0.isEpisodeFavorite }
@@ -48,6 +49,16 @@ struct EpisodeDetailView: View {
 
                 if episode.audioURL != nil {
                     episodePlayerCard(artworkURL: episode.artworkURL, sleepTimer: sleepTimer)
+                } else if episode.feedContentKind == .newsletter, let url = episode.linkURL {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Link(destination: url) {
+                            Label("Open on Substack", systemImage: "safari")
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 } else {
                     Label("No audio enclosure in this feed item", systemImage: "waveform.slash")
                         .font(.subheadline)
@@ -56,9 +67,13 @@ struct EpisodeDetailView: View {
 
                 if !episode.descriptionPlain.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Show notes")
+                        Text(episode.feedContentKind == .newsletter ? "Article" : "Show notes")
                             .font(.headline)
-                        SelectableNotesView(text: episode.descriptionPlain, reader: notesReader)
+                        SelectableNotesView(
+                            text: episode.descriptionPlain,
+                            attributedFallback: newsletterAttributedBody,
+                            reader: notesReader
+                        )
                             .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
                         HStack {
                             Button("Save selected text") {
@@ -127,6 +142,11 @@ struct EpisodeDetailView: View {
         .task(id: episode.stableKey) {
             playback.sleepTimerStore = sleepTimer
             applyPlaybackSource()
+            if episode.feedContentKind == .newsletter {
+                newsletterAttributedBody = episode.descriptionRaw.attributedArticleFromHTML()
+            } else {
+                newsletterAttributedBody = nil
+            }
         }
         .onChange(of: downloads.changeToken) { _, _ in
             applyPlaybackSource()

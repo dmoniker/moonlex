@@ -1,0 +1,56 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/NewsletterFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Newsletters",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "Turn on a newsletter above, or add a Substack RSS URL.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading posts…",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load newsletters",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "No newsletters selected",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feeds",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 66
+        }
+      }
+    ]
+  },
+  "version": 1
+}

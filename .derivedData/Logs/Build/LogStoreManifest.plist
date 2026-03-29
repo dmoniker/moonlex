@@ -48,6 +48,48 @@
 			<key>uniqueIdentifier</key>
 			<string>B42F4830-FF37-48CF-938D-82158746552D</string>
 		</dict>
+		<key>D17A4A70-4F8D-43EB-B812-5286A88F4AA7</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>D17A4A70-4F8D-43EB-B812-5286A88F4AA7.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Moonlex project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Moonlex</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Moonlex with scheme Moonlex</string>
+			<key>timeStartedRecording</key>
+			<real>796437308.47368002</real>
+			<key>timeStoppedRecording</key>
+			<real>796437312.54641294</real>
+			<key>title</key>
+			<string>Building project Moonlex with scheme Moonlex</string>
+			<key>uniqueIdentifier</key>
+			<string>D17A4A70-4F8D-43EB-B812-5286A88F4AA7</string>
+		</dict>
 	</dict>
 </dict>
 </plist>

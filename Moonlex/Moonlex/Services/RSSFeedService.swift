@@ -40,6 +40,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
     private var guidBuf = ""
     private var pubDateBuf = ""
     private var enclosureURL: String?
+    private var enclosureTypeLower: String?
     private var descriptionBuf = ""
 
     /// Show-level artwork (persists for all items in this feed document).
@@ -86,6 +87,9 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         if inItem, leaf == "enclosure" {
             if let u = attributeDict["url"] ?? attributeDict["URL"] {
                 enclosureURL = u
+            }
+            if let t = attributeDict["type"] ?? attributeDict["TYPE"] {
+                enclosureTypeLower = t.lowercased()
             }
         }
         if inItem, leaf == "link" {
@@ -153,7 +157,10 @@ private final class RSSParser: NSObject, XMLParserDelegate {
     /// iTunes (`http://www.itunes.com/dtds/podcast-1.0.dtd`) or Google Play podcast `<image href>` cover.
     private static func isPodcastCoverImage(elementName: String, namespaceURI: String?, qualifiedName qName: String?) -> Bool {
         let el = elementName.lowercased()
-        if qName?.lowercased() == "itunes:image" { return true }
+        let q = qName?.lowercased()
+        // Default XMLParser does not process namespaces; `elementName` is often the prefixed `"itunes:image"`.
+        if q == "itunes:image" || el == "itunes:image" { return true }
+        if q == "googleplay:image" || el == "googleplay:image" { return true }
         if el != "image" { return false }
         guard let uri = namespaceURI, !uri.isEmpty else { return false }
         if uri == "http://www.itunes.com/dtds/podcast-1.0.dtd" { return true }
@@ -168,6 +175,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         guidBuf = ""
         pubDateBuf = ""
         enclosureURL = nil
+        enclosureTypeLower = nil
         descriptionBuf = ""
         itemArtworkURL = nil
     }
@@ -182,9 +190,10 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         let stableKey = "\(feed.id)|\(keySource)"
 
         let date = RSSDateParser.date(from: pubDateBuf)
-        let audio = enclosureURL.flatMap { URL(string: $0) }
+        let (audioString, artFromEnclosure) = Self.classifyEnclosure(url: enclosureURL, typeLower: enclosureTypeLower)
+        let audio = audioString.flatMap { URL(string: $0) }
         let page = URL(string: link)
-        let rawArt = itemArtworkURL ?? channelArtworkURL
+        let rawArt = itemArtworkURL ?? artFromEnclosure ?? channelArtworkURL
         let trimmedArt = rawArt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let artwork = trimmedArt.isEmpty ? nil : URL(string: trimmedArt)
 
@@ -198,8 +207,32 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             feedURLString: feed.rssURLString,
             linkURL: page,
             descriptionRaw: descriptionBuf.trimmingCharacters(in: .whitespacesAndNewlines),
-            artworkURL: artwork
+            artworkURL: artwork,
+            feedContentKind: feed.contentKind
         )
+    }
+
+    /// Substack and similar feeds use `<enclosure type="image/jpeg" …>` for the hero image, not audio.
+    private static func classifyEnclosure(url: String?, typeLower: String?) -> (audio: String?, imageFallback: String?) {
+        guard let u = url?.trimmingCharacters(in: .whitespacesAndNewlines), !u.isEmpty else {
+            return (nil, nil)
+        }
+        if let t = typeLower, !t.isEmpty {
+            if t.hasPrefix("audio/") || t == "application/octet-stream" {
+                return (u, nil)
+            }
+            if t.hasPrefix("image/") {
+                return (nil, u)
+            }
+            return (urlLooksLikeAudioURL(u) ? u : nil, nil)
+        }
+        return (urlLooksLikeAudioURL(u) ? u : nil, nil)
+    }
+
+    private static func urlLooksLikeAudioURL(_ urlString: String) -> Bool {
+        guard let path = URL(string: urlString)?.path.lowercased() else { return false }
+        let audioSuffixes = [".mp3", ".m4a", ".mp4", ".aac", ".wav", ".ogg", ".opus", ".flac", ".mpeg"]
+        return audioSuffixes.contains { path.hasSuffix($0) }
     }
 }
 

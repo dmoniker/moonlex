@@ -41,6 +41,16 @@ final class HomeViewModel: ObservableObject {
             }
         }
 
+        var innermostHeroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: combined)
+        if innermostHeroByLink.isEmpty,
+           combined.contains(where: { $0.feedID == PodcastFeed.innermostLoopPodcastID }),
+           !active.contains(where: { $0.id == PodcastFeed.innermostLoopID }),
+           let newsFeed = PodcastFeed.builtins.first(where: { $0.id == PodcastFeed.innermostLoopID }),
+           let newsEps = try? await RSSFeedService.loadEpisodes(for: newsFeed) {
+            innermostHeroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: newsEps)
+        }
+        combined = Self.applyInnermostHeroMap(innermostHeroByLink, to: combined)
+
         episodes = combined.sorted {
             ($0.pubDate ?? .distantPast) > ($1.pubDate ?? .distantPast)
         }
@@ -52,5 +62,35 @@ final class HomeViewModel: ObservableObject {
         } else if !errors.isEmpty {
             lastError = "Some feeds failed to load: \(errors.joined(separator: ", "))"
         }
+    }
+
+    /// Builds `link` → hero image from Innermost Loop newsletter RSS (`image/jpeg` enclosures).
+    private static func innermostNewsletterHeroByNormalizedLink(from episodes: [Episode]) -> [String: URL] {
+        var heroByLink: [String: URL] = [:]
+        for ep in episodes where ep.feedID == PodcastFeed.innermostLoopID {
+            guard let key = normalizedPostLinkKey(ep.linkURL), let art = ep.artworkURL else { continue }
+            heroByLink[key] = art
+        }
+        return heroByLink
+    }
+
+    private static func applyInnermostHeroMap(_ heroByLink: [String: URL], to episodes: [Episode]) -> [Episode] {
+        guard !heroByLink.isEmpty else { return episodes }
+        return episodes.map { ep in
+            guard ep.feedID == PodcastFeed.innermostLoopPodcastID,
+                  let key = normalizedPostLinkKey(ep.linkURL),
+                  let hero = heroByLink[key]
+            else { return ep }
+            return ep.replacingArtwork(with: hero)
+        }
+    }
+
+    private static func normalizedPostLinkKey(_ url: URL?) -> String? {
+        guard let url else { return nil }
+        var c = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        c?.fragment = nil
+        c?.query = nil
+        guard let normalized = c?.url else { return nil }
+        return normalized.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
 }

@@ -19,6 +19,7 @@
 		A100000A000000000000000A /* SelectableNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A000000000000000A /* SelectableNotesView.swift */; };
 		A100000B000000000000000B /* FeedFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B000000000000000B /* FeedFilterBar.swift */; };
 		A100000C000000000000000C /* HomeFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C000000000000000C /* HomeFeedView.swift */; };
+		A10000180000000000000018 /* NewsletterFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000018 /* NewsletterFeedView.swift */; };
 		A100000D000000000000000D /* EpisodeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D000000000000000D /* EpisodeDetailView.swift */; };
 		A100000E000000000000000E /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E000000000000000E /* FavoritesView.swift */; };
 		A100000F000000000000000F /* AddPodcastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F000000000000000F /* AddPodcastView.swift */; };
@@ -44,6 +45,7 @@
 		A200000A000000000000000A /* SelectableNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableNotesView.swift; sourceTree = "<group>"; };
 		A200000B000000000000000B /* FeedFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilterBar.swift; sourceTree = "<group>"; };
 		A200000C000000000000000C /* HomeFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeedView.swift; sourceTree = "<group>"; };
+		A20000180000000000000018 /* NewsletterFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsletterFeedView.swift; sourceTree = "<group>"; };
 		A200000D000000000000000D /* EpisodeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDetailView.swift; sourceTree = "<group>"; };
 		A200000E000000000000000E /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		A200000F000000000000000F /* AddPodcastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPodcastView.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				A200000A000000000000000A /* SelectableNotesView.swift */,
 				A200000B000000000000000B /* FeedFilterBar.swift */,
 				A200000C000000000000000C /* HomeFeedView.swift */,
+				A20000180000000000000018 /* NewsletterFeedView.swift */,
 				A200000D000000000000000D /* EpisodeDetailView.swift */,
 				A200000E000000000000000E /* FavoritesView.swift */,
 				A200000F000000000000000F /* AddPodcastView.swift */,
@@ -228,6 +231,7 @@
 				A100000A000000000000000A /* SelectableNotesView.swift in Sources */,
 				A100000B000000000000000B /* FeedFilterBar.swift in Sources */,
 				A100000C000000000000000C /* HomeFeedView.swift in Sources */,
+				A10000180000000000000018 /* NewsletterFeedView.swift in Sources */,
 				A100000D000000000000000D /* EpisodeDetailView.swift in Sources */,
 				A100000E000000000000000E /* FavoritesView.swift in Sources */,
 				A100000F000000000000000F /* AddPodcastView.swift in Sources */,

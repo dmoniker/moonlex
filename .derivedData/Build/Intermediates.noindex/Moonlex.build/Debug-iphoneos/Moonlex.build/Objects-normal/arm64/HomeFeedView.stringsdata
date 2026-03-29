@@ -7,7 +7,7 @@
         "key": "Moonlex",
         "location": {
           "startingColumn": 26,
-          "startingLine": 53
+          "startingLine": 76
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "Turn on at least one podcast with the filters above.",
         "location": {
           "startingColumn": 39,
-          "startingLine": 31
+          "startingLine": 38
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "Loading episodes…",
         "location": {
           "startingColumn": 30,
-          "startingLine": 19
+          "startingLine": 26
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Could not load feeds",
         "location": {
           "startingColumn": 21,
-          "startingLine": 23
+          "startingLine": 30
         }
       },
       {
@@ -39,7 +39,23 @@
         "key": "No shows selected",
         "location": {
           "startingColumn": 21,
-          "startingLine": 29
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 59
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 65
         }
       },
       {
@@ -47,7 +63,7 @@
         "key": "Podcasts",
         "location": {
           "startingColumn": 27,
-          "startingLine": 59
+          "startingLine": 82
         }
       }
     ]

@@ -7,7 +7,15 @@
         "key": "Feed",
         "location": {
           "startingColumn": 23,
-          "startingLine": 25
+          "startingLine": 28
+        }
+      },
+      {
+        "comment": "",
+        "key": "Newsletters",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 43
         }
       },
       {
@@ -15,7 +23,7 @@
         "key": "Saved",
         "location": {
           "startingColumn": 23,
-          "startingLine": 32
+          "startingLine": 50
         }
       }
     ]

@@ -13,9 +13,15 @@ struct Episode: Identifiable, Hashable, Sendable {
     let linkURL: URL?
     let descriptionRaw: String
     let artworkURL: URL?
+    let feedContentKind: FeedContentKind
 
     var descriptionPlain: String {
-        descriptionRaw.strippingHTML
+        switch feedContentKind {
+        case .podcast:
+            return descriptionRaw.strippingHTML
+        case .newsletter:
+            return descriptionRaw.strippingHTMLNewsletter
+        }
     }
 
     static func < (lhs: Episode, rhs: Episode) -> Bool {
@@ -23,5 +29,22 @@ struct Episode: Identifiable, Hashable, Sendable {
         let rd = rhs.pubDate ?? .distantPast
         if ld != rd { return ld < rd }
         return lhs.stableKey < rhs.stableKey
+    }
+
+    /// Same episode with a different artwork URL (e.g. after merging a companion feed).
+    func replacingArtwork(with url: URL?) -> Episode {
+        Episode(
+            stableKey: stableKey,
+            title: title,
+            pubDate: pubDate,
+            audioURL: audioURL,
+            showTitle: showTitle,
+            feedID: feedID,
+            feedURLString: feedURLString,
+            linkURL: linkURL,
+            descriptionRaw: descriptionRaw,
+            artworkURL: url,
+            feedContentKind: feedContentKind
+        )
     }
 }

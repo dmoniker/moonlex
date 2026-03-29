@@ -4,15 +4,21 @@ struct HomeFeedView: View {
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var feedFilters: FeedFilters
     @ObservedObject var model: HomeViewModel
-    @Binding var showPodcasts: Bool
+    @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
     @ObservedObject var episodeDownloads: EpisodeDownloadStore
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            FeedFilterBar(feeds: catalog.allFeeds, filters: feedFilters) {
-                Task { await model.refresh(feeds: catalog.allFeeds, feedFilters: feedFilters, downloads: episodeDownloads) }
+            FeedFilterBar(feeds: catalog.podcastFeeds, filters: feedFilters) {
+                Task {
+                    await model.refresh(
+                        feeds: catalog.podcastFeeds,
+                        feedFilters: feedFilters,
+                        downloads: episodeDownloads
+                    )
+                }
             }
             .padding(.horizontal)
 
@@ -71,7 +77,7 @@ struct HomeFeedView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showPodcasts = true
+                    showAddFeeds = true
                 } label: {
                     Label("Podcasts", systemImage: "plus.square.on.square")
                 }
@@ -81,10 +87,10 @@ struct HomeFeedView: View {
             EpisodeDetailView(episode: ep, playback: episodePlayback, sleepTimer: sleepTimer, downloads: episodeDownloads)
         }
         .task {
-            await model.refresh(feeds: catalog.allFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
+            await model.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
         }
         .refreshable {
-            await model.refresh(feeds: catalog.allFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
+            await model.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
         }
     }
 }

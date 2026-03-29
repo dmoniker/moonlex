@@ -11,9 +11,9 @@ struct AddPodcastView: View {
 
     var body: some View {
         Form {
-            Section("Your podcasts (RSS)") {
+            Section("Your feeds (RSS)") {
                 if catalog.customFeeds.isEmpty {
-                    Text("Add any podcast that publishes a public RSS feed.")
+                    Text("Add podcast RSS URLs, or a Substack feed URL (…/feed) — Substack feeds show up under Newsletters.")
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(catalog.customFeeds) { feed in
@@ -45,7 +45,7 @@ struct AddPodcastView: View {
                     .disabled(isAddDisabled)
             }
         }
-        .navigationTitle("Podcasts")
+        .navigationTitle("Add feeds")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

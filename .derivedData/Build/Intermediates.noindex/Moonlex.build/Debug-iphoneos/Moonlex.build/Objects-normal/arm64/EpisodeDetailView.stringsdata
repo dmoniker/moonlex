@@ -7,15 +7,39 @@
         "key": "No audio enclosure in this feed item",
         "location": {
           "startingColumn": 27,
-          "startingLine": 45
+          "startingLine": 63
+        }
+      },
+      {
+        "comment": "",
+        "key": "AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open on Substack",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "Article",
+        "location": {
+          "startingColumn": 71,
+          "startingLine": 70
         }
       },
       {
         "comment": "",
         "key": "Show notes",
         "location": {
-          "startingColumn": 30,
-          "startingLine": 52
+          "startingColumn": 83,
+          "startingLine": 70
         }
       },
       {
@@ -23,7 +47,7 @@
         "key": "Save selected text",
         "location": {
           "startingColumn": 36,
-          "startingLine": 57
+          "startingLine": 79
         }
       },
       {
@@ -31,7 +55,7 @@
         "key": "Paste quote",
         "location": {
           "startingColumn": 36,
-          "startingLine": 65
+          "startingLine": 87
         }
       },
       {
@@ -39,7 +63,7 @@
         "key": "Highlight",
         "location": {
           "startingColumn": 30,
-          "startingLine": 75
+          "startingLine": 97
         }
       },
       {
@@ -47,7 +71,7 @@
         "key": "Quoted text",
         "location": {
           "startingColumn": 35,
-          "startingLine": 77
+          "startingLine": 99
         }
       },
       {
@@ -55,7 +79,7 @@
         "key": "Optional note",
         "location": {
           "startingColumn": 35,
-          "startingLine": 80
+          "startingLine": 102
         }
       },
       {
@@ -63,7 +87,7 @@
         "key": "Save highlight",
         "location": {
           "startingColumn": 32,
-          "startingLine": 83
+          "startingLine": 105
         }
       },
       {
@@ -71,7 +95,7 @@
         "key": "Favorited",
         "location": {
           "startingColumn": 27,
-          "startingLine": 97
+          "startingLine": 119
         }
       },
       {
@@ -79,31 +103,47 @@
         "key": "Favorite episode",
         "location": {
           "startingColumn": 31,
-          "startingLine": 103
+          "startingLine": 125
         }
       },
       {
         "comment": "",
         "key": "Pause",
         "location": {
-          "startingColumn": 66,
-          "startingLine": 150
+          "startingColumn": 62,
+          "startingLine": 211
         }
       },
       {
         "comment": "",
         "key": "Play",
         "location": {
-          "startingColumn": 76,
-          "startingLine": 150
+          "startingColumn": 72,
+          "startingLine": 211
         }
       },
       {
         "comment": "",
-        "key": "Open audio link",
+        "key": "Rewind %lld seconds",
         "location": {
-          "startingColumn": 27,
-          "startingLine": 197
+          "startingColumn": 29,
+          "startingLine": 272
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast forward %lld seconds",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 286
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 243
         }
       }
     ]

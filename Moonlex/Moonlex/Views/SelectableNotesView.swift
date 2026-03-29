@@ -39,6 +39,8 @@ final class NotesSelectionReader: ObservableObject {
 
 struct SelectableNotesView: UIViewRepresentable {
     let text: String
+    /// When set (e.g. newsletter HTML), shown instead of `text` with links and typography preserved.
+    var attributedFallback: NSAttributedString? = nil
     @ObservedObject var reader: NotesSelectionReader
 
     func makeUIView(context: Context) -> UITextView {
@@ -51,15 +53,23 @@ struct SelectableNotesView: UIViewRepresentable {
         tv.textContainer.lineFragmentPadding = 0
         tv.font = UIFont.preferredFont(forTextStyle: .body)
         tv.adjustsFontForContentSizeCategory = true
-        tv.text = text
+        tv.linkTextAttributes = [.foregroundColor: UIColor.link]
+        applyContent(to: tv)
         reader.textView = tv
         return tv
     }
 
     func updateUIView(_ uiView: UITextView, context: Context) {
-        if uiView.text != text {
-            uiView.text = text
-        }
+        applyContent(to: uiView)
         reader.textView = uiView
+    }
+
+    private func applyContent(to tv: UITextView) {
+        if let attr = attributedFallback, attr.length > 0 {
+            tv.attributedText = attr
+        } else {
+            if tv.attributedText != nil { tv.attributedText = nil }
+            tv.text = text
+        }
     }
 }
