@@ -32,7 +32,9 @@ struct EpisodeDetailView: View {
     }
 
     /// True when the global player is playing this episode’s stream or its local file.
+    /// `loadedEpisodeKey` is required so autoplay (and any URL edge cases) still binds the scrubber to live playback.
     private var isPlaybackBoundToThisEpisode: Bool {
+        if playback.loadedEpisodeKey == episode.stableKey { return true }
         guard let loaded = playback.loadedMediaURL else { return false }
         return episodeAudioURLs.contains(loaded)
     }
@@ -181,16 +183,12 @@ struct EpisodeDetailView: View {
     private func applyPlaybackSource() {
         guard let url = episodePlaybackURL else { return }
         guard playback.loadedMediaURL == url else { return }
-        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey) {
-            sleepTimer.onNewEpisodeLoaded()
-        }
+        _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
     }
 
     private func loadThisEpisodeIfNeeded() -> Bool {
         guard let url = episodePlaybackURL else { return false }
-        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey) {
-            sleepTimer.onNewEpisodeLoaded()
-        }
+        _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
         return true
     }
 
@@ -269,6 +267,8 @@ struct EpisodeDetailView: View {
     @ViewBuilder
     private func episodePlayerCard(artworkURL: URL?, sleepTimer: SleepTimerStore) -> some View {
         let span = detailScrubberSpan
+        let back = playback.skipBackwardIntervals
+        let fwd = playback.skipForwardIntervals
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Spacer(minLength: 0)
@@ -304,8 +304,16 @@ struct EpisodeDetailView: View {
 
                 HStack(alignment: .center) {
                     HStack(spacing: 4) {
-                        skipBackButton(seconds: 15, systemName: "gobackward.15")
-                        skipBackButton(seconds: 30, systemName: "gobackward.30")
+                        if back.count >= 2 {
+                            skipBackButton(
+                                seconds: Int(back[0]),
+                                systemName: skipRewindSymbol(seconds: Int(back[0]))
+                            )
+                            skipBackButton(
+                                seconds: Int(back[1]),
+                                systemName: skipRewindSymbol(seconds: Int(back[1]))
+                            )
+                        }
                     }
                     .frame(maxWidth: .infinity)
 
@@ -324,8 +332,16 @@ struct EpisodeDetailView: View {
                     .accessibilityLabel(detailTransportShowsPause ? "Pause" : "Play")
 
                     HStack(spacing: 4) {
-                        skipForwardButton(seconds: 30, systemName: "goforward.30")
-                        skipForwardButton(seconds: 60, systemName: "goforward.60")
+                        if fwd.count >= 2 {
+                            skipForwardButton(
+                                seconds: Int(fwd[0]),
+                                systemName: skipAheadSymbol(seconds: Int(fwd[0]))
+                            )
+                            skipForwardButton(
+                                seconds: Int(fwd[1]),
+                                systemName: skipAheadSymbol(seconds: Int(fwd[1]))
+                            )
+                        }
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -383,6 +399,17 @@ struct EpisodeDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.quaternary.opacity(0.35))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    /// SF Symbols only define `gobackward` / `goforward` with specific second values; fall back to the undecorated symbol when needed.
+    private static let skipGlyphSeconds = Set([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120])
+
+    private func skipRewindSymbol(seconds: Int) -> String {
+        Self.skipGlyphSeconds.contains(seconds) ? "gobackward.\(seconds)" : "gobackward"
+    }
+
+    private func skipAheadSymbol(seconds: Int) -> String {
+        Self.skipGlyphSeconds.contains(seconds) ? "goforward.\(seconds)" : "goforward"
     }
 
     @ViewBuilder

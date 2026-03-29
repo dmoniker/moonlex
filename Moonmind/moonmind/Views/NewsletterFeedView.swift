@@ -10,7 +10,27 @@ struct NewsletterFeedView: View {
     @ObservedObject var episodeDownloads: EpisodeDownloadStore
     @Binding var showAppSettings: Bool
 
+    @State private var navigationPath = NavigationPath()
+
     var body: some View {
+        NavigationStack(path: $navigationPath) {
+            newsletterFeedContents
+                .navigationDestination(for: Episode.self) { ep in
+                    EpisodeDetailView(episode: ep, playback: episodePlayback, sleepTimer: sleepTimer, downloads: episodeDownloads)
+                }
+        }
+        .onChange(of: episodePlayback.autoplayDetailNavigation) { _, request in
+            guard let request, request.feed == .newsletter else { return }
+            if !navigationPath.isEmpty {
+                navigationPath.removeLast()
+            }
+            navigationPath.append(request.episode)
+            episodePlayback.consumeAutoplayDetailNavigation()
+        }
+    }
+
+    @ViewBuilder
+    private var newsletterFeedContents: some View {
         VStack(alignment: .leading, spacing: 0) {
             FeedFilterBar(feeds: catalog.newsletterFeeds, filters: feedFilters) {
                 Task {
@@ -66,11 +86,8 @@ struct NewsletterFeedView: View {
                 } label: {
                     Label("Feeds", systemImage: "plus.square.on.square")
                 }
-                ProfileSettingsToolbarButton(showSettings: $showAppSettings)
+                SettingsToolbarButton(showSettings: $showAppSettings)
             }
-        }
-        .navigationDestination(for: Episode.self) { ep in
-            EpisodeDetailView(episode: ep, playback: episodePlayback, sleepTimer: sleepTimer, downloads: episodeDownloads)
         }
         .task {
             await model.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)

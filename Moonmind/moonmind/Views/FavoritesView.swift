@@ -65,7 +65,7 @@ struct FavoritesView: View {
         .navigationTitle("Saved")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                ProfileSettingsToolbarButton(showSettings: $showAppSettings)
+                SettingsToolbarButton(showSettings: $showAppSettings)
             }
         }
     }

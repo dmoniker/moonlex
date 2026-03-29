@@ -385,7 +385,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = moonmind/MoonmindInfo.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Moonmind;
+				INFOPLIST_KEY_CFBundleDisplayName = LunarCast;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -416,7 +416,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = moonmind/MoonmindInfo.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Moonmind;
+				INFOPLIST_KEY_CFBundleDisplayName = LunarCast;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

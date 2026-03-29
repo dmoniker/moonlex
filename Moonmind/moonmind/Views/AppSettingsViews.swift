@@ -1,32 +1,15 @@
 import SwiftUI
 
-// MARK: - Profile (system-style glyph; Contacts “My Card” photo API is not available on iOS)
+// MARK: - Settings toolbar
 
-struct ProfileToolbarAvatarView: View {
-    var diameter: CGFloat = 30
-
-    var body: some View {
-        Image(systemName: "person.crop.circle.fill")
-            .resizable()
-            .scaledToFit()
-            .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(.secondary, .quaternary)
-            .frame(width: diameter, height: diameter)
-            .clipShape(Circle())
-            .overlay(Circle().strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
-            .accessibilityHidden(true)
-    }
-}
-
-struct ProfileSettingsToolbarButton: View {
+struct SettingsToolbarButton: View {
     @Binding var showSettings: Bool
-    var diameter: CGFloat = 30
 
     var body: some View {
         Button {
             showSettings = true
         } label: {
-            ProfileToolbarAvatarView(diameter: diameter)
+            Image(systemName: "gearshape.fill")
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Settings")
@@ -39,19 +22,76 @@ struct AppSettingsSheetView: View {
     @ObservedObject var playback: EpisodePlaybackController
 
     @AppStorage(EpisodePlaybackController.autoplayNextDefaultsKey) private var autoplayNextInFeed = false
+    @AppStorage(EpisodePlaybackController.autoplayScopeDefaultsKey) private var autoplayScopeRaw =
+        EpisodePlaybackController.AutoplayScope.feed.rawValue
     @AppStorage(EpisodePlaybackController.playbackRateSlowDefaultsKey) private var slowRateStored = Double(EpisodePlaybackController.defaultSlowPlaybackRate)
     @AppStorage(EpisodePlaybackController.playbackRateFastDefaultsKey) private var fastRateStored = Double(EpisodePlaybackController.defaultFastPlaybackRate)
+    @AppStorage(EpisodePlaybackController.skipBackLeftDefaultsKey) private var skipBackLeft =
+        Double(EpisodePlaybackController.defaultSkipBackLeft)
+    @AppStorage(EpisodePlaybackController.skipBackRightDefaultsKey) private var skipBackRight =
+        Double(EpisodePlaybackController.defaultSkipBackRight)
+    @AppStorage(EpisodePlaybackController.skipForwardLeftDefaultsKey) private var skipForwardLeft =
+        Double(EpisodePlaybackController.defaultSkipForwardLeft)
+    @AppStorage(EpisodePlaybackController.skipForwardRightDefaultsKey) private var skipForwardRight =
+        Double(EpisodePlaybackController.defaultSkipForwardRight)
 
     @Environment(\.dismiss) private var dismiss
+
+    private var skipSecondsBounds: ClosedRange<Double> {
+        Double(EpisodePlaybackController.skipSecondsMin)...Double(EpisodePlaybackController.skipSecondsMax)
+    }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     Toggle("Autoplay next episode", isOn: $autoplayNextInFeed)
-                    Text("When an episode finishes, starts the next one with audio in your feed (newest-first order).")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    if autoplayNextInFeed {
+                        Picker("Autoplay from", selection: $autoplayScopeRaw) {
+                            Text("Entire feed").tag(EpisodePlaybackController.AutoplayScope.feed.rawValue)
+                            Text("Same show").tag(EpisodePlaybackController.AutoplayScope.sameShow.rawValue)
+                        }
+                    }
+                    Text(
+                        "When an episode finishes, plays the next not-fully-played episode with audio (newest-first order). Choose the whole feed or only the same podcast or newsletter. Stops if there isn’t a match."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                }
+
+                Section("Skip buttons") {
+                    Stepper(
+                        "Rewind, inner: \(Int(skipBackLeft.rounded())) s",
+                        value: $skipBackLeft,
+                        in: skipSecondsBounds,
+                        step: 5
+                    )
+                    Stepper(
+                        "Rewind, outer: \(Int(skipBackRight.rounded())) s",
+                        value: $skipBackRight,
+                        in: skipSecondsBounds,
+                        step: 5
+                    )
+                    Stepper(
+                        "Fast-forward, inner: \(Int(skipForwardLeft.rounded())) s",
+                        value: $skipForwardLeft,
+                        in: skipSecondsBounds,
+                        step: 5
+                    )
+                    Stepper(
+                        "Fast-forward, outer: \(Int(skipForwardRight.rounded())) s",
+                        value: $skipForwardRight,
+                        in: skipSecondsBounds,
+                        step: 5
+                    )
+                    Button {
+                        resetSkipIntervalsToDefaults()
+                    } label: {
+                        Text("Reset")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.tint)
                 }
 
                 Section("Playback speed") {
@@ -121,8 +161,34 @@ struct AppSettingsSheetView: View {
             .onChange(of: fastRateStored) { _, _ in
                 playback.refreshPlaybackRateTiersFromUserDefaults()
             }
+            .onChange(of: skipBackLeft) { _, _ in
+                playback.refreshSkipIntervalsFromUserDefaults()
+            }
+            .onChange(of: skipBackRight) { _, _ in
+                playback.refreshSkipIntervalsFromUserDefaults()
+            }
+            .onChange(of: skipForwardLeft) { _, _ in
+                playback.refreshSkipIntervalsFromUserDefaults()
+            }
+            .onChange(of: skipForwardRight) { _, _ in
+                playback.refreshSkipIntervalsFromUserDefaults()
+            }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+    }
+
+    private func resetSkipIntervalsToDefaults() {
+        let c = EpisodePlaybackController.self
+        let ud = UserDefaults.standard
+        ud.set(c.defaultSkipBackLeft, forKey: c.skipBackLeftDefaultsKey)
+        ud.set(c.defaultSkipBackRight, forKey: c.skipBackRightDefaultsKey)
+        ud.set(c.defaultSkipForwardLeft, forKey: c.skipForwardLeftDefaultsKey)
+        ud.set(c.defaultSkipForwardRight, forKey: c.skipForwardRightDefaultsKey)
+        skipBackLeft = c.defaultSkipBackLeft
+        skipBackRight = c.defaultSkipBackRight
+        skipForwardLeft = c.defaultSkipForwardLeft
+        skipForwardRight = c.defaultSkipForwardRight
+        playback.refreshSkipIntervalsFromUserDefaults()
     }
 }

@@ -11,6 +11,7 @@ struct HomeFeedView: View {
     @Binding var showAppSettings: Bool
 
     @AppStorage("moonmind.feedShowUnplayedOnly") private var showUnplayedOnly = true
+    @State private var navigationPath = NavigationPath()
 
     private var displayedEpisodes: [Episode] {
         guard showUnplayedOnly else { return model.episodes }
@@ -21,6 +22,24 @@ struct HomeFeedView: View {
     }
 
     var body: some View {
+        NavigationStack(path: $navigationPath) {
+            feedContents
+                .navigationDestination(for: Episode.self) { ep in
+                    EpisodeDetailView(episode: ep, playback: episodePlayback, sleepTimer: sleepTimer, downloads: episodeDownloads)
+                }
+        }
+        .onChange(of: episodePlayback.autoplayDetailNavigation) { _, request in
+            guard let request, request.feed == .podcast else { return }
+            if !navigationPath.isEmpty {
+                navigationPath.removeLast()
+            }
+            navigationPath.append(request.episode)
+            episodePlayback.consumeAutoplayDetailNavigation()
+        }
+    }
+
+    @ViewBuilder
+    private var feedContents: some View {
         VStack(alignment: .leading, spacing: 0) {
             FeedFilterBar(feeds: catalog.podcastFeeds, filters: feedFilters) {
                 Task {
@@ -95,7 +114,7 @@ struct HomeFeedView: View {
                 .listStyle(.plain)
             }
         }
-        .navigationTitle("Moonmind")
+        .navigationTitle("LunarCast")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
@@ -111,11 +130,8 @@ struct HomeFeedView: View {
                     Label("Podcasts", systemImage: "plus.square.on.square")
                 }
 
-                ProfileSettingsToolbarButton(showSettings: $showAppSettings)
+                SettingsToolbarButton(showSettings: $showAppSettings)
             }
-        }
-        .navigationDestination(for: Episode.self) { ep in
-            EpisodeDetailView(episode: ep, playback: episodePlayback, sleepTimer: sleepTimer, downloads: episodeDownloads)
         }
         .task {
             await model.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)

@@ -10,9 +10,28 @@ struct EpisodeNowPlayingMetadata: Equatable {
     var artworkURL: URL?
 }
 
+/// When autoplay advances, the owning feed’s `NavigationStack` should show this episode’s detail (replacing the finished one if still on-screen).
+struct AutoplayDetailNavigation: Equatable {
+    enum Feed: Equatable {
+        case podcast
+        case newsletter
+    }
+
+    let feed: Feed
+    let episode: Episode
+}
+
 final class EpisodePlaybackController: ObservableObject {
-    static let skipBackwardOptions: [TimeInterval] = [15, 30]
-    static let skipForwardOptions: [TimeInterval] = [30, 60]
+    static let skipBackLeftDefaultsKey = "moonmind.skipBackLeftSeconds"
+    static let skipBackRightDefaultsKey = "moonmind.skipBackRightSeconds"
+    static let skipForwardLeftDefaultsKey = "moonmind.skipForwardLeftSeconds"
+    static let skipForwardRightDefaultsKey = "moonmind.skipForwardRightSeconds"
+    static let defaultSkipBackLeft: TimeInterval = 15
+    static let defaultSkipBackRight: TimeInterval = 30
+    static let defaultSkipForwardLeft: TimeInterval = 30
+    static let defaultSkipForwardRight: TimeInterval = 60
+    static let skipSecondsMin: TimeInterval = 5
+    static let skipSecondsMax: TimeInterval = 300
 
     static let playbackRateSlowDefaultsKey = "moonmind.playbackRateSlow"
     static let playbackRateFastDefaultsKey = "moonmind.playbackRateFast"
@@ -23,6 +42,24 @@ final class EpisodePlaybackController: ObservableObject {
 
     private static let playbackRateDefaultsKey = "moonmind.playbackRate"
     static let autoplayNextDefaultsKey = "moonmind.autoplayNextInFeed"
+    /// Stored raw value of `AutoplayScope` (`feed` or `sameShow`).
+    static let autoplayScopeDefaultsKey = "moonmind.autoplayScope"
+
+    enum AutoplayScope: String, CaseIterable, Identifiable {
+        /// Next unplayed episode in full feed order (newest first).
+        case feed
+        /// Next unplayed episode from the same podcast / newsletter (`feedID`).
+        case sameShow
+
+        var id: String { rawValue }
+
+        static func resolvedFromUserDefaults() -> AutoplayScope {
+            let raw = UserDefaults.standard.string(forKey: EpisodePlaybackController.autoplayScopeDefaultsKey)
+            guard let raw, let scope = AutoplayScope(rawValue: raw) else { return .feed }
+            return scope
+        }
+    }
+
     private static let minResumeSeconds: TimeInterval = 3
     private static let nearEndClearSeconds: TimeInterval = 15
     private static let periodicProgressSaveInterval: TimeInterval = 12
@@ -37,11 +74,17 @@ final class EpisodePlaybackController: ObservableObject {
         Self.resolvedPlaybackRateTiers()
     }
 
+    /// Skip amounts for the two rewind / fast-forward controls and lock-screen skip (seconds).
+    private(set) var skipBackwardIntervals: [TimeInterval]
+    private(set) var skipForwardIntervals: [TimeInterval]
+
     /// Currently loaded stream; used to avoid resetting playback when reopening the same episode.
-    private(set) var loadedMediaURL: URL?
+    @Published private(set) var loadedMediaURL: URL?
 
     /// Episode whose progress is tracked for persistence (matches the playing asset).
     private(set) var loadedEpisodeKey: String?
+
+    @Published private(set) var autoplayDetailNavigation: AutoplayDetailNavigation?
 
     var sleepTimerStore: SleepTimerStore?
     weak var downloadStore: EpisodeDownloadStore?
@@ -50,7 +93,8 @@ final class EpisodePlaybackController: ObservableObject {
 
     let progressStore = EpisodePlaybackProgressStore()
 
-    private var nowPlayingMetadata: EpisodeNowPlayingMetadata?
+    /// Title, show, and artwork for the current load; `nil` after `stopAndClear()`. Published for mini-player UI.
+    @Published private(set) var nowPlayingMetadata: EpisodeNowPlayingMetadata?
     private var nowPlayingArtwork: UIImage?
     private var artworkFetchTask: Task<Void, Never>?
     private var player: AVPlayer?
@@ -64,6 +108,9 @@ final class EpisodePlaybackController: ObservableObject {
     private var progressForwardCancellable: AnyCancellable?
 
     init() {
+        skipBackwardIntervals = Self.loadSkipBackwardIntervalsFromDefaults()
+        skipForwardIntervals = Self.loadSkipForwardIntervalsFromDefaults()
+
         let tiers = Self.resolvedPlaybackRateTiers()
         let stored = Float(UserDefaults.standard.double(forKey: Self.playbackRateDefaultsKey))
         playbackRate = tiers.first(where: { abs($0 - stored) < 0.001 }) ?? 1.0
@@ -96,6 +143,42 @@ final class EpisodePlaybackController: ObservableObject {
         let slow = (rawSlow > 0 && rawSlow < 1) ? clampSlowRate(rawSlow) : defaultSlowPlaybackRate
         let fast = (rawFast > 1) ? clampFastRate(rawFast) : defaultFastPlaybackRate
         return [slow, 1.0, fast]
+    }
+
+    private static func clampSkipSeconds(_ value: TimeInterval) -> TimeInterval {
+        let rounded = round(value)
+        return min(max(rounded, skipSecondsMin), skipSecondsMax)
+    }
+
+    private static func readSkipSeconds(key: String, default def: TimeInterval) -> TimeInterval {
+        guard UserDefaults.standard.object(forKey: key) != nil else {
+            return clampSkipSeconds(def)
+        }
+        let v = UserDefaults.standard.double(forKey: key)
+        if v <= 0 { return clampSkipSeconds(def) }
+        return clampSkipSeconds(v)
+    }
+
+    private static func loadSkipBackwardIntervalsFromDefaults() -> [TimeInterval] {
+        let a = readSkipSeconds(key: skipBackLeftDefaultsKey, default: defaultSkipBackLeft)
+        let b = readSkipSeconds(key: skipBackRightDefaultsKey, default: defaultSkipBackRight)
+        return [a, b]
+    }
+
+    private static func loadSkipForwardIntervalsFromDefaults() -> [TimeInterval] {
+        let a = readSkipSeconds(key: skipForwardLeftDefaultsKey, default: defaultSkipForwardLeft)
+        let b = readSkipSeconds(key: skipForwardRightDefaultsKey, default: defaultSkipForwardRight)
+        return [a, b]
+    }
+
+    /// Call when skip interval values change in Settings (updates Now Playing / lock screen).
+    func refreshSkipIntervalsFromUserDefaults() {
+        skipBackwardIntervals = Self.loadSkipBackwardIntervalsFromDefaults()
+        skipForwardIntervals = Self.loadSkipForwardIntervalsFromDefaults()
+        let center = MPRemoteCommandCenter.shared()
+        center.skipBackwardCommand.preferredIntervals = skipBackwardIntervals.map { NSNumber(value: $0) }
+        center.skipForwardCommand.preferredIntervals = skipForwardIntervals.map { NSNumber(value: $0) }
+        objectWillChange.send()
     }
 
     /// Call after slow/fast tiers change in Settings so the current rate stays valid and the player updates.
@@ -131,34 +214,66 @@ final class EpisodePlaybackController: ObservableObject {
         }
     }
 
+    func consumeAutoplayDetailNavigation() {
+        autoplayDetailNavigation = nil
+    }
+
     @MainActor
     private func attemptAutoplayAfterFinishedEpisode(finishedKey: String?) {
         guard UserDefaults.standard.bool(forKey: Self.autoplayNextDefaultsKey) else { return }
         guard let key = finishedKey, let downloads = downloadStore else { return }
-        let lists = [feedHomeModel?.episodes, feedNewsletterModel?.episodes].compactMap { $0 }
-        for episodes in lists {
-            guard let next = Self.nextEpisodeWithAudio(after: key, in: episodes) else { continue }
-            guard let url = downloads.playbackURL(for: next) else { continue }
+        let scope = AutoplayScope.resolvedFromUserDefaults()
+
+        func tryAdvance(in episodes: [Episode], feed: AutoplayDetailNavigation.Feed) -> Bool {
+            guard let next = nextUnplayedEpisodeWithAudio(after: key, in: episodes, scope: scope) else { return false }
+            guard let url = downloads.playbackURL(for: next) else { return false }
             let meta = EpisodeNowPlayingMetadata(
                 title: next.title,
                 showTitle: next.showTitle,
                 artworkURL: next.artworkURL
             )
-            _ = load(url: url, nowPlaying: meta, episodeKey: next.stableKey)
-            play()
-            return
+            _ = load(url: url, nowPlaying: meta, episodeKey: next.stableKey, resetSleepTimerForNewEpisode: false)
+            play(armSleepTimerIfNeeded: false)
+            autoplayDetailNavigation = AutoplayDetailNavigation(feed: feed, episode: next)
+            return true
         }
+
+        if let home = feedHomeModel?.episodes, tryAdvance(in: home, feed: .podcast) { return }
+        if let newsletters = feedNewsletterModel?.episodes, tryAdvance(in: newsletters, feed: .newsletter) { return }
     }
 
-    private static func nextEpisodeWithAudio(after key: String, in episodes: [Episode]) -> Episode? {
+    /// Next episode with audio after `key` in feed order that is not marked fully played; nil if none (autoplay stops).
+    private func nextUnplayedEpisodeWithAudio(
+        after key: String,
+        in episodes: [Episode],
+        scope: AutoplayScope
+    ) -> Episode? {
         let withAudio = episodes.filter { $0.audioURL != nil }
-        guard let i = withAudio.firstIndex(where: { $0.stableKey == key }), i + 1 < withAudio.count else { return nil }
-        return withAudio[i + 1]
+        guard let i = withAudio.firstIndex(where: { $0.stableKey == key }) else { return nil }
+        let sameShowID = withAudio[i].feedID
+        var j = i + 1
+        while j < withAudio.count {
+            let ep = withAudio[j]
+            if scope == .sameShow, ep.feedID != sameShowID {
+                j += 1
+                continue
+            }
+            if !progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
+                return ep
+            }
+            j += 1
+        }
+        return nil
     }
 
     /// Returns `true` if the current item was replaced (new URL or cleared). Caller can use this to reset episode-scoped UI state.
     @discardableResult
-    func load(url: URL?, nowPlaying: EpisodeNowPlayingMetadata? = nil, episodeKey: String? = nil) -> Bool {
+    func load(
+        url: URL?,
+        nowPlaying: EpisodeNowPlayingMetadata? = nil,
+        episodeKey: String? = nil,
+        resetSleepTimerForNewEpisode: Bool = true
+    ) -> Bool {
         guard let url else {
             persistListeningProgressIfNeeded()
             let changed = player != nil
@@ -186,6 +301,8 @@ final class EpisodePlaybackController: ObservableObject {
         persistListeningProgressIfNeeded()
         resumeSetupComplete = false
         resetPlayer()
+        currentTime = 0
+        duration = 0
         loadedMediaURL = url
         loadedEpisodeKey = episodeKey
         cancelArtworkFetch()
@@ -272,6 +389,9 @@ final class EpisodePlaybackController: ObservableObject {
 
         startArtworkFetchIfNeeded()
         pushNowPlayingInfo()
+        if resetSleepTimerForNewEpisode {
+            sleepTimerStore?.onNewEpisodeLoaded()
+        }
         return true
     }
 
@@ -413,11 +533,14 @@ final class EpisodePlaybackController: ObservableObject {
         pushNowPlayingInfo()
     }
 
-    func play() {
+    /// - Parameter armSleepTimerIfNeeded: When false (e.g. autoplay), does not start a new countdown if none is active—only explicit user playback should re-arm after the timer has fired.
+    func play(armSleepTimerIfNeeded: Bool = true) {
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .default, options: [])
         try? session.setActive(true)
-        sleepTimerStore?.armCountdownIfNeeded()
+        if armSleepTimerIfNeeded {
+            sleepTimerStore?.armCountdownIfNeeded()
+        }
         player?.playImmediately(atRate: playbackRate)
         isPlaying = true
         pushNowPlayingInfo()
@@ -450,12 +573,12 @@ final class EpisodePlaybackController: ObservableObject {
     }
 
     func skipBackward(by interval: TimeInterval) {
-        guard let delta = Self.skipBackwardOptions.first(where: { abs($0 - interval) < 0.5 }) else { return }
+        guard let delta = skipBackwardIntervals.first(where: { abs($0 - interval) < 0.5 }) else { return }
         seek(to: max(0, currentTime - delta))
     }
 
     func skipForward(by interval: TimeInterval) {
-        guard let delta = Self.skipForwardOptions.first(where: { abs($0 - interval) < 0.5 }) else { return }
+        guard let delta = skipForwardIntervals.first(where: { abs($0 - interval) < 0.5 }) else { return }
         let target = currentTime + delta
         if duration > 0, duration.isFinite {
             seek(to: min(target, duration))
@@ -590,7 +713,7 @@ final class EpisodePlaybackController: ObservableObject {
         }
 
         center.skipBackwardCommand.isEnabled = true
-        center.skipBackwardCommand.preferredIntervals = Self.skipBackwardOptions.map { NSNumber(value: $0) }
+        center.skipBackwardCommand.preferredIntervals = skipBackwardIntervals.map { NSNumber(value: $0) }
         center.skipBackwardCommand.addTarget { [weak self] event in
             guard let playback = self,
                   let e = event as? MPSkipIntervalCommandEvent
@@ -601,7 +724,7 @@ final class EpisodePlaybackController: ObservableObject {
             return .success
         }
         center.skipForwardCommand.isEnabled = true
-        center.skipForwardCommand.preferredIntervals = Self.skipForwardOptions.map { NSNumber(value: $0) }
+        center.skipForwardCommand.preferredIntervals = skipForwardIntervals.map { NSNumber(value: $0) }
         center.skipForwardCommand.addTarget { [weak self] event in
             guard let playback = self,
                   let e = event as? MPSkipIntervalCommandEvent
