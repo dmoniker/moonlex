@@ -1,0 +1,24 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Feed",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "Saved",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 34
+        }
+      }
+    ]
+  },
+  "version": 1
+}

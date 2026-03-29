@@ -1,0 +1,9 @@
+# Xcode
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+.swiftpm/configuration/registries.json
+
+# macOS
+.DS_Store

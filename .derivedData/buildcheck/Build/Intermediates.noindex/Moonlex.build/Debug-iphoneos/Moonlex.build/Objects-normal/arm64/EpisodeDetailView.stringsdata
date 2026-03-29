@@ -1,0 +1,168 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/EpisodeDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "No audio enclosure in this feed item",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show notes",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save selected text",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 59
+        }
+      },
+      {
+        "comment": "",
+        "key": "Paste quote",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Highlight",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quoted text",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 79
+        }
+      },
+      {
+        "comment": "",
+        "key": "Optional note",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save highlight",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorited",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 99
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorite episode",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 135
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloading episode…",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "Available offline",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 146
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove Download",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download Episode",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 158
+        }
+      },
+      {
+        "comment": "",
+        "key": "Pause",
+        "location": {
+          "startingColumn": 62,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "Play",
+        "location": {
+          "startingColumn": 72,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind %lld seconds",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 286
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast forward %lld seconds",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 300
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 257
+        }
+      }
+    ]
+  },
+  "version": 1
+}

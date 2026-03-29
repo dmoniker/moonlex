@@ -1,0 +1,72 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/AddPodcastView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Podcasts",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 48
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your podcasts (RSS)",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 14
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add feed",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add any podcast that publishes a public RSS feed.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show title",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "RSS URL",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 35
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 52
+        }
+      }
+    ]
+  },
+  "version": 1
+}

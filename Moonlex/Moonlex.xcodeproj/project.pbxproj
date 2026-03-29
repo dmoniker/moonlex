@@ -1,0 +1,451 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* MoonlexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* MoonlexApp.swift */; };
+		A10000020000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* ContentView.swift */; };
+		A10000030000000000000003 /* Episode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* Episode.swift */; };
+		A10000040000000000000004 /* FeedCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* FeedCatalog.swift */; };
+		A10000050000000000000005 /* SavedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* SavedItem.swift */; };
+		A10000060000000000000006 /* String+HTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* String+HTML.swift */; };
+		A10000070000000000000007 /* RSSFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RSSFeedService.swift */; };
+		A10000080000000000000008 /* FeedFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* FeedFilters.swift */; };
+		A10000090000000000000009 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000009 /* HomeViewModel.swift */; };
+		A100000A000000000000000A /* SelectableNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A000000000000000A /* SelectableNotesView.swift */; };
+		A100000B000000000000000B /* FeedFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B000000000000000B /* FeedFilterBar.swift */; };
+		A100000C000000000000000C /* HomeFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C000000000000000C /* HomeFeedView.swift */; };
+		A100000D000000000000000D /* EpisodeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D000000000000000D /* EpisodeDetailView.swift */; };
+		A100000E000000000000000E /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E000000000000000E /* FavoritesView.swift */; };
+		A100000F000000000000000F /* AddPodcastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F000000000000000F /* AddPodcastView.swift */; };
+		A10000100000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000100000000000000010 /* Assets.xcassets */; };
+		A10000110000000000000011 /* SleepTimerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000110000000000000011 /* SleepTimerStore.swift */; };
+		A10000120000000000000012 /* EpisodePlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000120000000000000012 /* EpisodePlaybackController.swift */; };
+		A10000140000000000000014 /* PodcastArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000140000000000000014 /* PodcastArtworkView.swift */; };
+		A10000150000000000000015 /* PodcastArtworkCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000150000000000000015 /* PodcastArtworkCache.swift */; };
+		A10000160000000000000016 /* EpisodeDownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000160000000000000016 /* EpisodeDownloadStore.swift */; };
+		A10000170000000000000017 /* EpisodeDownloadAccessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000170000000000000017 /* EpisodeDownloadAccessory.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000010000000000000001 /* MoonlexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonlexApp.swift; sourceTree = "<group>"; };
+		A20000020000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A20000030000000000000003 /* Episode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Episode.swift; sourceTree = "<group>"; };
+		A20000040000000000000004 /* FeedCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCatalog.swift; sourceTree = "<group>"; };
+		A20000050000000000000005 /* SavedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedItem.swift; sourceTree = "<group>"; };
+		A20000060000000000000006 /* String+HTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+HTML.swift"; sourceTree = "<group>"; };
+		A20000070000000000000007 /* RSSFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedService.swift; sourceTree = "<group>"; };
+		A20000080000000000000008 /* FeedFilters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilters.swift; sourceTree = "<group>"; };
+		A20000090000000000000009 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		A200000A000000000000000A /* SelectableNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableNotesView.swift; sourceTree = "<group>"; };
+		A200000B000000000000000B /* FeedFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilterBar.swift; sourceTree = "<group>"; };
+		A200000C000000000000000C /* HomeFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeedView.swift; sourceTree = "<group>"; };
+		A200000D000000000000000D /* EpisodeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDetailView.swift; sourceTree = "<group>"; };
+		A200000E000000000000000E /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
+		A200000F000000000000000F /* AddPodcastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPodcastView.swift; sourceTree = "<group>"; };
+		A20000110000000000000011 /* SleepTimerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerStore.swift; sourceTree = "<group>"; };
+		A20000120000000000000012 /* EpisodePlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodePlaybackController.swift; sourceTree = "<group>"; };
+		A20000130000000000000013 /* MoonlexInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MoonlexInfo.plist; sourceTree = "<group>"; };
+		A20000140000000000000014 /* PodcastArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PodcastArtworkView.swift; sourceTree = "<group>"; };
+		A20000150000000000000015 /* PodcastArtworkCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PodcastArtworkCache.swift; sourceTree = "<group>"; };
+		A20000160000000000000016 /* EpisodeDownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDownloadStore.swift; sourceTree = "<group>"; };
+		A20000170000000000000017 /* EpisodeDownloadAccessory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDownloadAccessory.swift; sourceTree = "<group>"; };
+		A20000100000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2FFFF010000000000000001 /* Moonlex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Moonlex.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000010000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A40000020000000000000002 /* Moonlex */,
+				A40000030000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A40000020000000000000002 /* Moonlex */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000001 /* MoonlexApp.swift */,
+				A20000020000000000000002 /* ContentView.swift */,
+				A40000040000000000000004 /* Models */,
+				A40000050000000000000005 /* Services */,
+				A40000060000000000000006 /* ViewModels */,
+				A40000070000000000000007 /* Views */,
+				A20000100000000000000010 /* Assets.xcassets */,
+				A20000130000000000000013 /* MoonlexInfo.plist */,
+			);
+			path = Moonlex;
+			sourceTree = "<group>";
+		};
+		A40000030000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A2FFFF010000000000000001 /* Moonlex.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A40000040000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000030000000000000003 /* Episode.swift */,
+				A20000040000000000000004 /* FeedCatalog.swift */,
+				A20000050000000000000005 /* SavedItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A40000050000000000000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A20000060000000000000006 /* String+HTML.swift */,
+				A20000070000000000000007 /* RSSFeedService.swift */,
+				A20000080000000000000008 /* FeedFilters.swift */,
+				A20000110000000000000011 /* SleepTimerStore.swift */,
+				A20000120000000000000012 /* EpisodePlaybackController.swift */,
+				A20000150000000000000015 /* PodcastArtworkCache.swift */,
+				A20000160000000000000016 /* EpisodeDownloadStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A40000060000000000000006 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000090000000000000009 /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A40000070000000000000007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A200000A000000000000000A /* SelectableNotesView.swift */,
+				A200000B000000000000000B /* FeedFilterBar.swift */,
+				A200000C000000000000000C /* HomeFeedView.swift */,
+				A200000D000000000000000D /* EpisodeDetailView.swift */,
+				A200000E000000000000000E /* FavoritesView.swift */,
+				A200000F000000000000000F /* AddPodcastView.swift */,
+				A20000140000000000000014 /* PodcastArtworkView.swift */,
+				A20000170000000000000017 /* EpisodeDownloadAccessory.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000010000000000000001 /* Moonlex */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A70000020000000000000002 /* Build configuration list for PBXNativeTarget "Moonlex" */;
+			buildPhases = (
+				A50000020000000000000002 /* Sources */,
+				A30000010000000000000001 /* Frameworks */,
+				A50000030000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Moonlex;
+			productName = Moonlex;
+			productReference = A2FFFF010000000000000001 /* Moonlex.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A60000010000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A50000010000000000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A70000010000000000000001 /* Build configuration list for PBXProject "Moonlex" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A40000010000000000000001;
+			productRefGroup = A40000030000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A50000010000000000000001 /* Moonlex */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A50000030000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000100000000000000010 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A50000020000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* MoonlexApp.swift in Sources */,
+				A10000020000000000000002 /* ContentView.swift in Sources */,
+				A10000030000000000000003 /* Episode.swift in Sources */,
+				A10000040000000000000004 /* FeedCatalog.swift in Sources */,
+				A10000050000000000000005 /* SavedItem.swift in Sources */,
+				A10000060000000000000006 /* String+HTML.swift in Sources */,
+				A10000070000000000000007 /* RSSFeedService.swift in Sources */,
+				A10000080000000000000008 /* FeedFilters.swift in Sources */,
+				A10000090000000000000009 /* HomeViewModel.swift in Sources */,
+				A100000A000000000000000A /* SelectableNotesView.swift in Sources */,
+				A100000B000000000000000B /* FeedFilterBar.swift in Sources */,
+				A100000C000000000000000C /* HomeFeedView.swift in Sources */,
+				A100000D000000000000000D /* EpisodeDetailView.swift in Sources */,
+				A100000E000000000000000E /* FavoritesView.swift in Sources */,
+				A100000F000000000000000F /* AddPodcastView.swift in Sources */,
+				A10000110000000000000011 /* SleepTimerStore.swift in Sources */,
+				A10000120000000000000012 /* EpisodePlaybackController.swift in Sources */,
+				A10000140000000000000014 /* PodcastArtworkView.swift in Sources */,
+				A10000150000000000000015 /* PodcastArtworkCache.swift in Sources */,
+				A10000160000000000000016 /* EpisodeDownloadStore.swift in Sources */,
+				A10000170000000000000017 /* EpisodeDownloadAccessory.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A80000020000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A80000030000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F34XBU4X46;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Moonlex/MoonlexInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Moonlex;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moonlex.Moonlex;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A80000040000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F34XBU4X46;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Moonlex/MoonlexInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Moonlex;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moonlex.Moonlex;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A70000010000000000000001 /* Build configuration list for PBXProject "Moonlex" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000010000000000000001 /* Debug */,
+				A80000020000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A70000020000000000000002 /* Build configuration list for PBXNativeTarget "Moonlex" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000030000000000000003 /* Debug */,
+				A80000040000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A60000010000000000000001 /* Project object */;
+}

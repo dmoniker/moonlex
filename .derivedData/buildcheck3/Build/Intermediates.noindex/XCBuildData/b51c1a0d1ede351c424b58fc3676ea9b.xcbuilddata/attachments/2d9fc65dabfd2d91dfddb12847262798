@@ -1,0 +1,229 @@
+{
+  "" : {
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Moonlex-primary.dia",
+    "emit-module-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Moonlex-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Moonlex-primary-emit-module.dia",
+    "pch" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Moonlex-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Moonlex-primary.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/ContentView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Models/Episode.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/Episode~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Models/FeedCatalog.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedCatalog~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Models/SavedItem.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SavedItem~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/MoonlexApp.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/MoonlexApp~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/EpisodeDownloadStore.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadStore~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/EpisodePlaybackController.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodePlaybackController~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/FeedFilters.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilters~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/PodcastArtworkCache.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkCache~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/RSSFeedService.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/RSSFeedService~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/SleepTimerStore.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SleepTimerStore~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Services/String+HTML.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/String+HTML~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/ViewModels/HomeViewModel.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeViewModel~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/AddPodcastView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/AddPodcastView~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/EpisodeDetailView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDetailView~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/EpisodeDownloadAccessory.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/EpisodeDownloadAccessory~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/FavoritesView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FavoritesView~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/FeedFilterBar.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/FeedFilterBar~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/HomeFeedView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/HomeFeedView~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/PodcastArtworkView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/PodcastArtworkView~partial.swiftmodule"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/SelectableNotesView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.dia",
+    "index-unit-output-path" : "/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView.swiftdeps",
+    "swiftmodule" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/buildcheck3/Build/Intermediates.noindex/Moonlex.build/Debug-iphoneos/Moonlex.build/Objects-normal/arm64/SelectableNotesView~partial.swiftmodule"
+  }
+}

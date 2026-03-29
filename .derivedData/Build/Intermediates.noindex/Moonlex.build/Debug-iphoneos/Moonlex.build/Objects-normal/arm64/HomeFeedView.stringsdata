@@ -1,0 +1,56 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/HomeFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Moonlex",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "Turn on at least one podcast with the filters above.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading episodes…",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load feeds",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "No shows selected",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "Podcasts",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 59
+        }
+      }
+    ]
+  },
+  "version": 1
+}

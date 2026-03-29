@@ -1,0 +1,56 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/FavoritesView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Saved",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorite an episode or save a highlight from show notes.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nothing saved yet",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 14
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorites & highlights",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "Episode",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "Highlight",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 33
+        }
+      }
+    ]
+  },
+  "version": 1
+}

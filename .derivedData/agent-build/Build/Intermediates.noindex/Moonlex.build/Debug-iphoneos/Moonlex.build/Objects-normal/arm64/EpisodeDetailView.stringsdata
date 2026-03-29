@@ -1,0 +1,112 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonlex/Moonlex/Views/EpisodeDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "No audio enclosure in this feed item",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show notes",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 52
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save selected text",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "Paste quote",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "Highlight",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quoted text",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Optional note",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save highlight",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 83
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorited",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorite episode",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 103
+        }
+      },
+      {
+        "comment": "",
+        "key": "Pause",
+        "location": {
+          "startingColumn": 66,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "Play",
+        "location": {
+          "startingColumn": 76,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 196
+        }
+      }
+    ]
+  },
+  "version": 1
+}
