@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>12</integer>
+	<key>logs</key>
+	<dict>
+		<key>F5465341-CE56-497E-8C26-868BF8835143</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>F5465341-CE56-497E-8C26-868BF8835143.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>2</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Moonmind project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>moonmind</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>timeStartedRecording</key>
+			<real>796510758.67083097</real>
+			<key>timeStoppedRecording</key>
+			<real>796510769.54150498</real>
+			<key>title</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>uniqueIdentifier</key>
+			<string>F5465341-CE56-497E-8C26-868BF8835143</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,128 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/HomeFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "LunarCast",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 133
+        }
+      },
+      {
+        "comment": "",
+        "key": "Turn on at least one podcast with the filters above.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading episodes…",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load feeds",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 66
+        }
+      },
+      {
+        "comment": "",
+        "key": "No shows selected",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "All caught up",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 78
+        }
+      },
+      {
+        "comment": "",
+        "key": "No episodes",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 78
+        }
+      },
+      {
+        "comment": "",
+        "key": "Every episode from your shows is played, or turn off unplayed-only to see the full feed again.",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 157,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 116
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show all episodes",
+        "location": {
+          "startingColumn": 56,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show unplayed only",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "Podcasts",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 146
+        }
+      }
+    ]
+  },
+  "version": 1
+}

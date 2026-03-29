@@ -6,7 +6,9 @@ struct EpisodeDetailView: View {
     @Query private var saved: [SavedItem]
 
     let episode: Episode
-    @ObservedObject var playback: EpisodePlaybackController
+    let playback: EpisodePlaybackController
+    /// Observed separately from `playback` so high‑frequency `currentTime` ticks do not rebuild the detail shell (e.g. sleep timer menu).
+    @ObservedObject var progressStore: EpisodePlaybackProgressStore
     @ObservedObject var sleepTimer: SleepTimerStore
     @ObservedObject var downloads: EpisodeDownloadStore
     @StateObject private var notesReader = NotesSelectionReader()
@@ -22,22 +24,6 @@ struct EpisodeDetailView: View {
     }
 
     private var episodePlaybackURL: URL? { downloads.playbackURL(for: episode) }
-
-    /// Remote or downloaded file URLs for this episode (player may hold either while it’s the same show).
-    private var episodeAudioURLs: [URL] {
-        var urls: [URL] = []
-        if let remote = episode.audioURL { urls.append(remote) }
-        if let local = downloads.localFileURL(forEpisodeKey: episode.stableKey) { urls.append(local) }
-        return urls
-    }
-
-    /// True when the global player is playing this episode’s stream or its local file.
-    /// `loadedEpisodeKey` is required so autoplay (and any URL edge cases) still binds the scrubber to live playback.
-    private var isPlaybackBoundToThisEpisode: Bool {
-        if playback.loadedEpisodeKey == episode.stableKey { return true }
-        guard let loaded = playback.loadedMediaURL else { return false }
-        return episodeAudioURLs.contains(loaded)
-    }
 
     private var episodeNowPlayingMeta: EpisodeNowPlayingMetadata {
         EpisodeNowPlayingMetadata(
@@ -74,7 +60,12 @@ struct EpisodeDetailView: View {
                 }
 
                 if episode.audioURL != nil {
-                    episodePlayerCard(artworkURL: episode.artworkURL, sleepTimer: sleepTimer)
+                    EpisodeDetailPlayerCard(
+                        episode: episode,
+                        playback: playback,
+                        sleepTimer: sleepTimer,
+                        downloads: downloads
+                    )
                 } else if episode.feedContentKind == .newsletter, let url = episode.linkURL {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.")
@@ -140,7 +131,15 @@ struct EpisodeDetailView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                if episode.audioURL != nil, progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) {
+                    Button {
+                        playback.markEpisodeUnplayed(episodeKey: episode.stableKey)
+                        flash("Marked as unplayed")
+                    } label: {
+                        Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                    }
+                }
                 if existingFavorite != nil {
                     Label("Favorited", systemImage: "star.fill")
                         .foregroundStyle(.yellow)
@@ -184,312 +183,6 @@ struct EpisodeDetailView: View {
         guard let url = episodePlaybackURL else { return }
         guard playback.loadedMediaURL == url else { return }
         _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
-    }
-
-    private func loadThisEpisodeIfNeeded() -> Bool {
-        guard let url = episodePlaybackURL else { return false }
-        _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
-        return true
-    }
-
-    private func startThisEpisodePlayback() {
-        guard loadThisEpisodeIfNeeded() else { return }
-        playback.play()
-    }
-
-    /// Switches the global player to this episode, starts playback, then runs `body` (e.g. skip or seek).
-    private func takeOverThisEpisodeThen(_ body: () -> Void) {
-        guard loadThisEpisodeIfNeeded() else { return }
-        playback.play()
-        body()
-    }
-
-    private var savedBookmark: (position: TimeInterval, duration: TimeInterval?)? {
-        playback.progressStore.bookmark(forEpisodeKey: episode.stableKey)
-    }
-
-    private var detailScrubberCurrentTime: TimeInterval {
-        if isPlaybackBoundToThisEpisode {
-            let live = playback.currentTime
-            if live > 0.25 || playback.isPlaying { return live }
-            if playback.loadedEpisodeKey == episode.stableKey,
-               let b = savedBookmark, b.position > 1 {
-                return b.position
-            }
-            return live
-        }
-        if let bookmark = savedBookmark {
-            return bookmark.position
-        }
-        return 0
-    }
-
-    private var detailScrubberSpan: TimeInterval {
-        if isPlaybackBoundToThisEpisode {
-            let live = playback.currentTime
-            if playback.duration > 0 {
-                return max(playback.duration, live, detailScrubberCurrentTime, 1)
-            }
-            if let d = savedBookmark?.duration, d > 0 {
-                return max(d, detailScrubberCurrentTime, 1)
-            }
-            return max(live, detailScrubberCurrentTime, 1)
-        }
-        if let bookmark = savedBookmark {
-            if let d = bookmark.duration, d > 0 {
-                return max(d, bookmark.position, 1)
-            }
-            return max(bookmark.position + max(60, bookmark.position * 0.08), bookmark.position, 1)
-        }
-        return 1
-    }
-
-    private var detailDurationLabel: String {
-        if isPlaybackBoundToThisEpisode {
-            if playback.duration > 0 {
-                return formatPlaybackTime(playback.duration)
-            }
-            if let d = savedBookmark?.duration, d > 0 {
-                return formatPlaybackTime(d)
-            }
-            return "–:–"
-        }
-        if let d = savedBookmark?.duration, d > 0 {
-            return formatPlaybackTime(d)
-        }
-        return "–:–"
-    }
-
-    private var detailTransportShowsPause: Bool {
-        isPlaybackBoundToThisEpisode && playback.isPlaying
-    }
-
-    @ViewBuilder
-    private func episodePlayerCard(artworkURL: URL?, sleepTimer: SleepTimerStore) -> some View {
-        let span = detailScrubberSpan
-        let back = playback.skipBackwardIntervals
-        let fwd = playback.skipForwardIntervals
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Spacer(minLength: 0)
-                PodcastArtworkView(url: artworkURL, size: 220, cornerRadius: 14)
-                Spacer(minLength: 0)
-            }
-
-            VStack(alignment: .leading, spacing: 12) {
-                Slider(
-                    value: Binding(
-                        get: { min(max(detailScrubberCurrentTime, 0), span) },
-                        set: { newTime in
-                            if isPlaybackBoundToThisEpisode {
-                                playback.seek(to: newTime)
-                            } else {
-                                guard loadThisEpisodeIfNeeded() else { return }
-                                playback.seek(to: newTime)
-                                playback.play()
-                            }
-                        }
-                    ),
-                    in: 0 ... span
-                )
-                .tint(.accentColor)
-
-                HStack {
-                    Text(formatPlaybackTime(detailScrubberCurrentTime))
-                    Spacer(minLength: 8)
-                    Text(detailDurationLabel)
-                }
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
-
-                HStack(alignment: .center) {
-                    HStack(spacing: 4) {
-                        if back.count >= 2 {
-                            skipBackButton(
-                                seconds: Int(back[0]),
-                                systemName: skipRewindSymbol(seconds: Int(back[0]))
-                            )
-                            skipBackButton(
-                                seconds: Int(back[1]),
-                                systemName: skipRewindSymbol(seconds: Int(back[1]))
-                            )
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    Button {
-                        if isPlaybackBoundToThisEpisode {
-                            playback.togglePlayback()
-                        } else {
-                            startThisEpisodePlayback()
-                        }
-                    } label: {
-                        Image(systemName: detailTransportShowsPause ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 52))
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(detailTransportShowsPause ? "Pause" : "Play")
-
-                    HStack(spacing: 4) {
-                        if fwd.count >= 2 {
-                            skipForwardButton(
-                                seconds: Int(fwd[0]),
-                                systemName: skipAheadSymbol(seconds: Int(fwd[0]))
-                            )
-                            skipForwardButton(
-                                seconds: Int(fwd[1]),
-                                systemName: skipAheadSymbol(seconds: Int(fwd[1]))
-                            )
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-
-            HStack(spacing: 12) {
-                Menu {
-                    ForEach(SleepTimerPreset.allCases) { preset in
-                        Button {
-                            if isPlaybackBoundToThisEpisode {
-                                sleepTimer.applyPreset(preset)
-                            } else {
-                                takeOverThisEpisodeThen {
-                                    sleepTimer.applyPreset(preset)
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text(preset.label)
-                                Spacer(minLength: 12)
-                                if sleepTimer.preset == preset {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    TimelineView(.periodic(from: .now, by: 1)) { _ in
-                        Label(sleepTimerMenuTitle(sleepTimer), systemImage: "moon.zzz.fill")
-                            .font(.subheadline.weight(.medium).monospacedDigit())
-                    }
-                }
-                Spacer(minLength: 8)
-                Picker("Speed", selection: Binding(
-                    get: { playback.playbackRate },
-                    set: { newRate in
-                        if isPlaybackBoundToThisEpisode {
-                            playback.setPlaybackRate(newRate)
-                        } else {
-                            guard loadThisEpisodeIfNeeded() else { return }
-                            playback.setPlaybackRate(newRate)
-                            playback.play()
-                        }
-                    }
-                )) {
-                    ForEach(playback.playbackRateOptions, id: \.self) { rate in
-                        Text(speedSegmentLabel(rate)).tag(rate)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.35))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    /// SF Symbols only define `gobackward` / `goforward` with specific second values; fall back to the undecorated symbol when needed.
-    private static let skipGlyphSeconds = Set([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120])
-
-    private func skipRewindSymbol(seconds: Int) -> String {
-        Self.skipGlyphSeconds.contains(seconds) ? "gobackward.\(seconds)" : "gobackward"
-    }
-
-    private func skipAheadSymbol(seconds: Int) -> String {
-        Self.skipGlyphSeconds.contains(seconds) ? "goforward.\(seconds)" : "goforward"
-    }
-
-    @ViewBuilder
-    private func skipBackButton(seconds: Int, systemName: String) -> some View {
-        Button {
-            if isPlaybackBoundToThisEpisode {
-                playback.skipBackward(by: TimeInterval(seconds))
-            } else {
-                takeOverThisEpisodeThen {
-                    playback.skipBackward(by: TimeInterval(seconds))
-                }
-            }
-        } label: {
-            Image(systemName: systemName)
-                .font(.system(size: 32))
-                .symbolRenderingMode(.hierarchical)
-                .frame(minWidth: 44, minHeight: 44)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Rewind \(seconds) seconds")
-    }
-
-    @ViewBuilder
-    private func skipForwardButton(seconds: Int, systemName: String) -> some View {
-        Button {
-            if isPlaybackBoundToThisEpisode {
-                playback.skipForward(by: TimeInterval(seconds))
-            } else {
-                takeOverThisEpisodeThen {
-                    playback.skipForward(by: TimeInterval(seconds))
-                }
-            }
-        } label: {
-            Image(systemName: systemName)
-                .font(.system(size: 32))
-                .symbolRenderingMode(.hierarchical)
-                .frame(minWidth: 44, minHeight: 44)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Fast forward \(seconds) seconds")
-    }
-
-    private func speedSegmentLabel(_ rate: Float) -> String {
-        if abs(rate - 1.0) < 0.001 { return "1×" }
-        return String(format: "%.1f×", rate)
-    }
-
-    private func sleepTimerMenuTitle(_ store: SleepTimerStore) -> String {
-        if store.preset == .off { return "Sleep timer" }
-        if store.preset == .endOfEpisode { return "Sleep · End of episode" }
-        if let r = store.remainingUntilFire(), r > 0 {
-            return "Sleep · \(formatCountdownDisplay(r)) left"
-        }
-        return "Sleep · \(store.preset == .fifteenMinutes ? "15 min" : "30 min")"
-    }
-
-    private func formatPlaybackTime(_ t: TimeInterval) -> String {
-        guard t.isFinite, !t.isNaN, t >= 0 else { return "0:00" }
-        let total = Int(t.rounded(.down))
-        let m = total / 60
-        let s = total % 60
-        if m >= 60 {
-            let h = m / 60
-            let rm = m % 60
-            return String(format: "%d:%02d:%02d", h, rm, s)
-        }
-        return String(format: "%d:%02d", m, s)
-    }
-
-    private func formatCountdownDisplay(_ t: TimeInterval) -> String {
-        guard t.isFinite, !t.isNaN, t >= 0 else { return "00:00" }
-        let total = Int(t.rounded(.down))
-        let m = total / 60
-        let s = total % 60
-        if m >= 60 {
-            let h = m / 60
-            let rm = m % 60
-            return String(format: "%d:%02d:%02d", h, rm, s)
-        }
-        return String(format: "%02d:%02d", m, s)
     }
 
     private func flash(_ message: String) {
@@ -542,5 +235,427 @@ struct EpisodeDetailView: View {
         noteDraft = ""
         showManualHighlight = false
         flash("Highlight saved")
+    }
+}
+
+// MARK: - Episode player card (split observation so playback time ticks don’t rebuild the sleep timer Menu)
+
+@MainActor
+private enum EpisodeDetailPlaybackBinder {
+    static func audioURLs(episode: Episode, downloads: EpisodeDownloadStore) -> [URL] {
+        var urls: [URL] = []
+        if let remote = episode.audioURL { urls.append(remote) }
+        if let local = downloads.localFileURL(forEpisodeKey: episode.stableKey) { urls.append(local) }
+        return urls
+    }
+
+    static func isPlaybackBound(episode: Episode, playback: EpisodePlaybackController, downloads: EpisodeDownloadStore) -> Bool {
+        if playback.loadedEpisodeKey == episode.stableKey { return true }
+        guard let loaded = playback.loadedMediaURL else { return false }
+        return audioURLs(episode: episode, downloads: downloads).contains(loaded)
+    }
+
+    static func nowPlayingMeta(for episode: Episode) -> EpisodeNowPlayingMetadata {
+        EpisodeNowPlayingMetadata(
+            title: episode.title,
+            showTitle: episode.showTitle,
+            artworkURL: episode.artworkURL
+        )
+    }
+
+    static func loadThisEpisodeIfNeeded(episode: Episode, playback: EpisodePlaybackController, downloads: EpisodeDownloadStore) -> Bool {
+        guard let url = downloads.playbackURL(for: episode) else { return false }
+        _ = playback.load(
+            url: url,
+            nowPlaying: nowPlayingMeta(for: episode),
+            episodeKey: episode.stableKey
+        )
+        return true
+    }
+
+    static func takeOverThisEpisodeThen(episode: Episode, playback: EpisodePlaybackController, downloads: EpisodeDownloadStore, body: () -> Void) {
+        guard loadThisEpisodeIfNeeded(episode: episode, playback: playback, downloads: downloads) else { return }
+        playback.play()
+        body()
+    }
+}
+
+private enum EpisodeDetailTimeFormatting {
+    static func playbackLabel(_ t: TimeInterval) -> String {
+        guard t.isFinite, !t.isNaN, t >= 0 else { return "0:00" }
+        let total = Int(t.rounded(.down))
+        let m = total / 60
+        let s = total % 60
+        if m >= 60 {
+            let h = m / 60
+            let rm = m % 60
+            return String(format: "%d:%02d:%02d", h, rm, s)
+        }
+        return String(format: "%d:%02d", m, s)
+    }
+
+    static func countdownLabel(_ t: TimeInterval) -> String {
+        guard t.isFinite, !t.isNaN, t >= 0 else { return "00:00" }
+        let total = Int(t.rounded(.down))
+        let m = total / 60
+        let s = total % 60
+        if m >= 60 {
+            let h = m / 60
+            let rm = m % 60
+            return String(format: "%d:%02d:%02d", h, rm, s)
+        }
+        return String(format: "%02d:%02d", m, s)
+    }
+}
+
+private struct EpisodeDetailPlayerCard: View {
+    let episode: Episode
+    let playback: EpisodePlaybackController
+    let sleepTimer: SleepTimerStore
+    let downloads: EpisodeDownloadStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Spacer(minLength: 0)
+                PodcastArtworkView(url: episode.artworkURL, size: 220, cornerRadius: 14)
+                Spacer(minLength: 0)
+            }
+            EpisodeDetailPlayerScrubberBlock(episode: episode, playback: playback, downloads: downloads)
+            HStack(spacing: 12) {
+                EpisodeDetailSleepTimerMenu(episode: episode, sleepTimer: sleepTimer, playback: playback, downloads: downloads)
+                Spacer(minLength: 8)
+                EpisodeDetailSpeedPicker(episode: episode, playback: playback, downloads: downloads)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.quaternary.opacity(0.35))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private struct EpisodeDetailPlayerScrubberBlock: View {
+    let episode: Episode
+    @ObservedObject var playback: EpisodePlaybackController
+    @ObservedObject var downloads: EpisodeDownloadStore
+
+    /// SF Symbols only define `gobackward` / `goforward` with specific second values; fall back to the undecorated symbol when needed.
+    private static let skipGlyphSeconds = Set([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120])
+
+    private var isBound: Bool {
+        EpisodeDetailPlaybackBinder.isPlaybackBound(episode: episode, playback: playback, downloads: downloads)
+    }
+
+    private var savedBookmark: (position: TimeInterval, duration: TimeInterval?)? {
+        playback.progressStore.bookmark(forEpisodeKey: episode.stableKey)
+    }
+
+    private var detailScrubberCurrentTime: TimeInterval {
+        if isBound {
+            let live = playback.currentTime
+            if live > 0.25 || playback.isPlaying { return live }
+            if playback.loadedEpisodeKey == episode.stableKey,
+               let b = savedBookmark, b.position > 1 {
+                return b.position
+            }
+            return live
+        }
+        if let bookmark = savedBookmark {
+            return bookmark.position
+        }
+        return 0
+    }
+
+    private var detailScrubberSpan: TimeInterval {
+        if isBound {
+            let live = playback.currentTime
+            if playback.duration > 0 {
+                return max(playback.duration, live, detailScrubberCurrentTime, 1)
+            }
+            if let d = savedBookmark?.duration, d > 0 {
+                return max(d, detailScrubberCurrentTime, 1)
+            }
+            return max(live, detailScrubberCurrentTime, 1)
+        }
+        if let bookmark = savedBookmark {
+            if let d = bookmark.duration, d > 0 {
+                return max(d, bookmark.position, 1)
+            }
+            return max(bookmark.position + max(60, bookmark.position * 0.08), bookmark.position, 1)
+        }
+        return 1
+    }
+
+    private var detailDurationLabel: String {
+        if isBound {
+            if playback.duration > 0 {
+                return EpisodeDetailTimeFormatting.playbackLabel(playback.duration)
+            }
+            if let d = savedBookmark?.duration, d > 0 {
+                return EpisodeDetailTimeFormatting.playbackLabel(d)
+            }
+            return "–:–"
+        }
+        if let d = savedBookmark?.duration, d > 0 {
+            return EpisodeDetailTimeFormatting.playbackLabel(d)
+        }
+        return "–:–"
+    }
+
+    private var detailTransportShowsPause: Bool {
+        isBound && playback.isPlaying
+    }
+
+    private func skipRewindSymbol(seconds: Int) -> String {
+        Self.skipGlyphSeconds.contains(seconds) ? "gobackward.\(seconds)" : "gobackward"
+    }
+
+    private func skipAheadSymbol(seconds: Int) -> String {
+        Self.skipGlyphSeconds.contains(seconds) ? "goforward.\(seconds)" : "goforward"
+    }
+
+    var body: some View {
+        let span = detailScrubberSpan
+        let back = playback.skipBackwardIntervals
+        let fwd = playback.skipForwardIntervals
+        VStack(alignment: .leading, spacing: 12) {
+            Slider(
+                value: Binding(
+                    get: { min(max(detailScrubberCurrentTime, 0), span) },
+                    set: { newTime in
+                        if isBound {
+                            playback.seek(to: newTime)
+                        } else {
+                            guard EpisodeDetailPlaybackBinder.loadThisEpisodeIfNeeded(
+                                episode: episode,
+                                playback: playback,
+                                downloads: downloads
+                            ) else { return }
+                            playback.seek(to: newTime)
+                            playback.play()
+                        }
+                    }
+                ),
+                in: 0 ... span
+            )
+            .tint(.accentColor)
+
+            HStack {
+                Text(EpisodeDetailTimeFormatting.playbackLabel(detailScrubberCurrentTime))
+                Spacer(minLength: 8)
+                Text(detailDurationLabel)
+            }
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(.secondary)
+
+            HStack(alignment: .center) {
+                HStack(spacing: 4) {
+                    if back.count >= 2 {
+                        skipBackButton(
+                            seconds: Int(back[0]),
+                            systemName: skipRewindSymbol(seconds: Int(back[0]))
+                        )
+                        skipBackButton(
+                            seconds: Int(back[1]),
+                            systemName: skipRewindSymbol(seconds: Int(back[1]))
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                Button {
+                    if isBound {
+                        playback.togglePlayback()
+                    } else {
+                        guard EpisodeDetailPlaybackBinder.loadThisEpisodeIfNeeded(
+                            episode: episode,
+                            playback: playback,
+                            downloads: downloads
+                        ) else { return }
+                        playback.play()
+                    }
+                } label: {
+                    Image(systemName: detailTransportShowsPause ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 52))
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(detailTransportShowsPause ? "Pause" : "Play")
+
+                HStack(spacing: 4) {
+                    if fwd.count >= 2 {
+                        skipForwardButton(
+                            seconds: Int(fwd[0]),
+                            systemName: skipAheadSymbol(seconds: Int(fwd[0]))
+                        )
+                        skipForwardButton(
+                            seconds: Int(fwd[1]),
+                            systemName: skipAheadSymbol(seconds: Int(fwd[1]))
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func skipBackButton(seconds: Int, systemName: String) -> some View {
+        Button {
+            if isBound {
+                playback.skipBackward(by: TimeInterval(seconds))
+            } else {
+                EpisodeDetailPlaybackBinder.takeOverThisEpisodeThen(
+                    episode: episode,
+                    playback: playback,
+                    downloads: downloads
+                ) {
+                    playback.skipBackward(by: TimeInterval(seconds))
+                }
+            }
+        } label: {
+            Image(systemName: systemName)
+                .font(.system(size: 32))
+                .symbolRenderingMode(.hierarchical)
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Rewind \(seconds) seconds")
+    }
+
+    @ViewBuilder
+    private func skipForwardButton(seconds: Int, systemName: String) -> some View {
+        Button {
+            if isBound {
+                playback.skipForward(by: TimeInterval(seconds))
+            } else {
+                EpisodeDetailPlaybackBinder.takeOverThisEpisodeThen(
+                    episode: episode,
+                    playback: playback,
+                    downloads: downloads
+                ) {
+                    playback.skipForward(by: TimeInterval(seconds))
+                }
+            }
+        } label: {
+            Image(systemName: systemName)
+                .font(.system(size: 32))
+                .symbolRenderingMode(.hierarchical)
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Fast forward \(seconds) seconds")
+    }
+}
+
+/// Observes only `SleepTimerStore` so `EpisodePlaybackController.currentTime` does not throttle‑rebuild this `Menu`.
+private struct EpisodeDetailSleepTimerMenu: View {
+    let episode: Episode
+    @ObservedObject var sleepTimer: SleepTimerStore
+    let playback: EpisodePlaybackController
+    let downloads: EpisodeDownloadStore
+
+    private var isBound: Bool {
+        EpisodeDetailPlaybackBinder.isPlaybackBound(episode: episode, playback: playback, downloads: downloads)
+    }
+
+    private var menuLabelNeedsTicker: Bool {
+        guard sleepTimer.preset.countdownDuration != nil else { return false }
+        guard let r = sleepTimer.remainingUntilFire(), r > 0 else { return false }
+        return true
+    }
+
+    private var menuLabel: some View {
+        Label(menuTitle, systemImage: "moon.zzz.fill")
+            .font(.subheadline.weight(.medium).monospacedDigit())
+    }
+
+    private var menuTitle: String {
+        if sleepTimer.preset == .off { return "Sleep timer" }
+        if sleepTimer.preset == .endOfEpisode { return "Sleep · End of episode" }
+        if let r = sleepTimer.remainingUntilFire(), r > 0 {
+            return "Sleep · \(EpisodeDetailTimeFormatting.countdownLabel(r)) left"
+        }
+        return "Sleep · \(sleepTimer.preset == .fifteenMinutes ? "15 min" : "30 min")"
+    }
+
+    var body: some View {
+        Menu {
+            ForEach(SleepTimerPreset.allCases) { preset in
+                Button {
+                    if isBound {
+                        sleepTimer.applyPreset(preset)
+                    } else {
+                        EpisodeDetailPlaybackBinder.takeOverThisEpisodeThen(
+                            episode: episode,
+                            playback: playback,
+                            downloads: downloads
+                        ) {
+                            sleepTimer.applyPreset(preset)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(preset.label)
+                        Spacer(minLength: 12)
+                        if sleepTimer.preset == preset {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            Group {
+                if menuLabelNeedsTicker {
+                    TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        menuLabel
+                    }
+                } else {
+                    menuLabel
+                }
+            }
+            .transaction { $0.animation = nil }
+        }
+    }
+}
+
+private struct EpisodeDetailSpeedPicker: View {
+    let episode: Episode
+    @ObservedObject var playback: EpisodePlaybackController
+    let downloads: EpisodeDownloadStore
+
+    private var isBound: Bool {
+        EpisodeDetailPlaybackBinder.isPlaybackBound(episode: episode, playback: playback, downloads: downloads)
+    }
+
+    private func speedSegmentLabel(_ rate: Float) -> String {
+        if abs(rate - 1.0) < 0.001 { return "1×" }
+        return String(format: "%.1f×", rate)
+    }
+
+    var body: some View {
+        Picker("Speed", selection: Binding(
+            get: { playback.playbackRate },
+            set: { newRate in
+                if isBound {
+                    playback.setPlaybackRate(newRate)
+                } else {
+                    guard EpisodeDetailPlaybackBinder.loadThisEpisodeIfNeeded(
+                        episode: episode,
+                        playback: playback,
+                        downloads: downloads
+                    ) else { return }
+                    playback.setPlaybackRate(newRate)
+                    playback.play()
+                }
+            }
+        )) {
+            ForEach(playback.playbackRateOptions, id: \.self) { rate in
+                Text(speedSegmentLabel(rate)).tag(rate)
+            }
+        }
+        .pickerStyle(.segmented)
+        .frame(maxWidth: .infinity)
     }
 }

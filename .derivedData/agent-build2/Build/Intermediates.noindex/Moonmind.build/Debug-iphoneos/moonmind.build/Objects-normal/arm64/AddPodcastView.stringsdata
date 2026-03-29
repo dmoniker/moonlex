@@ -1,0 +1,120 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AddPodcastView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Add feeds",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add manually",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 112
+        }
+      },
+      {
+        "comment": "",
+        "key": "No shows yet. Search above, add an RSS link manually, or use Settings → Reset feeds to defaults to restore the built-in list.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "Built-in",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your feeds",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "Swipe left to remove any show—including built-ins. To bring back every default show and clear those you added, use Settings.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "No matches.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search Apple Podcasts",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search Apple Podcasts",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 106
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search content courtesy of Apple Podcasts. Shows not listed here can be added below with a direct RSS URL.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show title",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "RSS URL",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 114
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 123
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 131
+        }
+      }
+    ]
+  },
+  "version": 1
+}

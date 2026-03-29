@@ -16,7 +16,13 @@ struct NewsletterFeedView: View {
         NavigationStack(path: $navigationPath) {
             newsletterFeedContents
                 .navigationDestination(for: Episode.self) { ep in
-                    EpisodeDetailView(episode: ep, playback: episodePlayback, sleepTimer: sleepTimer, downloads: episodeDownloads)
+                    EpisodeDetailView(
+                        episode: ep,
+                        playback: episodePlayback,
+                        progressStore: episodePlayback.progressStore,
+                        sleepTimer: sleepTimer,
+                        downloads: episodeDownloads
+                    )
                 }
         }
         .onChange(of: episodePlayback.autoplayDetailNavigation) { _, request in
@@ -71,6 +77,16 @@ struct NewsletterFeedView: View {
                         ForEach(model.episodes) { ep in
                             NavigationLink(value: ep) {
                                 NewsletterPostRow(episode: ep)
+                            }
+                            .contextMenu {
+                                if ep.audioURL != nil,
+                                   episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
+                                    Button {
+                                        episodePlayback.markEpisodeUnplayed(episodeKey: ep.stableKey)
+                                    } label: {
+                                        Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                                    }
+                                }
                             }
                         }
                     }

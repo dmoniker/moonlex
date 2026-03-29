@@ -232,7 +232,7 @@ final class EpisodePlaybackController: ObservableObject {
                 showTitle: next.showTitle,
                 artworkURL: next.artworkURL
             )
-            _ = load(url: url, nowPlaying: meta, episodeKey: next.stableKey, resetSleepTimerForNewEpisode: false)
+            _ = load(url: url, nowPlaying: meta, episodeKey: next.stableKey)
             play(armSleepTimerIfNeeded: false)
             autoplayDetailNavigation = AutoplayDetailNavigation(feed: feed, episode: next)
             return true
@@ -271,8 +271,7 @@ final class EpisodePlaybackController: ObservableObject {
     func load(
         url: URL?,
         nowPlaying: EpisodeNowPlayingMetadata? = nil,
-        episodeKey: String? = nil,
-        resetSleepTimerForNewEpisode: Bool = true
+        episodeKey: String? = nil
     ) -> Bool {
         guard let url else {
             persistListeningProgressIfNeeded()
@@ -389,9 +388,6 @@ final class EpisodePlaybackController: ObservableObject {
 
         startArtworkFetchIfNeeded()
         pushNowPlayingInfo()
-        if resetSleepTimerForNewEpisode {
-            sleepTimerStore?.onNewEpisodeLoaded()
-        }
         return true
     }
 
@@ -558,6 +554,18 @@ final class EpisodePlaybackController: ObservableObject {
             pause()
         } else {
             play()
+        }
+    }
+
+    /// Clears the fully-played flag (episode shows as unplayed again). If this episode is still loaded at the end, seeks to the start so it is not immediately marked played again.
+    func markEpisodeUnplayed(episodeKey: String) {
+        progressStore.clearPlayed(forEpisodeKey: episodeKey)
+        guard loadedEpisodeKey == episodeKey else { return }
+        if duration > 0, duration.isFinite, currentTime >= duration - Self.nearEndClearSeconds {
+            seek(to: 0)
+        } else {
+            persistListeningProgressIfNeeded()
+            pushNowPlayingInfo()
         }
     }
 

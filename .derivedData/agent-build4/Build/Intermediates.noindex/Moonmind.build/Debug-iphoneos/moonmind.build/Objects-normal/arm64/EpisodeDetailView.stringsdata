@@ -1,0 +1,160 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/EpisodeDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "No audio enclosure in this feed item",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open on Substack",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Article",
+        "location": {
+          "startingColumn": 71,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show notes",
+        "location": {
+          "startingColumn": 83,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save selected text",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "Paste quote",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "Highlight",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 114
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quoted text",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 116
+        }
+      },
+      {
+        "comment": "",
+        "key": "Optional note",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 119
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save highlight",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorited",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorite episode",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "Pause",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 484
+        }
+      },
+      {
+        "comment": "",
+        "key": "Play",
+        "location": {
+          "startingColumn": 75,
+          "startingLine": 484
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind %lld seconds",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 524
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast forward %lld seconds",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 548
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 638
+        }
+      }
+    ]
+  },
+  "version": 1
+}

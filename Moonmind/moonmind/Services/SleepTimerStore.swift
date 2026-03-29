@@ -27,7 +27,8 @@ enum SleepTimerPreset: String, CaseIterable, Identifiable {
     }
 }
 
-/// Persists the sleep timer **preset** (sticky). Countdown deadlines are also persisted so the timer survives backgrounding.
+/// Persists the sleep timer **preset** (sticky). Countdown deadlines persist across episode changes until the timer fires;
+/// after a fired timer pauses playback, the next explicit `play` arms a fresh countdown via `armCountdownIfNeeded()`.
 final class SleepTimerStore: ObservableObject {
     private let presetKey = "moonmind.sleepTimerPreset"
     private let deadlineKey = "moonmind.sleepTimerFireDeadline"
@@ -49,14 +50,6 @@ final class SleepTimerStore: ObservableObject {
             UserDefaults.standard.removeObject(forKey: deadlineKey)
         }
         fireDeadline = deadline
-    }
-
-    /// Call when opening a different episode so a previous countdown does not carry over.
-    func onNewEpisodeLoaded() {
-        guard preset.countdownDuration != nil else { return }
-        fireDeadline = nil
-        persistDeadline()
-        objectWillChange.send()
     }
 
     func applyPreset(_ new: SleepTimerPreset) {
