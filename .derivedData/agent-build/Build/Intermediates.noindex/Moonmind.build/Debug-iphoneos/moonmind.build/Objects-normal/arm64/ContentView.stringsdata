@@ -31,7 +31,7 @@
         "key": "Pause",
         "location": {
           "startingColumn": 54,
-          "startingLine": 270
+          "startingLine": 275
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Play",
         "location": {
           "startingColumn": 64,
-          "startingLine": 270
+          "startingLine": 275
         }
       }
     ]

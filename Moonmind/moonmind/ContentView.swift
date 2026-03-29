@@ -75,11 +75,16 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showAddFeeds) {
             NavigationStack {
-                AddPodcastView(catalog: catalog, onFeedsChanged: feedsChanged)
+                AddPodcastView(catalog: catalog, downloads: episodeDownloads, onFeedsChanged: feedsChanged)
             }
         }
         .sheet(isPresented: $showAppSettings) {
-            AppSettingsSheetView(playback: episodePlayback, downloads: episodeDownloads)
+            AppSettingsSheetView(
+                playback: episodePlayback,
+                downloads: episodeDownloads,
+                catalog: catalog,
+                onFeedsReset: feedsChanged
+            )
         }
         .onAppear {
             scheduleTabBarGeometryRefresh()

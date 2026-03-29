@@ -21,6 +21,9 @@ struct SettingsToolbarButton: View {
 struct AppSettingsSheetView: View {
     @ObservedObject var playback: EpisodePlaybackController
     @ObservedObject var downloads: EpisodeDownloadStore
+    @ObservedObject var catalog: FeedCatalog
+
+    var onFeedsReset: () -> Void
 
     @AppStorage(EpisodePlaybackController.autoplayNextDefaultsKey) private var autoplayNextInFeed = false
     @AppStorage(EpisodePlaybackController.autoplayScopeDefaultsKey) private var autoplayScopeRaw =
@@ -39,6 +42,7 @@ struct AppSettingsSheetView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var showClearDownloadsConfirm = false
+    @State private var showResetFeedsConfirm = false
 
     private var storageLimitByteFormatter: ByteCountFormatter {
         let f = ByteCountFormatter()
@@ -199,6 +203,25 @@ struct AppSettingsSheetView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+
+                Section {
+                    Button {
+                        showResetFeedsConfirm = true
+                    } label: {
+                        Text("Reset feeds to defaults")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.red)
+                } header: {
+                    Text("Feeds")
+                } footer: {
+                    Text(
+                        "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Innermost Loop, and the Innermost Loop newsletter)."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -239,6 +262,23 @@ struct AppSettingsSheetView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("Downloaded episode audio will be removed from this device. You can stream or download again anytime.")
+            }
+            .confirmationDialog(
+                "Reset feeds to defaults?",
+                isPresented: $showResetFeedsConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Reset feeds", role: .destructive) {
+                    let removedCustomIDs = catalog.customFeeds.map(\.id)
+                    catalog.resetFeedsToFactoryDefaults()
+                    for id in removedCustomIDs {
+                        downloads.removeAllDownloads(forFeedID: id)
+                    }
+                    onFeedsReset()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Your added shows will be removed and every built-in feed will appear again.")
             }
         }
         .presentationDetents([.large])

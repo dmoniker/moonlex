@@ -107,15 +107,19 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
 @MainActor
 final class FeedCatalog: ObservableObject {
     private let customFeedsKey = "moonmind.customFeedsJSON"
+    private let hiddenBuiltinsKey = "moonmind.hiddenBuiltinFeedIDsJSON"
 
     @Published private(set) var customFeeds: [PodcastFeed] = []
+    /// Built-in feeds the user has removed; restoring defaults clears this set.
+    @Published private(set) var hiddenBuiltinFeedIDs: Set<String> = []
 
     init() {
         loadCustom()
+        loadHiddenBuiltins()
     }
 
     var allFeeds: [PodcastFeed] {
-        PodcastFeed.builtins + customFeeds
+        PodcastFeed.builtins.filter { !hiddenBuiltinFeedIDs.contains($0.id) } + customFeeds
     }
 
     var podcastFeeds: [PodcastFeed] {
@@ -131,7 +135,7 @@ final class FeedCatalog: ObservableObject {
             throw FeedCatalogError.invalidURL
         }
         let id = "custom.\(UUID().uuidString)"
-        guard !customFeeds.contains(where: { $0.rssURLString == rssURL.absoluteString }) else {
+        guard !allFeeds.contains(where: { $0.rssURLString == rssURL.absoluteString }) else {
             throw FeedCatalogError.duplicateFeed
         }
         let kind: FeedContentKind =
@@ -147,10 +151,24 @@ final class FeedCatalog: ObservableObject {
         persistCustom()
     }
 
-    func removeCustom(_ feed: PodcastFeed) {
-        guard !feed.isBuiltin else { return }
-        customFeeds.removeAll { $0.id == feed.id }
+    func removeFeed(_ feed: PodcastFeed) {
+        if feed.isBuiltin {
+            var next = hiddenBuiltinFeedIDs
+            next.insert(feed.id)
+            hiddenBuiltinFeedIDs = next
+            persistHiddenBuiltins()
+        } else {
+            customFeeds.removeAll { $0.id == feed.id }
+            persistCustom()
+        }
+    }
+
+    /// Clears custom feeds, un-hides every built-in feed, matching a fresh install’s catalog.
+    func resetFeedsToFactoryDefaults() {
+        customFeeds = []
+        hiddenBuiltinFeedIDs = []
         persistCustom()
+        persistHiddenBuiltins()
     }
 
     private func loadCustom() {
@@ -163,6 +181,20 @@ final class FeedCatalog: ObservableObject {
     private func persistCustom() {
         if let data = try? JSONEncoder().encode(customFeeds) {
             UserDefaults.standard.set(data, forKey: customFeedsKey)
+        }
+    }
+
+    private func loadHiddenBuiltins() {
+        guard let data = UserDefaults.standard.data(forKey: hiddenBuiltinsKey),
+              let ids = try? JSONDecoder().decode([String].self, from: data)
+        else { return }
+        hiddenBuiltinFeedIDs = Set(ids)
+    }
+
+    private func persistHiddenBuiltins() {
+        let sortedIDs = hiddenBuiltinFeedIDs.sorted()
+        if let data = try? JSONEncoder().encode(sortedIDs) {
+            UserDefaults.standard.set(data, forKey: hiddenBuiltinsKey)
         }
     }
 }

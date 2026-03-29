@@ -32,6 +32,7 @@
 		A10000180000000000000018 /* NewsletterFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000018 /* NewsletterFeedView.swift */; };
 		A10000190000000000000019 /* EpisodePlaybackProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000190000000000000019 /* EpisodePlaybackProgressStore.swift */; };
 		A10000200000000000000020 /* AppSettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000200000000000000020 /* AppSettingsViews.swift */; };
+		A10000210000000000000021 /* ITunesPodcastSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000210000000000000021 /* ITunesPodcastSearchService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		A20000180000000000000018 /* NewsletterFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsletterFeedView.swift; sourceTree = "<group>"; };
 		A20000190000000000000019 /* EpisodePlaybackProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodePlaybackProgressStore.swift; sourceTree = "<group>"; };
 		A20000200000000000000020 /* AppSettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsViews.swift; sourceTree = "<group>"; };
+		A20000210000000000000021 /* ITunesPodcastSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITunesPodcastSearchService.swift; sourceTree = "<group>"; };
 		A2FFFF010000000000000001 /* moonmind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moonmind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -127,6 +129,7 @@
 				A20000190000000000000019 /* EpisodePlaybackProgressStore.swift */,
 				A20000150000000000000015 /* PodcastArtworkCache.swift */,
 				A20000160000000000000016 /* EpisodeDownloadStore.swift */,
+				A20000210000000000000021 /* ITunesPodcastSearchService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -249,6 +252,7 @@
 				A10000160000000000000016 /* EpisodeDownloadStore.swift in Sources */,
 				A10000170000000000000017 /* EpisodeDownloadAccessory.swift in Sources */,
 				A10000200000000000000020 /* AppSettingsViews.swift in Sources */,
+				A10000210000000000000021 /* ITunesPodcastSearchService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -21,6 +21,9 @@ final class EpisodeDownloadStore: ObservableObject {
 
     @Published private(set) var activeDownloadKeys: Set<String> = []
 
+    /// Episode keys purged because a feed was removed; in-flight downloads discard output instead of indexing.
+    private var discardedDownloadKeys: Set<String> = []
+
     private var index: [String: IndexRecord] = [:]
     private let fm = FileManager.default
 
@@ -131,6 +134,11 @@ final class EpisodeDownloadStore: ObservableObject {
             }
             try fm.moveItem(at: tmp, to: dest)
 
+            if discardedDownloadKeys.remove(key) != nil {
+                try? fm.removeItem(at: dest)
+                return
+            }
+
             index[key] = IndexRecord(remoteURLString: remote.absoluteString, relativeFileName: fileName)
             saveIndex()
             onDownloadReady?(key, remote, dest)
@@ -144,6 +152,27 @@ final class EpisodeDownloadStore: ObservableObject {
         guard let rec = index.removeValue(forKey: stableKey) else { return }
         let url = episodesDirectory.appendingPathComponent(rec.relativeFileName, isDirectory: false)
         try? fm.removeItem(at: url)
+        saveIndex()
+        bumpToken()
+    }
+
+    /// Deletes stored audio for every episode whose ``Episode/stableKey`` belongs to this feed (`feedID|…`).
+    func removeAllDownloads(forFeedID feedID: String) {
+        let prefix = "\(feedID)|"
+        let indexMatches = index.keys.filter { $0.hasPrefix(prefix) }
+        let activeMatches = activeDownloadKeys.filter { $0.hasPrefix(prefix) }
+        for key in activeMatches {
+            discardedDownloadKeys.insert(key)
+        }
+        for key in indexMatches {
+            if let rec = index.removeValue(forKey: key) {
+                let url = episodesDirectory.appendingPathComponent(rec.relativeFileName, isDirectory: false)
+                try? fm.removeItem(at: url)
+            }
+        }
+        for key in activeMatches {
+            activeDownloadKeys.remove(key)
+        }
         saveIndex()
         bumpToken()
     }

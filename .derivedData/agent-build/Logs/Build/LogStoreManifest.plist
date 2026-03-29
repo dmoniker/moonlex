@@ -6,7 +6,7 @@
 	<integer>12</integer>
 	<key>logs</key>
 	<dict>
-		<key>E9767213-E586-434C-B239-C2682986C53F</key>
+		<key>735D42C9-5D52-4EB0-AE8F-A7B145181E33</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>E9767213-E586-434C-B239-C2682986C53F.xcactivitylog</string>
+			<string>735D42C9-5D52-4EB0-AE8F-A7B145181E33.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -29,7 +29,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
+				<integer>1</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>Moonmind project</string>
@@ -40,13 +40,55 @@
 			<key>signature</key>
 			<string>Building project Moonmind with scheme moonmind</string>
 			<key>timeStartedRecording</key>
-			<real>796451884.485852</real>
+			<real>796452584.54985094</real>
 			<key>timeStoppedRecording</key>
-			<real>796451886.32983196</real>
+			<real>796452587.84216297</real>
 			<key>title</key>
 			<string>Building project Moonmind with scheme moonmind</string>
 			<key>uniqueIdentifier</key>
-			<string>E9767213-E586-434C-B239-C2682986C53F</string>
+			<string>735D42C9-5D52-4EB0-AE8F-A7B145181E33</string>
+		</dict>
+		<key>DA021744-11F1-4472-BD33-F3E2E4D82254</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>DA021744-11F1-4472-BD33-F3E2E4D82254.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>1</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Moonmind project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>moonmind</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>timeStartedRecording</key>
+			<real>796453031.43206</real>
+			<key>timeStoppedRecording</key>
+			<real>796453035.60529304</real>
+			<key>title</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>uniqueIdentifier</key>
+			<string>DA021744-11F1-4472-BD33-F3E2E4D82254</string>
 		</dict>
 	</dict>
 </dict>
