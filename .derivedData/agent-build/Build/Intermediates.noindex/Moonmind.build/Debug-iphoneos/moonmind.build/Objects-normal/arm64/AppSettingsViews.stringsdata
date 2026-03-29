@@ -1,0 +1,288 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AppSettingsViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 15
+        }
+      },
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 203
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 232
+        }
+      },
+      {
+        "comment": "",
+        "key": "Skip buttons",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "Playback speed",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "When an episode finishes, plays the next not-fully-played episode with audio (newest-first order). Choose the whole feed or only the same podcast or newsletter. Stops if there isn’t a match.",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay next episode",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay from",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Entire feed",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Same show",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "When total downloads exceed this limit, older files are removed automatically (by date modified on disk).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 132
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download storage limit",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 118
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unlimited",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 119
+        }
+      },
+      {
+        "comment": "",
+        "key": "250 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 120
+        }
+      },
+      {
+        "comment": "",
+        "key": "500 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 121
+        }
+      },
+      {
+        "comment": "",
+        "key": "1 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "2 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 123
+        }
+      },
+      {
+        "comment": "",
+        "key": "5 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 124
+        }
+      },
+      {
+        "comment": "",
+        "key": "10 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloads",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 146
+        }
+      },
+      {
+        "comment": "",
+        "key": "The player uses three speeds: slow, normal (1×), and fast.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 163
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 176
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 187
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 207
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 239
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloaded episode audio will be removed from this device. You can stream or download again anytime.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 241
+        }
+      }
+    ]
+  },
+  "version": 1
+}

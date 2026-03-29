@@ -20,6 +20,7 @@ struct SettingsToolbarButton: View {
 
 struct AppSettingsSheetView: View {
     @ObservedObject var playback: EpisodePlaybackController
+    @ObservedObject var downloads: EpisodeDownloadStore
 
     @AppStorage(EpisodePlaybackController.autoplayNextDefaultsKey) private var autoplayNextInFeed = false
     @AppStorage(EpisodePlaybackController.autoplayScopeDefaultsKey) private var autoplayScopeRaw =
@@ -34,8 +35,27 @@ struct AppSettingsSheetView: View {
         Double(EpisodePlaybackController.defaultSkipForwardLeft)
     @AppStorage(EpisodePlaybackController.skipForwardRightDefaultsKey) private var skipForwardRight =
         Double(EpisodePlaybackController.defaultSkipForwardRight)
+    @AppStorage(EpisodeDownloadStore.storageLimitMegabytesDefaultsKey) private var storageLimitMB = 0
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showClearDownloadsConfirm = false
+
+    private var storageLimitByteFormatter: ByteCountFormatter {
+        let f = ByteCountFormatter()
+        f.allowedUnits = [.useMB, .useGB]
+        f.countStyle = .file
+        return f
+    }
+
+    private var downloadsUsedLabel: String {
+        ByteCountFormatter.string(fromByteCount: downloads.totalStoredByteCount(), countStyle: .file)
+    }
+
+    private var storageLimitSummary: String {
+        if storageLimitMB <= 0 { return "No limit — \(downloadsUsedLabel) stored" }
+        let cap = Int64(storageLimitMB) * 1_048_576
+        return "\(downloadsUsedLabel) of \(storageLimitByteFormatter.string(fromByteCount: cap))"
+    }
 
     private var skipSecondsBounds: ClosedRange<Double> {
         Double(EpisodePlaybackController.skipSecondsMin)...Double(EpisodePlaybackController.skipSecondsMax)
@@ -92,6 +112,38 @@ struct AppSettingsSheetView: View {
                     }
                     .buttonStyle(.borderless)
                     .foregroundStyle(.tint)
+                }
+
+                Section {
+                    Picker("Download storage limit", selection: $storageLimitMB) {
+                        Text("Unlimited").tag(0)
+                        Text("250 MB").tag(250)
+                        Text("500 MB").tag(500)
+                        Text("1 GB").tag(1024)
+                        Text("2 GB").tag(2048)
+                        Text("5 GB").tag(5120)
+                        Text("10 GB").tag(10240)
+                    }
+                    Text(storageLimitSummary)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                    Text(
+                        "When total downloads exceed this limit, older files are removed automatically (by date modified on disk)."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                    Button {
+                        showClearDownloadsConfirm = true
+                    } label: {
+                        Text("Clear all downloads")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.tint)
+                } header: {
+                    Text("Downloads")
                 }
 
                 Section("Playback speed") {
@@ -172,6 +224,21 @@ struct AppSettingsSheetView: View {
             }
             .onChange(of: skipForwardRight) { _, _ in
                 playback.refreshSkipIntervalsFromUserDefaults()
+            }
+            .onChange(of: storageLimitMB) { _, _ in
+                downloads.enforceStorageLimit()
+            }
+            .confirmationDialog(
+                "Clear all downloads?",
+                isPresented: $showClearDownloadsConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Clear all downloads", role: .destructive) {
+                    downloads.clearAllDownloads()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Downloaded episode audio will be removed from this device. You can stream or download again anytime.")
             }
         }
         .presentationDetents([.large])

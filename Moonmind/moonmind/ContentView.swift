@@ -79,7 +79,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showAppSettings) {
-            AppSettingsSheetView(playback: episodePlayback)
+            AppSettingsSheetView(playback: episodePlayback, downloads: episodeDownloads)
         }
         .onAppear {
             scheduleTabBarGeometryRefresh()

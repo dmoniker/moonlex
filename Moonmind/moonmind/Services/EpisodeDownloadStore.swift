@@ -10,6 +10,8 @@ final class EpisodeDownloadStore: ObservableObject {
     }
 
     private static let indexDefaultsKey = "moonmind.episodeDownloadIndex.v1"
+    /// Stored in UserDefaults as megabytes. `0` means no limit.
+    static let storageLimitMegabytesDefaultsKey = "moonmind.downloadStorageLimitMB.v1"
 
     /// Called on the main actor after a new file is written: stable episode key, remote URL, local file URL.
     var onDownloadReady: ((String, URL, URL) -> Void)?
@@ -25,9 +27,51 @@ final class EpisodeDownloadStore: ObservableObject {
     init() {
         loadIndex()
         pruneMissingFiles()
+        enforceStorageLimit()
     }
 
     // MARK: - Public API
+
+    static func storageLimitBytesFromUserDefaults() -> Int64 {
+        let mb = UserDefaults.standard.integer(forKey: storageLimitMegabytesDefaultsKey)
+        guard mb > 0 else { return 0 }
+        return Int64(mb) * 1_048_576
+    }
+
+    /// Total on-disk size of indexed episode files.
+    func totalStoredByteCount() -> Int64 {
+        var sum: Int64 = 0
+        for (_, rec) in index {
+            let url = episodesDirectory.appendingPathComponent(rec.relativeFileName, isDirectory: false)
+            guard fm.fileExists(atPath: url.path) else { continue }
+            if let sz = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                sum += Int64(sz)
+            }
+        }
+        return sum
+    }
+
+    /// Deletes every stored episode file and clears the download index.
+    func clearAllDownloads() {
+        for (_, rec) in index {
+            let url = episodesDirectory.appendingPathComponent(rec.relativeFileName, isDirectory: false)
+            try? fm.removeItem(at: url)
+        }
+        index = [:]
+        saveIndex()
+        bumpToken()
+    }
+
+    /// Removes oldest downloads (by file modification date) until usage is at or below the user’s limit. No-op when limit is unlimited.
+    func enforceStorageLimit() {
+        let limitBytes = Self.storageLimitBytesFromUserDefaults()
+        guard limitBytes > 0 else { return }
+
+        while totalStoredByteCount() > limitBytes {
+            guard let victimKey = oldestStoredEpisodeKey() else { return }
+            removeDownload(forEpisodeKey: victimKey)
+        }
+    }
 
     func localFileURL(forEpisodeKey stableKey: String) -> URL? {
         guard let rec = index[stableKey] else { return nil }
@@ -90,6 +134,7 @@ final class EpisodeDownloadStore: ObservableObject {
             index[key] = IndexRecord(remoteURLString: remote.absoluteString, relativeFileName: fileName)
             saveIndex()
             onDownloadReady?(key, remote, dest)
+            enforceStorageLimit()
         } catch {
             try? fm.removeItem(at: episodesDirectory.appendingPathComponent(makeFileName(stableKey: key, remoteURL: remote), isDirectory: false))
         }
@@ -146,6 +191,25 @@ final class EpisodeDownloadStore: ObservableObject {
         }
         if removedAny { saveIndex() }
         bumpToken()
+    }
+
+    private func oldestStoredEpisodeKey() -> String? {
+        var best: (key: String, date: Date)?
+        for (key, rec) in index {
+            let url = episodesDirectory.appendingPathComponent(rec.relativeFileName, isDirectory: false)
+            guard fm.fileExists(atPath: url.path) else { continue }
+            let date =
+                (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
+                ?? .distantPast
+            if let existing = best {
+                if date < existing.date || (date == existing.date && key < existing.key) {
+                    best = (key, date)
+                }
+            } else {
+                best = (key, date)
+            }
+        }
+        return best?.key
     }
 
     private func makeFileName(stableKey: String, remoteURL: URL) -> String {
