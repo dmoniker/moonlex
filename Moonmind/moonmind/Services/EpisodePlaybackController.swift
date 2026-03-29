@@ -16,6 +16,9 @@ final class EpisodePlaybackController: ObservableObject {
     static let skipForwardOptions: [TimeInterval] = [30, 60]
 
     private static let playbackRateDefaultsKey = "moonmind.playbackRate"
+    private static let minResumeSeconds: TimeInterval = 3
+    private static let nearEndClearSeconds: TimeInterval = 15
+    private static let periodicProgressSaveInterval: TimeInterval = 12
 
     @Published private(set) var isPlaying = false
     @Published private(set) var currentTime: TimeInterval = 0
@@ -25,7 +28,12 @@ final class EpisodePlaybackController: ObservableObject {
     /// Currently loaded stream; used to avoid resetting playback when reopening the same episode.
     private(set) var loadedMediaURL: URL?
 
+    /// Episode whose progress is tracked for persistence (matches the playing asset).
+    private(set) var loadedEpisodeKey: String?
+
     var sleepTimerStore: SleepTimerStore?
+
+    let progressStore = EpisodePlaybackProgressStore()
 
     private var nowPlayingMetadata: EpisodeNowPlayingMetadata?
     private var nowPlayingArtwork: UIImage?
@@ -35,6 +43,9 @@ final class EpisodePlaybackController: ObservableObject {
     private var endObserver: NSObjectProtocol?
     private var statusObservation: NSKeyValueObservation?
     private var interruptionObserver: NSObjectProtocol?
+    /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
+    private var resumeSetupComplete = true
+    private var lastPeriodicProgressSave = Date.distantPast
 
     init() {
         let stored = Float(UserDefaults.standard.double(forKey: Self.playbackRateDefaultsKey))
@@ -52,14 +63,17 @@ final class EpisodePlaybackController: ObservableObject {
 
     /// Returns `true` if the current item was replaced (new URL or cleared). Caller can use this to reset episode-scoped UI state.
     @discardableResult
-    func load(url: URL?, nowPlaying: EpisodeNowPlayingMetadata? = nil) -> Bool {
+    func load(url: URL?, nowPlaying: EpisodeNowPlayingMetadata? = nil, episodeKey: String? = nil) -> Bool {
         guard let url else {
+            persistListeningProgressIfNeeded()
             let changed = player != nil
             stopAndClear()
             return changed
         }
 
         if let loaded = loadedMediaURL, loaded == url, player != nil {
+            if let episodeKey { loadedEpisodeKey = episodeKey }
+            resumeSetupComplete = true
             player?.defaultRate = playbackRate
             if isPlaying { player?.rate = playbackRate }
             if let np = nowPlaying {
@@ -74,8 +88,11 @@ final class EpisodePlaybackController: ObservableObject {
             return false
         }
 
+        persistListeningProgressIfNeeded()
+        resumeSetupComplete = false
         resetPlayer()
         loadedMediaURL = url
+        loadedEpisodeKey = episodeKey
         cancelArtworkFetch()
         nowPlayingArtwork = nil
         if let nowPlaying {
@@ -98,7 +115,29 @@ final class EpisodePlaybackController: ObservableObject {
                 if let s = durationUpdate {
                     playback.duration = s
                 }
-                playback.pushNowPlayingInfo()
+                let key = episodeKey
+                let knownDuration = playback.duration
+                let resume = playback.resolvedResumePosition(episodeKey: key, knownDuration: knownDuration)
+                if resume > 0.5 {
+                    let cm = CMTime(seconds: resume, preferredTimescale: 600)
+                    p.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
+                        DispatchQueue.main.async {
+                            guard let playback = self else { return }
+                            if finished {
+                                playback.currentTime = resume
+                            }
+                            playback.statusObservation?.invalidate()
+                            playback.statusObservation = nil
+                            playback.resumeSetupComplete = true
+                            playback.pushNowPlayingInfo()
+                        }
+                    }
+                } else {
+                    playback.statusObservation?.invalidate()
+                    playback.statusObservation = nil
+                    playback.resumeSetupComplete = true
+                    playback.pushNowPlayingInfo()
+                }
             }
         }
 
@@ -108,6 +147,9 @@ final class EpisodePlaybackController: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             guard let playback = self else { return }
+            if let key = playback.loadedEpisodeKey {
+                playback.progressStore.removePosition(forEpisodeKey: key)
+            }
             playback.player?.pause()
             playback.isPlaying = false
             let endDuration = playback.duration
@@ -126,6 +168,13 @@ final class EpisodePlaybackController: ObservableObject {
                item.duration.isNumeric,
                item.duration.seconds.isFinite {
                 playback.duration = item.duration.seconds
+            }
+            if playback.resumeSetupComplete, playback.isPlaying, playback.loadedEpisodeKey != nil {
+                let now = Date()
+                if now.timeIntervalSince(playback.lastPeriodicProgressSave) >= Self.periodicProgressSaveInterval {
+                    playback.lastPeriodicProgressSave = now
+                    playback.persistListeningProgressIfNeeded()
+                }
             }
             if playback.isPlaying, let store = playback.sleepTimerStore, store.checkFire() {
                 playback.pause()
@@ -202,6 +251,9 @@ final class EpisodePlaybackController: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             guard let playback = self else { return }
+            if let key = playback.loadedEpisodeKey {
+                playback.progressStore.removePosition(forEpisodeKey: key)
+            }
             playback.player?.pause()
             playback.isPlaying = false
             let endDuration = playback.duration
@@ -220,6 +272,13 @@ final class EpisodePlaybackController: ObservableObject {
                curItem.duration.isNumeric,
                curItem.duration.seconds.isFinite {
                 playback.duration = curItem.duration.seconds
+            }
+            if playback.resumeSetupComplete, playback.isPlaying, playback.loadedEpisodeKey != nil {
+                let now = Date()
+                if now.timeIntervalSince(playback.lastPeriodicProgressSave) >= Self.periodicProgressSaveInterval {
+                    playback.lastPeriodicProgressSave = now
+                    playback.persistListeningProgressIfNeeded()
+                }
             }
             if playback.isPlaying, let store = playback.sleepTimerStore, store.checkFire() {
                 playback.pause()
@@ -241,6 +300,32 @@ final class EpisodePlaybackController: ObservableObject {
 
     private static func urlsMatchForSameAsset(_ a: URL, _ b: URL) -> Bool {
         a.absoluteString == b.absoluteString
+    }
+
+    private func resolvedResumePosition(episodeKey: String?, knownDuration: TimeInterval) -> TimeInterval {
+        guard let key = episodeKey, let saved = progressStore.position(forEpisodeKey: key) else { return 0 }
+        var t = saved
+        if knownDuration > 0, knownDuration.isFinite {
+            if t >= knownDuration - Self.nearEndClearSeconds { return 0 }
+            t = min(t, max(0, knownDuration - 1))
+        }
+        return t
+    }
+
+    private func persistListeningProgressIfNeeded() {
+        guard resumeSetupComplete else { return }
+        guard let key = loadedEpisodeKey else { return }
+        let t = currentTime
+        guard t.isFinite, !t.isNaN else { return }
+        if t < Self.minResumeSeconds {
+            progressStore.removePosition(forEpisodeKey: key)
+            return
+        }
+        if duration > 0, duration.isFinite, t >= duration - Self.nearEndClearSeconds {
+            progressStore.removePosition(forEpisodeKey: key)
+            return
+        }
+        progressStore.savePosition(t, forEpisodeKey: key)
     }
 
     func setPlaybackRate(_ rate: Float) {
@@ -265,6 +350,7 @@ final class EpisodePlaybackController: ObservableObject {
     func pause() {
         player?.pause()
         isPlaying = false
+        persistListeningProgressIfNeeded()
         pushNowPlayingInfo()
     }
 
@@ -281,6 +367,9 @@ final class EpisodePlaybackController: ObservableObject {
         let cm = CMTime(seconds: t, preferredTimescale: 600)
         player?.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero)
         currentTime = t
+        if resumeSetupComplete {
+            persistListeningProgressIfNeeded()
+        }
         pushNowPlayingInfo()
     }
 
@@ -300,9 +389,12 @@ final class EpisodePlaybackController: ObservableObject {
     }
 
     func stopAndClear() {
-        pause()
+        persistListeningProgressIfNeeded()
+        player?.pause()
+        isPlaying = false
         resetPlayer()
         loadedMediaURL = nil
+        loadedEpisodeKey = nil
         nowPlayingMetadata = nil
         cancelArtworkFetch()
         nowPlayingArtwork = nil

@@ -181,64 +181,50 @@ struct EpisodeDetailView: View {
     private func applyPlaybackSource() {
         guard let url = episodePlaybackURL else { return }
         guard playback.loadedMediaURL == url else { return }
-        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta) {
+        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey) {
             sleepTimer.onNewEpisodeLoaded()
         }
     }
 
-    private func startThisEpisodePlayback() {
-        guard let url = episodePlaybackURL else { return }
-        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta) {
+    private func loadThisEpisodeIfNeeded() -> Bool {
+        guard let url = episodePlaybackURL else { return false }
+        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey) {
             sleepTimer.onNewEpisodeLoaded()
         }
+        return true
+    }
+
+    private func startThisEpisodePlayback() {
+        guard loadThisEpisodeIfNeeded() else { return }
         playback.play()
+    }
+
+    /// Switches the global player to this episode, starts playback, then runs `body` (e.g. skip or seek).
+    private func takeOverThisEpisodeThen(_ body: () -> Void) {
+        guard loadThisEpisodeIfNeeded() else { return }
+        playback.play()
+        body()
+    }
+
+    private var detailScrubberCurrentTime: TimeInterval {
+        isPlaybackBoundToThisEpisode ? playback.currentTime : 0
+    }
+
+    private var detailScrubberSpan: TimeInterval {
+        if isPlaybackBoundToThisEpisode {
+            playback.duration > 0 ? playback.duration : max(playback.currentTime, 1)
+        } else {
+            1
+        }
+    }
+
+    private var detailTransportShowsPause: Bool {
+        isPlaybackBoundToThisEpisode && playback.isPlaying
     }
 
     @ViewBuilder
     private func episodePlayerCard(artworkURL: URL?, sleepTimer: SleepTimerStore) -> some View {
-        if isPlaybackBoundToThisEpisode {
-            activeEpisodePlayerCard(artworkURL: artworkURL, sleepTimer: sleepTimer)
-        } else {
-            inactiveEpisodePlayerCard(artworkURL: artworkURL)
-        }
-    }
-
-    @ViewBuilder
-    private func inactiveEpisodePlayerCard(artworkURL: URL?) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Spacer(minLength: 0)
-                PodcastArtworkView(url: artworkURL, size: 220, cornerRadius: 14)
-                Spacer(minLength: 0)
-            }
-            if playback.loadedMediaURL != nil {
-                Text("Another episode is playing. Tap below to listen here instead.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            }
-            Button {
-                startThisEpisodePlayback()
-            } label: {
-                Label(
-                    playback.loadedMediaURL != nil ? "Play this episode" : "Play",
-                    systemImage: "play.circle.fill"
-                )
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.35))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    @ViewBuilder
-    private func activeEpisodePlayerCard(artworkURL: URL?, sleepTimer: SleepTimerStore) -> some View {
-        let span = playback.duration > 0 ? playback.duration : max(playback.currentTime, 1)
+        let span = detailScrubberSpan
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Spacer(minLength: 0)
@@ -249,17 +235,29 @@ struct EpisodeDetailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Slider(
                     value: Binding(
-                        get: { min(max(playback.currentTime, 0), span) },
-                        set: { playback.seek(to: $0) }
+                        get: { min(max(detailScrubberCurrentTime, 0), span) },
+                        set: { newTime in
+                            if isPlaybackBoundToThisEpisode {
+                                playback.seek(to: newTime)
+                            } else {
+                                guard loadThisEpisodeIfNeeded() else { return }
+                                playback.seek(to: newTime)
+                                playback.play()
+                            }
+                        }
                     ),
                     in: 0 ... span
                 )
                 .tint(.accentColor)
 
                 HStack {
-                    Text(formatPlaybackTime(playback.currentTime))
+                    Text(formatPlaybackTime(detailScrubberCurrentTime))
                     Spacer(minLength: 8)
-                    Text(playback.duration > 0 ? formatPlaybackTime(playback.duration) : "–:–")
+                    Text(
+                        isPlaybackBoundToThisEpisode && playback.duration > 0
+                            ? formatPlaybackTime(playback.duration)
+                            : "–:–"
+                    )
                 }
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
@@ -272,14 +270,18 @@ struct EpisodeDetailView: View {
                     .frame(maxWidth: .infinity)
 
                     Button {
-                        playback.togglePlayback()
+                        if isPlaybackBoundToThisEpisode {
+                            playback.togglePlayback()
+                        } else {
+                            startThisEpisodePlayback()
+                        }
                     } label: {
-                        Image(systemName: playback.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        Image(systemName: detailTransportShowsPause ? "pause.circle.fill" : "play.circle.fill")
                             .font(.system(size: 52))
                             .symbolRenderingMode(.hierarchical)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(playback.isPlaying ? "Pause" : "Play")
+                    .accessibilityLabel(detailTransportShowsPause ? "Pause" : "Play")
 
                     HStack(spacing: 4) {
                         skipForwardButton(seconds: 30, systemName: "goforward.30")
@@ -293,7 +295,13 @@ struct EpisodeDetailView: View {
                 Menu {
                     ForEach(SleepTimerPreset.allCases) { preset in
                         Button {
-                            sleepTimer.applyPreset(preset)
+                            if isPlaybackBoundToThisEpisode {
+                                sleepTimer.applyPreset(preset)
+                            } else {
+                                takeOverThisEpisodeThen {
+                                    sleepTimer.applyPreset(preset)
+                                }
+                            }
                         } label: {
                             HStack {
                                 Text(preset.label)
@@ -313,7 +321,15 @@ struct EpisodeDetailView: View {
                 Spacer(minLength: 8)
                 Picker("Speed", selection: Binding(
                     get: { playback.playbackRate },
-                    set: { playback.setPlaybackRate($0) }
+                    set: { newRate in
+                        if isPlaybackBoundToThisEpisode {
+                            playback.setPlaybackRate(newRate)
+                        } else {
+                            guard loadThisEpisodeIfNeeded() else { return }
+                            playback.setPlaybackRate(newRate)
+                            playback.play()
+                        }
+                    }
                 )) {
                     ForEach(EpisodePlaybackController.playbackRateOptions, id: \.self) { rate in
                         Text(speedSegmentLabel(rate)).tag(rate)
@@ -332,7 +348,13 @@ struct EpisodeDetailView: View {
     @ViewBuilder
     private func skipBackButton(seconds: Int, systemName: String) -> some View {
         Button {
-            playback.skipBackward(by: TimeInterval(seconds))
+            if isPlaybackBoundToThisEpisode {
+                playback.skipBackward(by: TimeInterval(seconds))
+            } else {
+                takeOverThisEpisodeThen {
+                    playback.skipBackward(by: TimeInterval(seconds))
+                }
+            }
         } label: {
             Image(systemName: systemName)
                 .font(.system(size: 32))
@@ -346,7 +368,13 @@ struct EpisodeDetailView: View {
     @ViewBuilder
     private func skipForwardButton(seconds: Int, systemName: String) -> some View {
         Button {
-            playback.skipForward(by: TimeInterval(seconds))
+            if isPlaybackBoundToThisEpisode {
+                playback.skipForward(by: TimeInterval(seconds))
+            } else {
+                takeOverThisEpisodeThen {
+                    playback.skipForward(by: TimeInterval(seconds))
+                }
+            }
         } label: {
             Image(systemName: systemName)
                 .font(.system(size: 32))
