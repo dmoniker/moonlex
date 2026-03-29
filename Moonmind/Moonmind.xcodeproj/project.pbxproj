@@ -35,6 +35,7 @@
 		A10000210000000000000021 /* ITunesPodcastSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000210000000000000021 /* ITunesPodcastSearchService.swift */; };
 		A10000270000000000000027 /* ElonGuestEpisodeFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000270000000000000027 /* ElonGuestEpisodeFilter.swift */; };
 		A10000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift */; };
+		A10000290000000000000029 /* ElonSupplementalInterviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000290000000000000029 /* ElonSupplementalInterviews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,6 +68,7 @@
 		A20000210000000000000021 /* ITunesPodcastSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITunesPodcastSearchService.swift; sourceTree = "<group>"; };
 		A20000270000000000000027 /* ElonGuestEpisodeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElonGuestEpisodeFilter.swift; sourceTree = "<group>"; };
 		A20000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElonGuestInterviewEpisodeCache.swift; sourceTree = "<group>"; };
+		A20000290000000000000029 /* ElonSupplementalInterviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElonSupplementalInterviews.swift; sourceTree = "<group>"; };
 		A2FFFF010000000000000001 /* moonmind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moonmind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -136,6 +138,7 @@
 				A20000210000000000000021 /* ITunesPodcastSearchService.swift */,
 				A20000270000000000000027 /* ElonGuestEpisodeFilter.swift */,
 				A20000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift */,
+				A20000290000000000000029 /* ElonSupplementalInterviews.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 				A10000210000000000000021 /* ITunesPodcastSearchService.swift in Sources */,
 				A10000270000000000000027 /* ElonGuestEpisodeFilter.swift in Sources */,
 				A10000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift in Sources */,
+				A10000290000000000000029 /* ElonSupplementalInterviews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

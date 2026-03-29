@@ -103,7 +103,7 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
         title: "Elon as guest — JRE, Dwarkesh, All-In, WTF",
         rssURLString: elonInterviewRSSSourceFeeds[0].rssURLString,
         isBuiltin: true,
-        chipTitle: "Elon interviews",
+        chipTitle: "Elon",
         contentKind: .podcast
     )
 

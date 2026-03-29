@@ -265,10 +265,14 @@ final class HomeViewModel: ObservableObject {
                     failures.append(err)
                 }
             }
-            if merged.isEmpty, let first = failures.first {
+            merged.append(contentsOf: await ElonSupplementalInterviews.cachedOrResolveEpisodes())
+            var byKey: [String: Episode] = [:]
+            for ep in merged { byKey[ep.stableKey] = ep }
+            let deduped = Array(byKey.values)
+            if deduped.isEmpty, let first = failures.first {
                 return .failure(first)
             }
-            return .success(merged)
+            return .success(deduped)
         }
     }
 
