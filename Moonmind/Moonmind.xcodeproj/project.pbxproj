@@ -31,6 +31,7 @@
 		A10000170000000000000017 /* EpisodeDownloadAccessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000170000000000000017 /* EpisodeDownloadAccessory.swift */; };
 		A10000180000000000000018 /* NewsletterFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000018 /* NewsletterFeedView.swift */; };
 		A10000190000000000000019 /* EpisodePlaybackProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000190000000000000019 /* EpisodePlaybackProgressStore.swift */; };
+		A10000200000000000000020 /* AppSettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000200000000000000020 /* AppSettingsViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		A20000170000000000000017 /* EpisodeDownloadAccessory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDownloadAccessory.swift; sourceTree = "<group>"; };
 		A20000180000000000000018 /* NewsletterFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsletterFeedView.swift; sourceTree = "<group>"; };
 		A20000190000000000000019 /* EpisodePlaybackProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodePlaybackProgressStore.swift; sourceTree = "<group>"; };
+		A20000200000000000000020 /* AppSettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsViews.swift; sourceTree = "<group>"; };
 		A2FFFF010000000000000001 /* moonmind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moonmind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -149,6 +151,7 @@
 				A200000F000000000000000F /* AddPodcastView.swift */,
 				A20000140000000000000014 /* PodcastArtworkView.swift */,
 				A20000170000000000000017 /* EpisodeDownloadAccessory.swift */,
+				A20000200000000000000020 /* AppSettingsViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -245,6 +248,7 @@
 				A10000150000000000000015 /* PodcastArtworkCache.swift in Sources */,
 				A10000160000000000000016 /* EpisodeDownloadStore.swift in Sources */,
 				A10000170000000000000017 /* EpisodeDownloadAccessory.swift in Sources */,
+				A10000200000000000000020 /* AppSettingsViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,8 +390,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -417,8 +421,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

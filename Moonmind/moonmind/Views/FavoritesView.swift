@@ -6,6 +6,7 @@ struct FavoritesView: View {
     private var items: [SavedItem]
 
     @Environment(\.modelContext) private var modelContext
+    @Binding var showAppSettings: Bool
 
     var body: some View {
         Group {
@@ -62,6 +63,11 @@ struct FavoritesView: View {
             }
         }
         .navigationTitle("Saved")
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ProfileSettingsToolbarButton(showSettings: $showAppSettings)
+            }
+        }
     }
 
     private func delete(at offsets: IndexSet) {

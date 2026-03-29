@@ -8,6 +8,7 @@ struct NewsletterFeedView: View {
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
     @ObservedObject var episodeDownloads: EpisodeDownloadStore
+    @Binding var showAppSettings: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -59,12 +60,13 @@ struct NewsletterFeedView: View {
         }
         .navigationTitle("Newsletters")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
                     showAddFeeds = true
                 } label: {
                     Label("Feeds", systemImage: "plus.square.on.square")
                 }
+                ProfileSettingsToolbarButton(showSettings: $showAppSettings)
             }
         }
         .navigationDestination(for: Episode.self) { ep in

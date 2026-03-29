@@ -206,16 +206,60 @@ struct EpisodeDetailView: View {
         body()
     }
 
+    private var savedBookmark: (position: TimeInterval, duration: TimeInterval?)? {
+        playback.progressStore.bookmark(forEpisodeKey: episode.stableKey)
+    }
+
     private var detailScrubberCurrentTime: TimeInterval {
-        isPlaybackBoundToThisEpisode ? playback.currentTime : 0
+        if isPlaybackBoundToThisEpisode {
+            let live = playback.currentTime
+            if live > 0.25 || playback.isPlaying { return live }
+            if playback.loadedEpisodeKey == episode.stableKey,
+               let b = savedBookmark, b.position > 1 {
+                return b.position
+            }
+            return live
+        }
+        if let bookmark = savedBookmark {
+            return bookmark.position
+        }
+        return 0
     }
 
     private var detailScrubberSpan: TimeInterval {
         if isPlaybackBoundToThisEpisode {
-            playback.duration > 0 ? playback.duration : max(playback.currentTime, 1)
-        } else {
-            1
+            let live = playback.currentTime
+            if playback.duration > 0 {
+                return max(playback.duration, live, detailScrubberCurrentTime, 1)
+            }
+            if let d = savedBookmark?.duration, d > 0 {
+                return max(d, detailScrubberCurrentTime, 1)
+            }
+            return max(live, detailScrubberCurrentTime, 1)
         }
+        if let bookmark = savedBookmark {
+            if let d = bookmark.duration, d > 0 {
+                return max(d, bookmark.position, 1)
+            }
+            return max(bookmark.position + max(60, bookmark.position * 0.08), bookmark.position, 1)
+        }
+        return 1
+    }
+
+    private var detailDurationLabel: String {
+        if isPlaybackBoundToThisEpisode {
+            if playback.duration > 0 {
+                return formatPlaybackTime(playback.duration)
+            }
+            if let d = savedBookmark?.duration, d > 0 {
+                return formatPlaybackTime(d)
+            }
+            return "–:–"
+        }
+        if let d = savedBookmark?.duration, d > 0 {
+            return formatPlaybackTime(d)
+        }
+        return "–:–"
     }
 
     private var detailTransportShowsPause: Bool {
@@ -253,11 +297,7 @@ struct EpisodeDetailView: View {
                 HStack {
                     Text(formatPlaybackTime(detailScrubberCurrentTime))
                     Spacer(minLength: 8)
-                    Text(
-                        isPlaybackBoundToThisEpisode && playback.duration > 0
-                            ? formatPlaybackTime(playback.duration)
-                            : "–:–"
-                    )
+                    Text(detailDurationLabel)
                 }
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
@@ -315,7 +355,7 @@ struct EpisodeDetailView: View {
                 } label: {
                     TimelineView(.periodic(from: .now, by: 1)) { _ in
                         Label(sleepTimerMenuTitle(sleepTimer), systemImage: "moon.zzz.fill")
-                            .font(.subheadline.weight(.medium))
+                            .font(.subheadline.weight(.medium).monospacedDigit())
                     }
                 }
                 Spacer(minLength: 8)
@@ -331,7 +371,7 @@ struct EpisodeDetailView: View {
                         }
                     }
                 )) {
-                    ForEach(EpisodePlaybackController.playbackRateOptions, id: \.self) { rate in
+                    ForEach(playback.playbackRateOptions, id: \.self) { rate in
                         Text(speedSegmentLabel(rate)).tag(rate)
                     }
                 }
@@ -394,7 +434,7 @@ struct EpisodeDetailView: View {
         if store.preset == .off { return "Sleep timer" }
         if store.preset == .endOfEpisode { return "Sleep · End of episode" }
         if let r = store.remainingUntilFire(), r > 0 {
-            return "Sleep · \(formatPlaybackTime(r)) left"
+            return "Sleep · \(formatCountdownDisplay(r)) left"
         }
         return "Sleep · \(store.preset == .fifteenMinutes ? "15 min" : "30 min")"
     }
@@ -410,6 +450,19 @@ struct EpisodeDetailView: View {
             return String(format: "%d:%02d:%02d", h, rm, s)
         }
         return String(format: "%d:%02d", m, s)
+    }
+
+    private func formatCountdownDisplay(_ t: TimeInterval) -> String {
+        guard t.isFinite, !t.isNaN, t >= 0 else { return "00:00" }
+        let total = Int(t.rounded(.down))
+        let m = total / 60
+        let s = total % 60
+        if m >= 60 {
+            let h = m / 60
+            let rm = m % 60
+            return String(format: "%d:%02d:%02d", h, rm, s)
+        }
+        return String(format: "%02d:%02d", m, s)
     }
 
     private func flash(_ message: String) {

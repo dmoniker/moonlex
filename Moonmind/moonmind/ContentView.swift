@@ -10,6 +10,7 @@ struct ContentView: View {
     @StateObject private var episodeDownloads = EpisodeDownloadStore()
     @StateObject private var newsletterHome = HomeViewModel()
     @State private var showAddFeeds = false
+    @State private var showAppSettings = false
 
     var body: some View {
         TabView {
@@ -21,7 +22,8 @@ struct ContentView: View {
                     showAddFeeds: $showAddFeeds,
                     episodePlayback: episodePlayback,
                     sleepTimer: sleepTimer,
-                    episodeDownloads: episodeDownloads
+                    episodeDownloads: episodeDownloads,
+                    showAppSettings: $showAppSettings
                 )
             }
             .tabItem {
@@ -36,7 +38,8 @@ struct ContentView: View {
                     showAddFeeds: $showAddFeeds,
                     episodePlayback: episodePlayback,
                     sleepTimer: sleepTimer,
-                    episodeDownloads: episodeDownloads
+                    episodeDownloads: episodeDownloads,
+                    showAppSettings: $showAppSettings
                 )
             }
             .tabItem {
@@ -44,7 +47,7 @@ struct ContentView: View {
             }
 
             NavigationStack {
-                FavoritesView()
+                FavoritesView(showAppSettings: $showAppSettings)
             }
             .tabItem {
                 Label("Saved", systemImage: "star.fill")
@@ -55,8 +58,14 @@ struct ContentView: View {
                 AddPodcastView(catalog: catalog, onFeedsChanged: feedsChanged)
             }
         }
+        .sheet(isPresented: $showAppSettings) {
+            AppSettingsSheetView(playback: episodePlayback)
+        }
         .onAppear {
             episodePlayback.sleepTimerStore = sleepTimer
+            episodePlayback.downloadStore = episodeDownloads
+            episodePlayback.feedHomeModel = home
+            episodePlayback.feedNewsletterModel = newsletterHome
             episodeDownloads.onDownloadReady = { _, remote, local in
                 episodePlayback.migrateStreamToLocalFileIfCurrentlyPlaying(remoteURL: remote, localURL: local)
             }

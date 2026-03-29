@@ -11,11 +11,18 @@ struct EpisodeNowPlayingMetadata: Equatable {
 }
 
 final class EpisodePlaybackController: ObservableObject {
-    static let playbackRateOptions: [Float] = [0.8, 1.0, 1.3]
     static let skipBackwardOptions: [TimeInterval] = [15, 30]
     static let skipForwardOptions: [TimeInterval] = [30, 60]
 
+    static let playbackRateSlowDefaultsKey = "moonmind.playbackRateSlow"
+    static let playbackRateFastDefaultsKey = "moonmind.playbackRateFast"
+    static let defaultSlowPlaybackRate: Float = 0.8
+    static let defaultFastPlaybackRate: Float = 1.3
+    static let slowRateRange: ClosedRange<Float> = 0.5...0.95
+    static let fastRateRange: ClosedRange<Float> = 1.05...2.5
+
     private static let playbackRateDefaultsKey = "moonmind.playbackRate"
+    static let autoplayNextDefaultsKey = "moonmind.autoplayNextInFeed"
     private static let minResumeSeconds: TimeInterval = 3
     private static let nearEndClearSeconds: TimeInterval = 15
     private static let periodicProgressSaveInterval: TimeInterval = 12
@@ -25,6 +32,11 @@ final class EpisodePlaybackController: ObservableObject {
     @Published private(set) var duration: TimeInterval = 0
     @Published private(set) var playbackRate: Float
 
+    /// Three speeds: slow, 1×, fast (slow/fast come from Settings).
+    var playbackRateOptions: [Float] {
+        Self.resolvedPlaybackRateTiers()
+    }
+
     /// Currently loaded stream; used to avoid resetting playback when reopening the same episode.
     private(set) var loadedMediaURL: URL?
 
@@ -32,6 +44,9 @@ final class EpisodePlaybackController: ObservableObject {
     private(set) var loadedEpisodeKey: String?
 
     var sleepTimerStore: SleepTimerStore?
+    weak var downloadStore: EpisodeDownloadStore?
+    weak var feedHomeModel: HomeViewModel?
+    weak var feedNewsletterModel: HomeViewModel?
 
     let progressStore = EpisodePlaybackProgressStore()
 
@@ -46,10 +61,16 @@ final class EpisodePlaybackController: ObservableObject {
     /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
     private var resumeSetupComplete = true
     private var lastPeriodicProgressSave = Date.distantPast
+    private var progressForwardCancellable: AnyCancellable?
 
     init() {
+        let tiers = Self.resolvedPlaybackRateTiers()
         let stored = Float(UserDefaults.standard.double(forKey: Self.playbackRateDefaultsKey))
-        playbackRate = Self.playbackRateOptions.first(where: { abs($0 - stored) < 0.001 }) ?? 1.0
+        playbackRate = tiers.first(where: { abs($0 - stored) < 0.001 }) ?? 1.0
+
+        progressForwardCancellable = progressStore.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
 
         interruptionObserver = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
@@ -59,6 +80,80 @@ final class EpisodePlaybackController: ObservableObject {
             self?.handleAudioInterruption(notification)
         }
         configureRemoteCommands()
+    }
+
+    static func clampSlowRate(_ value: Float) -> Float {
+        min(max(value, slowRateRange.lowerBound), slowRateRange.upperBound)
+    }
+
+    static func clampFastRate(_ value: Float) -> Float {
+        min(max(value, fastRateRange.lowerBound), fastRateRange.upperBound)
+    }
+
+    private static func resolvedPlaybackRateTiers() -> [Float] {
+        let rawSlow = Float(UserDefaults.standard.double(forKey: playbackRateSlowDefaultsKey))
+        let rawFast = Float(UserDefaults.standard.double(forKey: playbackRateFastDefaultsKey))
+        let slow = (rawSlow > 0 && rawSlow < 1) ? clampSlowRate(rawSlow) : defaultSlowPlaybackRate
+        let fast = (rawFast > 1) ? clampFastRate(rawFast) : defaultFastPlaybackRate
+        return [slow, 1.0, fast]
+    }
+
+    /// Call after slow/fast tiers change in Settings so the current rate stays valid and the player updates.
+    func refreshPlaybackRateTiersFromUserDefaults() {
+        let tiers = Self.resolvedPlaybackRateTiers()
+        if tiers.contains(where: { abs($0 - playbackRate) < 0.001 }) {
+            // keep current rate
+        } else {
+            let nearest = tiers.min(by: { abs($0 - playbackRate) < abs($1 - playbackRate) }) ?? 1.0
+            playbackRate = nearest
+            UserDefaults.standard.set(Double(nearest), forKey: Self.playbackRateDefaultsKey)
+        }
+        player?.defaultRate = playbackRate
+        if isPlaying { player?.rate = playbackRate }
+        objectWillChange.send()
+        pushNowPlayingInfo()
+    }
+
+    private func handleCurrentItemPlayedToEnd() {
+        let finishedKey = loadedEpisodeKey
+        if let key = finishedKey {
+            progressStore.markPlayed(forEpisodeKey: key)
+        }
+        player?.pause()
+        isPlaying = false
+        let endDuration = duration
+        if endDuration.isFinite {
+            currentTime = endDuration
+        }
+        pushNowPlayingInfo()
+        Task { @MainActor [weak self] in
+            self?.attemptAutoplayAfterFinishedEpisode(finishedKey: finishedKey)
+        }
+    }
+
+    @MainActor
+    private func attemptAutoplayAfterFinishedEpisode(finishedKey: String?) {
+        guard UserDefaults.standard.bool(forKey: Self.autoplayNextDefaultsKey) else { return }
+        guard let key = finishedKey, let downloads = downloadStore else { return }
+        let lists = [feedHomeModel?.episodes, feedNewsletterModel?.episodes].compactMap { $0 }
+        for episodes in lists {
+            guard let next = Self.nextEpisodeWithAudio(after: key, in: episodes) else { continue }
+            guard let url = downloads.playbackURL(for: next) else { continue }
+            let meta = EpisodeNowPlayingMetadata(
+                title: next.title,
+                showTitle: next.showTitle,
+                artworkURL: next.artworkURL
+            )
+            _ = load(url: url, nowPlaying: meta, episodeKey: next.stableKey)
+            play()
+            return
+        }
+    }
+
+    private static func nextEpisodeWithAudio(after key: String, in episodes: [Episode]) -> Episode? {
+        let withAudio = episodes.filter { $0.audioURL != nil }
+        guard let i = withAudio.firstIndex(where: { $0.stableKey == key }), i + 1 < withAudio.count else { return nil }
+        return withAudio[i + 1]
     }
 
     /// Returns `true` if the current item was replaced (new URL or cleared). Caller can use this to reset episode-scoped UI state.
@@ -146,17 +241,7 @@ final class EpisodePlaybackController: ObservableObject {
             object: item,
             queue: .main
         ) { [weak self] _ in
-            guard let playback = self else { return }
-            if let key = playback.loadedEpisodeKey {
-                playback.progressStore.removePosition(forEpisodeKey: key)
-            }
-            playback.player?.pause()
-            playback.isPlaying = false
-            let endDuration = playback.duration
-            if endDuration.isFinite {
-                playback.currentTime = endDuration
-            }
-            playback.pushNowPlayingInfo()
+            self?.handleCurrentItemPlayedToEnd()
         }
 
         let interval = CMTime(seconds: 0.4, preferredTimescale: 600)
@@ -250,17 +335,7 @@ final class EpisodePlaybackController: ObservableObject {
             object: newItem,
             queue: .main
         ) { [weak self] _ in
-            guard let playback = self else { return }
-            if let key = playback.loadedEpisodeKey {
-                playback.progressStore.removePosition(forEpisodeKey: key)
-            }
-            playback.player?.pause()
-            playback.isPlaying = false
-            let endDuration = playback.duration
-            if endDuration.isFinite {
-                playback.currentTime = endDuration
-            }
-            playback.pushNowPlayingInfo()
+            self?.handleCurrentItemPlayedToEnd()
         }
 
         let interval = CMTime(seconds: 0.4, preferredTimescale: 600)
@@ -322,14 +397,15 @@ final class EpisodePlaybackController: ObservableObject {
             return
         }
         if duration > 0, duration.isFinite, t >= duration - Self.nearEndClearSeconds {
-            progressStore.removePosition(forEpisodeKey: key)
+            progressStore.markPlayed(forEpisodeKey: key)
             return
         }
-        progressStore.savePosition(t, forEpisodeKey: key)
+        let knownDuration = (duration > 0 && duration.isFinite) ? duration : nil
+        progressStore.savePosition(t, lastKnownDuration: knownDuration, forEpisodeKey: key)
     }
 
     func setPlaybackRate(_ rate: Float) {
-        guard Self.playbackRateOptions.contains(where: { abs($0 - rate) < 0.001 }) else { return }
+        guard playbackRateOptions.contains(where: { abs($0 - rate) < 0.001 }) else { return }
         playbackRate = rate
         UserDefaults.standard.set(Double(rate), forKey: Self.playbackRateDefaultsKey)
         player?.defaultRate = rate
