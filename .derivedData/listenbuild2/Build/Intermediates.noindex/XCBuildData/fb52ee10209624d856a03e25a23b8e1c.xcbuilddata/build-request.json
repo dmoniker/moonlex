@@ -1,0 +1,70 @@
+{
+  "buildCommand" : {
+    "command" : "build",
+    "skipDependencies" : false,
+    "style" : "buildOnly"
+  },
+  "configuredTargets" : [
+    {
+      "guid" : "9795bba36e2119146781a555fb6b7706cf59dce99ae309d6914bf8f61d82a92b"
+    }
+  ],
+  "containerPath" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/Moonmind.xcodeproj",
+  "continueBuildingAfterErrors" : false,
+  "dependencyScope" : "workspace",
+  "enableIndexBuildArena" : false,
+  "hideShellScriptEnvironment" : false,
+  "parameters" : {
+    "action" : "build",
+    "activeArchitecture" : "undefined_arch",
+    "activeRunDestination" : {
+      "disableOnlyActiveArch" : true,
+      "hostTargetedPlatform" : null,
+      "platform" : "iphoneos",
+      "sdk" : "iphoneos26.4",
+      "sdkVariant" : "iphoneos",
+      "supportedArchitectures" : [
+        "armv4t",
+        "armv5",
+        "armv6",
+        "armv7",
+        "armv7f",
+        "armv7s",
+        "armv7k",
+        "arm64",
+        "arm64e"
+      ],
+      "targetArchitecture" : "undefined_arch"
+    },
+    "arenaInfo" : {
+      "buildIntermediatesPath" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/listenbuild2/Build/Intermediates.noindex",
+      "buildProductsPath" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/listenbuild2/Build/Products",
+      "derivedDataPath" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/listenbuild2",
+      "indexDataStoreFolderPath" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/listenbuild2/Index.noindex/DataStore",
+      "indexEnableDataStore" : true,
+      "indexPCHPath" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/listenbuild2/Index.noindex/PrecompiledHeaders",
+      "pchPath" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/listenbuild2/Build/Intermediates.noindex/PrecompiledHeaders"
+    },
+    "configurationName" : "Debug",
+    "overrides" : {
+      "commandLine" : {
+        "table" : {
+
+        }
+      },
+      "synthesized" : {
+        "table" : {
+          "ACTION" : "build",
+          "ENABLE_PREVIEWS" : "NO",
+          "ENABLE_XOJIT_PREVIEWS" : "YES"
+        }
+      }
+    }
+  },
+  "schemeCommand" : "launch",
+  "showNonLoggedProgress" : true,
+  "useDryRun" : false,
+  "useImplicitDependencies" : true,
+  "useLegacyBuildLocations" : false,
+  "useParallelTargets" : true
+}

@@ -120,6 +120,8 @@ struct ContentView: View {
     private static let miniPlayerContentReservationHeight: CGFloat = 56
 
     private func feedsChanged() {
+        home.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
+        newsletterHome.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
         Task {
             await home.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
             await newsletterHome.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)

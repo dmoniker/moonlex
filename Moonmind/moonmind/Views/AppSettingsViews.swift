@@ -217,7 +217,7 @@ struct AppSettingsSheetView: View {
                     Text("Feeds")
                 } footer: {
                     Text(
-                        "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Innermost Loop, and the Innermost Loop newsletter)."
+                        "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Elon interviews from JRE / Dwarkesh / All-In / WTF, Innermost Loop, and the Innermost Loop newsletter)."
                     )
                     .font(.footnote)
                     .foregroundStyle(.secondary)

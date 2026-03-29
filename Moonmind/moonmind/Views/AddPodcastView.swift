@@ -33,10 +33,16 @@ struct AddPodcastView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.tertiary)
                             }
-                            Text(feed.rssURLString)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .textSelection(.enabled)
+                            if feed.id == PodcastFeed.elonGuestInterviewsFeedID {
+                                Text("Curated Elon-as-guest episodes from JRE, Dwarkesh, All-In, and WTF — loaded from each show’s public RSS.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text(feed.rssURLString)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }
                         }
                     }
                     .onDelete(perform: deleteFeed)

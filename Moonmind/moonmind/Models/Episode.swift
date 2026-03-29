@@ -1,6 +1,6 @@
 import Foundation
 
-struct Episode: Identifiable, Hashable, Sendable {
+struct Episode: Identifiable, Hashable, Sendable, Codable {
     var id: String { stableKey }
 
     let stableKey: String
@@ -44,6 +44,23 @@ struct Episode: Identifiable, Hashable, Sendable {
             linkURL: linkURL,
             descriptionRaw: descriptionRaw,
             artworkURL: url,
+            feedContentKind: feedContentKind
+        )
+    }
+
+    /// Same episode with an updated audio URL (e.g. after resolving a redirect).
+    func replacingAudioURL(with url: URL?) -> Episode {
+        Episode(
+            stableKey: stableKey,
+            title: title,
+            pubDate: pubDate,
+            audioURL: url,
+            showTitle: showTitle,
+            feedID: feedID,
+            feedURLString: feedURLString,
+            linkURL: linkURL,
+            descriptionRaw: descriptionRaw,
+            artworkURL: artworkURL,
             feedContentKind: feedContentKind
         )
     }

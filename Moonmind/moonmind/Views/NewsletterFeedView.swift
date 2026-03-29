@@ -38,7 +38,8 @@ struct NewsletterFeedView: View {
     @ViewBuilder
     private var newsletterFeedContents: some View {
         VStack(alignment: .leading, spacing: 0) {
-            FeedFilterBar(feeds: catalog.newsletterFeeds, filters: feedFilters) {
+            FeedFilterBar(feeds: catalog.newsletterFeeds, scope: .newsletter, filters: feedFilters) {
+                model.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
                 Task {
                     await model.refresh(
                         feeds: catalog.newsletterFeeds,
@@ -62,7 +63,7 @@ struct NewsletterFeedView: View {
                 ContentUnavailableView(
                     "No newsletters selected",
                     systemImage: "newspaper",
-                    description: Text("Turn on a newsletter above, or add a Substack RSS URL.")
+                    description: Text("Choose All or a feed above, or add a Substack RSS URL.")
                 )
             } else {
                 List {

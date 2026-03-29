@@ -1,0 +1,23 @@
+{
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/EpisodeDownloadStore.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AppSettingsViews.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/EpisodeDownloadAccessory.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.swiftdeps"
+  }
+}

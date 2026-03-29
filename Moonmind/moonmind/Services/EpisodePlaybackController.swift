@@ -100,6 +100,7 @@ final class EpisodePlaybackController: ObservableObject {
     private var player: AVPlayer?
     private var timeObserver: Any?
     private var endObserver: NSObjectProtocol?
+    private var stallObserver: NSObjectProtocol?
     private var statusObservation: NSKeyValueObservation?
     private var interruptionObserver: NSObjectProtocol?
     /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
@@ -266,6 +267,33 @@ final class EpisodePlaybackController: ObservableObject {
         return nil
     }
 
+    /// Listen Notes and some ad/CDN hops reject AVFoundation’s default user agent (stall after a few seconds or silent decode).
+    private static func playerItem(for url: URL) -> AVPlayerItem {
+        guard url.isFileURL == false, Self.needsBrowserLikeAssetHeaders(for: url) else {
+            return AVPlayerItem(url: url)
+        }
+        let headers: [String: String] = [
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+            "Accept": "*/*",
+        ]
+        // `AVURLAssetHTTPHeaderFieldsKey` is not always visible to Swift; string matches AVFoundation’s option key.
+        let opts: [String: Any] = ["AVURLAssetHTTPHeaderFieldsKey": headers]
+        let asset = AVURLAsset(url: url, options: opts)
+        return AVPlayerItem(asset: asset)
+    }
+
+    private static func needsBrowserLikeAssetHeaders(for url: URL) -> Bool {
+        let h = url.host?.lowercased() ?? ""
+        if h.contains("megaphone.fm") { return true }
+        if h.contains("omny.fm") || h.contains("omnycontent.com") { return true }
+        if h.contains("podtrac.com") { return true }
+        if h.contains("art19.com") { return true }
+        if h.contains("spotifycdn.com") || h.contains("spotify.com") { return true }
+        if h.contains("simplecast.com") { return true }
+        if h.contains("anchor.fm") { return true }
+        return false
+    }
+
     /// Returns `true` if the current item was replaced (new URL or cleared). Caller can use this to reset episode-scoped UI state.
     @discardableResult
     func load(
@@ -310,13 +338,24 @@ final class EpisodePlaybackController: ObservableObject {
             nowPlayingMetadata = nowPlaying
         }
 
-        let item = AVPlayerItem(url: url)
+        let item = Self.playerItem(for: url)
+        item.preferredForwardBufferDuration = 45
         let p = AVPlayer(playerItem: item)
         p.defaultRate = playbackRate
+        p.automaticallyWaitsToMinimizeStalling = true
         player = p
 
         statusObservation = item.observe(\.status, options: [.new]) { [weak self] observed, _ in
             guard let playback = self else { return }
+            if observed.status == .failed {
+                DispatchQueue.main.async {
+                    playback.isPlaying = false
+                    playback.statusObservation?.invalidate()
+                    playback.statusObservation = nil
+                    playback.pushNowPlayingInfo()
+                }
+                return
+            }
             guard observed.status == .readyToPlay else { return }
             let durationUpdate: TimeInterval? = {
                 let d = observed.duration
@@ -358,6 +397,15 @@ final class EpisodePlaybackController: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             self?.handleCurrentItemPlayedToEnd()
+        }
+
+        stallObserver = NotificationCenter.default.addObserver(
+            forName: AVPlayerItem.playbackStalledNotification,
+            object: item,
+            queue: .main
+        ) { [weak self] _ in
+            guard let playback = self, playback.isPlaying else { return }
+            playback.player?.play()
         }
 
         let interval = CMTime(seconds: 0.4, preferredTimescale: 600)
@@ -408,6 +456,10 @@ final class EpisodePlaybackController: ObservableObject {
             NotificationCenter.default.removeObserver(endObserver)
             self.endObserver = nil
         }
+        if let stallObserver {
+            NotificationCenter.default.removeObserver(stallObserver)
+            self.stallObserver = nil
+        }
         statusObservation?.invalidate()
         statusObservation = nil
 
@@ -452,6 +504,15 @@ final class EpisodePlaybackController: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             self?.handleCurrentItemPlayedToEnd()
+        }
+
+        stallObserver = NotificationCenter.default.addObserver(
+            forName: AVPlayerItem.playbackStalledNotification,
+            object: newItem,
+            queue: .main
+        ) { [weak self] _ in
+            guard let playback = self, playback.isPlaying else { return }
+            playback.player?.play()
         }
 
         let interval = CMTime(seconds: 0.4, preferredTimescale: 600)
@@ -537,7 +598,15 @@ final class EpisodePlaybackController: ObservableObject {
         if armSleepTimerIfNeeded {
             sleepTimerStore?.armCountdownIfNeeded()
         }
-        player?.playImmediately(atRate: playbackRate)
+        guard let p = player else {
+            isPlaying = false
+            pushNowPlayingInfo()
+            return
+        }
+        // `playImmediately(atRate:)` often no-ops until the item is ready; Listen Notes audio URLs redirect and buffer more slowly than direct MP3 enclosures.
+        p.automaticallyWaitsToMinimizeStalling = true
+        p.rate = playbackRate
+        p.play()
         isPlaying = true
         pushNowPlayingInfo()
     }
@@ -770,6 +839,10 @@ final class EpisodePlaybackController: ObservableObject {
             NotificationCenter.default.removeObserver(endObserver)
         }
         endObserver = nil
+        if let stallObserver {
+            NotificationCenter.default.removeObserver(stallObserver)
+        }
+        stallObserver = nil
         player?.replaceCurrentItem(with: nil)
         player = nil
     }
@@ -781,6 +854,9 @@ final class EpisodePlaybackController: ObservableObject {
         }
         if let endObserver {
             NotificationCenter.default.removeObserver(endObserver)
+        }
+        if let stallObserver {
+            NotificationCenter.default.removeObserver(stallObserver)
         }
         if let interruptionObserver {
             NotificationCenter.default.removeObserver(interruptionObserver)

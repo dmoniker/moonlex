@@ -1,0 +1,48 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Feed",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "Newsletters",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "Saved",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 52
+        }
+      },
+      {
+        "comment": "",
+        "key": "Pause",
+        "location": {
+          "startingColumn": 54,
+          "startingLine": 277
+        }
+      },
+      {
+        "comment": "",
+        "key": "Play",
+        "location": {
+          "startingColumn": 64,
+          "startingLine": 277
+        }
+      }
+    ]
+  },
+  "version": 1
+}

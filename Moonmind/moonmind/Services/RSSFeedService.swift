@@ -1,14 +1,38 @@
 import Foundation
 
 enum RSSFeedService {
-    static func loadEpisodes(for feed: PodcastFeed, limit: Int = 80) async throws -> [Episode] {
+    /// Default cap for routine refreshes (newest episodes only).
+    static let defaultEpisodeFetchLimit = 80
+    /// Upper bound when scanning years of history (host may return fewer items than this).
+    static let deepHistoryMaxItems = 2_000
+
+    struct FetchOptions: Sendable {
+        var maxItems: Int
+        /// When set, assumes the feed lists **newest first**; stops once an episode publishes before this instant.
+        var notBefore: Date?
+
+        static let standard = FetchOptions(maxItems: RSSFeedService.defaultEpisodeFetchLimit, notBefore: nil)
+
+        /// ~5 years of episodes, capped at `deepHistoryMaxItems` (feeds often truncate earlier).
+        static func rollingFiveYears(now: Date = Date(), calendar: Calendar = .current) -> FetchOptions {
+            let start = calendar.date(byAdding: .year, value: -5, to: now) ?? .distantPast
+            return FetchOptions(maxItems: RSSFeedService.deepHistoryMaxItems, notBefore: start)
+        }
+    }
+
+    static func loadEpisodes(for feed: PodcastFeed, options: FetchOptions = .standard) async throws -> [Episode] {
         guard let url = feed.rssURL else { throw RSSError.badURL }
         let (data, response) = try await URLSession.shared.data(from: url)
         guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
             throw RSSError.badResponse
         }
-        let parser = RSSParser(data: data, feed: feed, limit: limit)
+        let parser = RSSParser(data: data, feed: feed, options: options)
         return try parser.parse()
+    }
+
+    /// Backward-compatible convenience.
+    static func loadEpisodes(for feed: PodcastFeed, limit: Int) async throws -> [Episode] {
+        try await loadEpisodes(for: feed, options: FetchOptions(maxItems: limit, notBefore: nil))
     }
 }
 
@@ -29,9 +53,10 @@ enum RSSError: LocalizedError {
 private final class RSSParser: NSObject, XMLParserDelegate {
     private let parser: XMLParser
     private let feed: PodcastFeed
-    private let limit: Int
+    private let options: RSSFeedService.FetchOptions
 
     private var episodes: [Episode] = []
+    private var abortedForHistoryBoundary = false
     private var currentPath: [String] = []
     private var inItem = false
 
@@ -51,19 +76,20 @@ private final class RSSParser: NSObject, XMLParserDelegate {
 
     private var failure: Error?
 
-    init(data: Data, feed: PodcastFeed, limit: Int) {
+    init(data: Data, feed: PodcastFeed, options: RSSFeedService.FetchOptions) {
         self.parser = XMLParser(data: data)
         self.feed = feed
-        self.limit = limit
+        self.options = options
         super.init()
         parser.delegate = self
     }
 
     func parse() throws -> [Episode] {
-        guard parser.parse() else {
-            throw failure ?? RSSError.parseFailed
+        _ = parser.parse()
+        if abortedForHistoryBoundary || failure == nil {
+            return episodes
         }
-        return episodes
+        throw failure ?? RSSError.parseFailed
     }
 
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
@@ -135,8 +161,13 @@ private final class RSSParser: NSObject, XMLParserDelegate {
 
         if leaf == "item" {
             inItem = false
-            if episodes.count < limit, let episode = makeEpisode() {
-                episodes.append(episode)
+            if episodes.count < options.maxItems, let episode = makeEpisode() {
+                if let cutoff = options.notBefore, let pub = episode.pubDate, pub < cutoff {
+                    abortedForHistoryBoundary = true
+                    parser.abortParsing()
+                } else {
+                    episodes.append(episode)
+                }
             }
             resetItemBuffers()
         }
@@ -151,6 +182,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
+        if abortedForHistoryBoundary { return }
         failure = parseError
     }
 

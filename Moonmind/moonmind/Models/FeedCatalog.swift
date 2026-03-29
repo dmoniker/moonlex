@@ -25,6 +25,9 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
     static let innermostLoopID = "builtin.innermostloop"
     /// Audio RSS from Substack (`/podcast` page `rel="alternate"`); distinct from the text `/feed`.
     static let innermostLoopPodcastID = "builtin.innermostloop.podcast"
+    /// Virtual feed: Elon-as-guest episodes merged from several RSS sources (`elonInterviewRSSSourceFeeds`).
+    static let elonGuestInterviewsFeedID = "builtin.elon.guest"
+    fileprivate static let elonGuestInterviewsFeedIDLegacy = "builtin.listennotes.elon"
 
     enum CodingKeys: String, CodingKey {
         case id, title, rssURLString, isBuiltin, chipTitle, contentKind
@@ -66,6 +69,44 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
         try c.encode(contentKind, forKey: .contentKind)
     }
 
+    /// RSS shows merged into the Elon interviews chip only (not listed as separate podcasts).
+    static let elonInterviewRSSSourceFeeds: [PodcastFeed] = [
+        PodcastFeed(
+            id: "builtin.elon.source.jre",
+            title: "The Joe Rogan Experience",
+            rssURLString: "https://feeds.megaphone.fm/GLT1412515089",
+            isBuiltin: true
+        ),
+        PodcastFeed(
+            id: "builtin.elon.source.dwarkesh",
+            title: "Dwarkesh Podcast",
+            rssURLString: "https://api.substack.com/feed/podcast/69345.rss",
+            isBuiltin: true
+        ),
+        PodcastFeed(
+            id: "builtin.elon.source.allin",
+            title: "All-In with Chamath, Jason, Sacks & Friedberg",
+            rssURLString: "https://allinchamathjason.libsyn.com/rss",
+            isBuiltin: true
+        ),
+        PodcastFeed(
+            id: "builtin.elon.source.wtf",
+            title: "WTF with Marc Maron",
+            rssURLString: "https://feeds.acast.com/public/shows/wtf-with-marc-maron-podcast",
+            isBuiltin: true
+        ),
+    ]
+
+    /// Built-in row for curated Elon interview episodes (JRE, Dwarkesh, All-In, WTF) loaded via RSS.
+    static let elonGuestInterviewsFeed = PodcastFeed(
+        id: elonGuestInterviewsFeedID,
+        title: "Elon as guest — JRE, Dwarkesh, All-In, WTF",
+        rssURLString: elonInterviewRSSSourceFeeds[0].rssURLString,
+        isBuiltin: true,
+        chipTitle: "Elon interviews",
+        contentKind: .podcast
+    )
+
     static var builtins: [PodcastFeed] {
         [
             PodcastFeed(
@@ -81,9 +122,10 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
                 title: "Lex Fridman Podcast",
                 rssURLString: "https://lexfridman.com/feed/podcast/",
                 isBuiltin: true,
-                chipTitle: "Lex Fridman",
+                chipTitle: "Lex",
                 contentKind: .podcast
             ),
+            elonGuestInterviewsFeed,
             PodcastFeed(
                 id: innermostLoopPodcastID,
                 title: "The Innermost Loop (Podcast)",
@@ -114,8 +156,26 @@ final class FeedCatalog: ObservableObject {
     @Published private(set) var hiddenBuiltinFeedIDs: Set<String> = []
 
     init() {
+        Self.migrateLegacyElonGuestFeedIDIfNeeded()
         loadCustom()
         loadHiddenBuiltins()
+    }
+
+    /// Replaces the pre–RSS-merge virtual feed id so settings stay consistent.
+    private static func migrateLegacyElonGuestFeedIDIfNeeded() {
+        let legacy = PodcastFeed.elonGuestInterviewsFeedIDLegacy
+        let id = PodcastFeed.elonGuestInterviewsFeedID
+        let ud = UserDefaults.standard
+        for key in ["moonmind.podcastFilterExclusiveFeedID", "moonmind.newsletterFilterExclusiveFeedID"] {
+            if ud.string(forKey: key) == legacy { ud.set(id, forKey: key) }
+        }
+        let hiddenKey = "moonmind.hiddenBuiltinFeedIDsJSON"
+        guard let data = ud.data(forKey: hiddenKey),
+              var ids = try? JSONDecoder().decode([String].self, from: data),
+              let idx = ids.firstIndex(of: legacy)
+        else { return }
+        ids[idx] = id
+        if let next = try? JSONEncoder().encode(ids) { ud.set(next, forKey: hiddenKey) }
     }
 
     var allFeeds: [PodcastFeed] {

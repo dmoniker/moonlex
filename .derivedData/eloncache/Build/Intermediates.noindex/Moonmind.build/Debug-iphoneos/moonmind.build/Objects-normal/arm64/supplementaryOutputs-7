@@ -1,0 +1,23 @@
+{
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/EpisodePlaybackProgressStore.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/PodcastArtworkCache.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/PodcastArtworkView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.swiftdeps"
+  }
+}

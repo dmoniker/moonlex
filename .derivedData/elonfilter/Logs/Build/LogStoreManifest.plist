@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>12</integer>
+	<key>logs</key>
+	<dict>
+		<key>47E4E3AC-EC29-4043-89AA-C4A5D87036B1</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>47E4E3AC-EC29-4043-89AA-C4A5D87036B1.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Moonmind project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>moonmind</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>timeStartedRecording</key>
+			<real>796513369.06886005</real>
+			<key>timeStoppedRecording</key>
+			<real>796513379.34619296</real>
+			<key>title</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>uniqueIdentifier</key>
+			<string>47E4E3AC-EC29-4043-89AA-C4A5D87036B1</string>
+		</dict>
+		<key>9B1CC733-1CE9-4F4B-AEB1-C3287EC549B6</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>9B1CC733-1CE9-4F4B-AEB1-C3287EC549B6.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Moonmind project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>moonmind</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>timeStartedRecording</key>
+			<real>796517886.59844398</real>
+			<key>timeStoppedRecording</key>
+			<real>796517890.98795497</real>
+			<key>title</key>
+			<string>Building project Moonmind with scheme moonmind</string>
+			<key>uniqueIdentifier</key>
+			<string>9B1CC733-1CE9-4F4B-AEB1-C3287EC549B6</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

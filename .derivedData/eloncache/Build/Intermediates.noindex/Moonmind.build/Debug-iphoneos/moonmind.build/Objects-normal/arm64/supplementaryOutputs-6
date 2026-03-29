@@ -1,0 +1,23 @@
+{
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/EpisodePlaybackController.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/SleepTimerStore.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AddPodcastView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/eloncache/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.swiftdeps"
+  }
+}

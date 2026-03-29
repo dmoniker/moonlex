@@ -47,7 +47,8 @@ struct HomeFeedView: View {
     @ViewBuilder
     private var feedContents: some View {
         VStack(alignment: .leading, spacing: 0) {
-            FeedFilterBar(feeds: catalog.podcastFeeds, filters: feedFilters) {
+            FeedFilterBar(feeds: catalog.podcastFeeds, scope: .podcast, filters: feedFilters) {
+                model.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
                 Task {
                     await model.refresh(
                         feeds: catalog.podcastFeeds,
@@ -71,7 +72,7 @@ struct HomeFeedView: View {
                 ContentUnavailableView(
                     "No shows selected",
                     systemImage: "line.3.horizontal.decrease.circle",
-                    description: Text("Turn on at least one podcast with the filters above.")
+                    description: Text("Choose All or a show with the filters above.")
                 )
             } else if displayedEpisodes.isEmpty {
                 ContentUnavailableView(

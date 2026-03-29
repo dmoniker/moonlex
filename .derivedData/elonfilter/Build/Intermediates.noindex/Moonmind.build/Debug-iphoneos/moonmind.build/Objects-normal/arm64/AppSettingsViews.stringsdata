@@ -1,0 +1,384 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AppSettingsViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 15
+        }
+      },
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 242
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 271
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds to defaults?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "Skip buttons",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "Playback speed",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 169
+        }
+      },
+      {
+        "comment": "",
+        "key": "The Elon filter uses LISTEN_API_KEY from moonmind/.env.local (see .env.local.example). Xcode runs “Sync Listen .env.local” on build to embed the key. With Elon as the only selection, Moonshots and Lex still load from RSS but only Elon-as-guest episodes; choose Moonshots, Lex, or All alone for full episodes from those feeds. Listen Notes fills Joe Rogan, Dwarkesh, Meet the Leader (WEF), People by WTF, and All-In with the same Elon-as-guest rules. Raw X/Twitter Spaces are not included unless someone publishes them as podcast audio—add a mirror RSS under “Add podcast” if you use one. Elon discovery uses a few episode-search requests per refresh (Listen Notes counts each successful search HTTP call). Attribution is required (FAQ link above).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Listen API documentation",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "FAQ & terms (attribution)",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "Listen Notes (Elon)",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "Powered by Listen Notes · X Spaces only appear if indexed as podcast audio",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "When an episode finishes, plays the next not-fully-played episode with audio (newest-first order). Choose the whole feed or only the same podcast or newsletter. Stops if there isn’t a match.",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay next episode",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay from",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "Entire feed",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 91
+        }
+      },
+      {
+        "comment": "",
+        "key": "Same show",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 92
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 116
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "When total downloads exceed this limit, older files are removed automatically (by date modified on disk).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download storage limit",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 138
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unlimited",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 139
+        }
+      },
+      {
+        "comment": "",
+        "key": "250 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "500 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "1 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 142
+        }
+      },
+      {
+        "comment": "",
+        "key": "2 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 143
+        }
+      },
+      {
+        "comment": "",
+        "key": "5 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "10 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 160
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloads",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 166
+        }
+      },
+      {
+        "comment": "",
+        "key": "The player uses three speeds: slow, normal (1×), and fast.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 218
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 172
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 183
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 196
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 207
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds to defaults",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 227
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feeds",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 233
+        }
+      },
+      {
+        "comment": "",
+        "key": "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Elon-as-guest discovery via Listen Notes, Innermost Loop, and the Innermost Loop newsletter).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 246
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 275
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 278
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloaded episode audio will be removed from this device. You can stream or download again anytime.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 280
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 287
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 295
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your added shows will be removed and every built-in feed will appear again.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 297
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,32 +1,62 @@
 import Foundation
 
+enum FeedFilterBarScope: String, Sendable {
+    case podcast
+    case newsletter
+
+    fileprivate var storageKey: String {
+        switch self {
+        case .podcast: return "moonmind.podcastFilterExclusiveFeedID"
+        case .newsletter: return "moonmind.newsletterFilterExclusiveFeedID"
+        }
+    }
+}
+
+/// `nil` exclusive ID means **All** feeds in that scope are included (combined feed).
 @MainActor
 final class FeedFilters: ObservableObject {
-    private let key = "moonmind.feedEnabled"
-
-    @Published private(set) var enabledByFeedID: [String: Bool] = [:]
+    @Published private(set) var podcastExclusiveFeedID: String?
+    @Published private(set) var newsletterExclusiveFeedID: String?
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([String: Bool].self, from: data) {
-            enabledByFeedID = decoded
+        podcastExclusiveFeedID = Self.loadExclusiveID(key: FeedFilterBarScope.podcast.storageKey)
+        newsletterExclusiveFeedID = Self.loadExclusiveID(key: FeedFilterBarScope.newsletter.storageKey)
+    }
+
+    func exclusiveFeedID(for scope: FeedFilterBarScope) -> String? {
+        switch scope {
+        case .podcast: return podcastExclusiveFeedID
+        case .newsletter: return newsletterExclusiveFeedID
         }
     }
 
-    func isOn(_ feedID: String) -> Bool {
-        enabledByFeedID[feedID, default: true]
+    /// `nil` = All; otherwise only that feed is active in the given scope.
+    func selectExclusive(_ feedID: String?, scope: FeedFilterBarScope) {
+        switch scope {
+        case .podcast:
+            podcastExclusiveFeedID = feedID
+            Self.persistExclusiveID(feedID, key: scope.storageKey)
+        case .newsletter:
+            newsletterExclusiveFeedID = feedID
+            Self.persistExclusiveID(feedID, key: scope.storageKey)
+        }
     }
 
-    func setOn(_ feedID: String, _ on: Bool) {
-        var next = enabledByFeedID
-        next[feedID] = on
-        enabledByFeedID = next
-        persist()
+    func isOn(_ feedID: String, scope: FeedFilterBarScope) -> Bool {
+        guard let only = exclusiveFeedID(for: scope) else { return true }
+        return feedID == only
     }
 
-    private func persist() {
-        if let data = try? JSONEncoder().encode(enabledByFeedID) {
-            UserDefaults.standard.set(data, forKey: key)
+    private static func loadExclusiveID(key: String) -> String? {
+        guard UserDefaults.standard.object(forKey: key) != nil else { return nil }
+        return UserDefaults.standard.string(forKey: key)
+    }
+
+    private static func persistExclusiveID(_ id: String?, key: String) {
+        if let id {
+            UserDefaults.standard.set(id, forKey: key)
+        } else {
+            UserDefaults.standard.removeObject(forKey: key)
         }
     }
 }

@@ -1,0 +1,392 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AppSettingsViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 15
+        }
+      },
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 247
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 276
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds to defaults?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 288
+        }
+      },
+      {
+        "comment": "",
+        "key": "Skip buttons",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Playback speed",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 174
+        }
+      },
+      {
+        "comment": "",
+        "key": "By default the app uses LISTEN_API_KEY from moonmind/.env.local (see .env.local.example in the repo). Leave empty and build from Xcode; set a key here only to override on this device. The free plan returns up to 30 matching episodes per refresh. Attribution is required for Listen API data (see FAQ link above).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "Listen API key (optional override)",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "Listen API documentation",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "FAQ & terms (attribution)",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 78
+        }
+      },
+      {
+        "comment": "",
+        "key": "Listen Notes (Elon interviews)",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Powered by Listen Notes",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "When an episode finishes, plays the next not-fully-played episode with audio (newest-first order). Choose the whole feed or only the same podcast or newsletter. Stops if there isn’t a match.",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 101
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay next episode",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay from",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "Entire feed",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "Same show",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 121
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 135
+        }
+      },
+      {
+        "comment": "",
+        "key": "When total downloads exceed this limit, older files are removed automatically (by date modified on disk).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 157
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download storage limit",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 143
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unlimited",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "250 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "500 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 146
+        }
+      },
+      {
+        "comment": "",
+        "key": "1 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 147
+        }
+      },
+      {
+        "comment": "",
+        "key": "2 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 148
+        }
+      },
+      {
+        "comment": "",
+        "key": "5 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "10 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 165
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloads",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 171
+        }
+      },
+      {
+        "comment": "",
+        "key": "The player uses three speeds: slow, normal (1×), and fast.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 223
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 188
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 201
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 212
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds to defaults",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 232
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feeds",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Elon interviews via Listen Notes, Innermost Loop, and the Innermost Loop newsletter).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 241
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 251
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 280
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloaded episode audio will be removed from this device. You can stream or download again anytime.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 285
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 292
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 300
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your added shows will be removed and every built-in feed will appear again.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 302
+        }
+      }
+    ]
+  },
+  "version": 1
+}
