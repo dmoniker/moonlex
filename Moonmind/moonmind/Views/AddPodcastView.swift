@@ -26,18 +26,15 @@ struct AddPodcastView: View {
                 } else {
                     ForEach(catalog.allFeeds) { feed in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(feed.title)
-                                .font(.headline)
-                            if feed.isBuiltin {
-                                Text("Built-in")
-                                    .font(.caption2)
-                                    .foregroundStyle(.tertiary)
-                            }
                             if feed.id == PodcastFeed.elonGuestInterviewsFeedID {
-                                Text("Curated Elon-as-guest episodes from JRE, Dwarkesh, All-In, and WTF — loaded from each show’s public RSS.")
+                                Text("Elon Musk Interviews")
+                                    .font(.headline)
+                                Text("Curated Elon-as-guest podcast episodes from over the years. Enjoy.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             } else {
+                                Text(feed.title)
+                                    .font(.headline)
                                 Text(feed.rssURLString)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
