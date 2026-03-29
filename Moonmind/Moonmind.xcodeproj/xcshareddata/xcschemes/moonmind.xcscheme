@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A50000010000000000000001"
-               BuildableName = "Moonlex.app"
-               BlueprintName = "Moonlex"
-               ReferencedContainer = "container:Moonlex.xcodeproj">
+               BuildableName = "moonmind.app"
+               BlueprintName = "moonmind"
+               ReferencedContainer = "container:Moonmind.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A50000010000000000000001"
-            BuildableName = "Moonlex.app"
-            BlueprintName = "Moonlex"
-            ReferencedContainer = "container:Moonlex.xcodeproj">
+            BuildableName = "moonmind.app"
+            BlueprintName = "moonmind"
+            ReferencedContainer = "container:Moonmind.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -61,9 +61,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A50000010000000000000001"
-            BuildableName = "Moonlex.app"
-            BlueprintName = "Moonlex"
-            ReferencedContainer = "container:Moonlex.xcodeproj">
+            BuildableName = "moonmind.app"
+            BlueprintName = "moonmind"
+            ReferencedContainer = "container:Moonmind.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

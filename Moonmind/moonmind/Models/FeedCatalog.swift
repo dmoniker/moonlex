@@ -106,7 +106,7 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
 
 @MainActor
 final class FeedCatalog: ObservableObject {
-    private let customFeedsKey = "moonlex.customFeedsJSON"
+    private let customFeedsKey = "moonmind.customFeedsJSON"
 
     @Published private(set) var customFeeds: [PodcastFeed] = []
 

@@ -4,7 +4,7 @@ import UIKit
 
 /// In-memory (`NSCache`) + on-disk JPEG cache so artwork survives app relaunch and lists avoid spinner flashes.
 enum PodcastArtworkCache {
-    static let userAgent = "Moonlex/1.0 (iOS Podcast; artwork)"
+    static let userAgent = "moonmind/1.0 (iOS Podcast; artwork)"
 
     fileprivate static let memory: NSCache<NSString, UIImage> = {
         let cache = NSCache<NSString, UIImage>()
@@ -70,7 +70,7 @@ enum PodcastArtworkCache {
 
     private nonisolated static var artworkDirectory: URL {
         let base = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return base.appendingPathComponent("Moonlex/Artwork", isDirectory: true)
+        return base.appendingPathComponent("moonmind/Artwork", isDirectory: true)
     }
 
     private nonisolated static func diskURL(for url: URL) -> URL {

@@ -21,6 +21,30 @@ struct EpisodeDetailView: View {
         saved.first { $0.episodeKey == episode.stableKey && $0.isEpisodeFavorite }
     }
 
+    private var episodePlaybackURL: URL? { downloads.playbackURL(for: episode) }
+
+    /// Remote or downloaded file URLs for this episode (player may hold either while it’s the same show).
+    private var episodeAudioURLs: [URL] {
+        var urls: [URL] = []
+        if let remote = episode.audioURL { urls.append(remote) }
+        if let local = downloads.localFileURL(forEpisodeKey: episode.stableKey) { urls.append(local) }
+        return urls
+    }
+
+    /// True when the global player is playing this episode’s stream or its local file.
+    private var isPlaybackBoundToThisEpisode: Bool {
+        guard let loaded = playback.loadedMediaURL else { return false }
+        return episodeAudioURLs.contains(loaded)
+    }
+
+    private var episodeNowPlayingMeta: EpisodeNowPlayingMetadata {
+        EpisodeNowPlayingMetadata(
+            title: episode.title,
+            showTitle: episode.showTitle,
+            artworkURL: episode.artworkURL
+        )
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -153,20 +177,67 @@ struct EpisodeDetailView: View {
         }
     }
 
+    /// Keeps the current player when browsing other episodes or non-audio posts; only syncs metadata when this episode is already loaded.
     private func applyPlaybackSource() {
-        let url = downloads.playbackURL(for: episode)
-        let meta = EpisodeNowPlayingMetadata(
-            title: episode.title,
-            showTitle: episode.showTitle,
-            artworkURL: episode.artworkURL
-        )
-        if playback.load(url: url, nowPlaying: meta) {
+        guard let url = episodePlaybackURL else { return }
+        guard playback.loadedMediaURL == url else { return }
+        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta) {
             sleepTimer.onNewEpisodeLoaded()
         }
     }
 
+    private func startThisEpisodePlayback() {
+        guard let url = episodePlaybackURL else { return }
+        if playback.load(url: url, nowPlaying: episodeNowPlayingMeta) {
+            sleepTimer.onNewEpisodeLoaded()
+        }
+        playback.play()
+    }
+
     @ViewBuilder
     private func episodePlayerCard(artworkURL: URL?, sleepTimer: SleepTimerStore) -> some View {
+        if isPlaybackBoundToThisEpisode {
+            activeEpisodePlayerCard(artworkURL: artworkURL, sleepTimer: sleepTimer)
+        } else {
+            inactiveEpisodePlayerCard(artworkURL: artworkURL)
+        }
+    }
+
+    @ViewBuilder
+    private func inactiveEpisodePlayerCard(artworkURL: URL?) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Spacer(minLength: 0)
+                PodcastArtworkView(url: artworkURL, size: 220, cornerRadius: 14)
+                Spacer(minLength: 0)
+            }
+            if playback.loadedMediaURL != nil {
+                Text("Another episode is playing. Tap below to listen here instead.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+            Button {
+                startThisEpisodePlayback()
+            } label: {
+                Label(
+                    playback.loadedMediaURL != nil ? "Play this episode" : "Play",
+                    systemImage: "play.circle.fill"
+                )
+                .font(.title3.weight(.semibold))
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.quaternary.opacity(0.35))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func activeEpisodePlayerCard(artworkURL: URL?, sleepTimer: SleepTimerStore) -> some View {
         let span = playback.duration > 0 ? playback.duration : max(playback.currentTime, 1)
         VStack(alignment: .leading, spacing: 12) {
             HStack {

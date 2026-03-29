@@ -9,7 +9,10 @@ final class EpisodeDownloadStore: ObservableObject {
         var relativeFileName: String
     }
 
-    private static let indexDefaultsKey = "moonlex.episodeDownloadIndex.v1"
+    private static let indexDefaultsKey = "moonmind.episodeDownloadIndex.v1"
+
+    /// Called on the main actor after a new file is written: stable episode key, remote URL, local file URL.
+    var onDownloadReady: ((String, URL, URL) -> Void)?
 
     /// Bumped when downloads or removals complete so views can refresh playback URL.
     @Published private(set) var changeToken: UInt64 = 0
@@ -86,6 +89,7 @@ final class EpisodeDownloadStore: ObservableObject {
 
             index[key] = IndexRecord(remoteURLString: remote.absoluteString, relativeFileName: fileName)
             saveIndex()
+            onDownloadReady?(key, remote, dest)
         } catch {
             try? fm.removeItem(at: episodesDirectory.appendingPathComponent(makeFileName(stableKey: key, remoteURL: remote), isDirectory: false))
         }
@@ -103,7 +107,7 @@ final class EpisodeDownloadStore: ObservableObject {
 
     private var episodesDirectory: URL {
         let base = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return base.appendingPathComponent("Moonlex/Episodes", isDirectory: true)
+        return base.appendingPathComponent("moonmind/Episodes", isDirectory: true)
     }
 
     private func bumpToken() {

@@ -15,7 +15,7 @@ final class EpisodePlaybackController: ObservableObject {
     static let skipBackwardOptions: [TimeInterval] = [15, 30]
     static let skipForwardOptions: [TimeInterval] = [30, 60]
 
-    private static let playbackRateDefaultsKey = "moonlex.playbackRate"
+    private static let playbackRateDefaultsKey = "moonmind.playbackRate"
 
     @Published private(set) var isPlaying = false
     @Published private(set) var currentTime: TimeInterval = 0
@@ -139,6 +139,108 @@ final class EpisodePlaybackController: ObservableObject {
         startArtworkFetchIfNeeded()
         pushNowPlayingInfo()
         return true
+    }
+
+    /// When a download finishes while this URL is playing, swap to the local file and keep time / play state.
+    func migrateStreamToLocalFileIfCurrentlyPlaying(remoteURL: URL, localURL: URL) {
+        guard let p = player, let loaded = loadedMediaURL else { return }
+        guard Self.urlsMatchForSameAsset(loaded, remoteURL) else { return }
+        guard !Self.urlsMatchForSameAsset(localURL, loaded) else { return }
+
+        let resumeTime = max(0, currentTime)
+        let shouldResumePlaying = isPlaying
+
+        if let obs = timeObserver {
+            p.removeTimeObserver(obs)
+            timeObserver = nil
+        }
+        if let endObserver {
+            NotificationCenter.default.removeObserver(endObserver)
+            self.endObserver = nil
+        }
+        statusObservation?.invalidate()
+        statusObservation = nil
+
+        p.pause()
+        isPlaying = false
+        pushNowPlayingInfo()
+
+        loadedMediaURL = localURL
+
+        let newItem = AVPlayerItem(url: localURL)
+        p.replaceCurrentItem(with: newItem)
+        p.defaultRate = playbackRate
+
+        statusObservation = newItem.observe(\.status, options: [.new]) { [weak self] observedItem, _ in
+            guard let playback = self else { return }
+            guard observedItem.status == .readyToPlay else { return }
+            DispatchQueue.main.async {
+                playback.statusObservation?.invalidate()
+                playback.statusObservation = nil
+                if let d = playback.durationIfReady(observedItem) {
+                    playback.duration = d
+                }
+                let cm = CMTime(seconds: resumeTime, preferredTimescale: 600)
+                p.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero) { finished in
+                    guard finished else { return }
+                    DispatchQueue.main.async { [weak playback] in
+                        guard let playback else { return }
+                        playback.currentTime = resumeTime
+                        if shouldResumePlaying {
+                            playback.play()
+                        } else {
+                            playback.pushNowPlayingInfo()
+                        }
+                    }
+                }
+            }
+        }
+
+        endObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: newItem,
+            queue: .main
+        ) { [weak self] _ in
+            guard let playback = self else { return }
+            playback.player?.pause()
+            playback.isPlaying = false
+            let endDuration = playback.duration
+            if endDuration.isFinite {
+                playback.currentTime = endDuration
+            }
+            playback.pushNowPlayingInfo()
+        }
+
+        let interval = CMTime(seconds: 0.4, preferredTimescale: 600)
+        timeObserver = p.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] t in
+            guard let playback = self else { return }
+            playback.currentTime = t.seconds
+            if let curItem = playback.player?.currentItem,
+               playback.duration <= 0 || !playback.duration.isFinite,
+               curItem.duration.isNumeric,
+               curItem.duration.seconds.isFinite {
+                playback.duration = curItem.duration.seconds
+            }
+            if playback.isPlaying, let store = playback.sleepTimerStore, store.checkFire() {
+                playback.pause()
+                store.consumeFiredCountdown()
+            }
+            if playback.isPlaying {
+                playback.pushNowPlayingInfo()
+            }
+        }
+
+        pushNowPlayingInfo()
+    }
+
+    private func durationIfReady(_ item: AVPlayerItem) -> TimeInterval? {
+        let d = item.duration
+        guard d.isNumeric, d.seconds.isFinite else { return nil }
+        return d.seconds
+    }
+
+    private static func urlsMatchForSameAsset(_ a: URL, _ b: URL) -> Bool {
+        a.absoluteString == b.absoluteString
     }
 
     func setPlaybackRate(_ rate: Float) {

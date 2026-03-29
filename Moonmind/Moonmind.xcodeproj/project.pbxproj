@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000010000000000000001 /* MoonlexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* MoonlexApp.swift */; };
+		A10000010000000000000001 /* MoonmindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* MoonmindApp.swift */; };
 		A10000020000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* ContentView.swift */; };
 		A10000030000000000000003 /* Episode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* Episode.swift */; };
 		A10000040000000000000004 /* FeedCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* FeedCatalog.swift */; };
@@ -19,7 +19,6 @@
 		A100000A000000000000000A /* SelectableNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A000000000000000A /* SelectableNotesView.swift */; };
 		A100000B000000000000000B /* FeedFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B000000000000000B /* FeedFilterBar.swift */; };
 		A100000C000000000000000C /* HomeFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C000000000000000C /* HomeFeedView.swift */; };
-		A10000180000000000000018 /* NewsletterFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000018 /* NewsletterFeedView.swift */; };
 		A100000D000000000000000D /* EpisodeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D000000000000000D /* EpisodeDetailView.swift */; };
 		A100000E000000000000000E /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E000000000000000E /* FavoritesView.swift */; };
 		A100000F000000000000000F /* AddPodcastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F000000000000000F /* AddPodcastView.swift */; };
@@ -30,10 +29,11 @@
 		A10000150000000000000015 /* PodcastArtworkCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000150000000000000015 /* PodcastArtworkCache.swift */; };
 		A10000160000000000000016 /* EpisodeDownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000160000000000000016 /* EpisodeDownloadStore.swift */; };
 		A10000170000000000000017 /* EpisodeDownloadAccessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000170000000000000017 /* EpisodeDownloadAccessory.swift */; };
+		A10000180000000000000018 /* NewsletterFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000180000000000000018 /* NewsletterFeedView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A20000010000000000000001 /* MoonlexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonlexApp.swift; sourceTree = "<group>"; };
+		A20000010000000000000001 /* MoonmindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonmindApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A20000030000000000000003 /* Episode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Episode.swift; sourceTree = "<group>"; };
 		A20000040000000000000004 /* FeedCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCatalog.swift; sourceTree = "<group>"; };
@@ -45,19 +45,19 @@
 		A200000A000000000000000A /* SelectableNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableNotesView.swift; sourceTree = "<group>"; };
 		A200000B000000000000000B /* FeedFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilterBar.swift; sourceTree = "<group>"; };
 		A200000C000000000000000C /* HomeFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeedView.swift; sourceTree = "<group>"; };
-		A20000180000000000000018 /* NewsletterFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsletterFeedView.swift; sourceTree = "<group>"; };
 		A200000D000000000000000D /* EpisodeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDetailView.swift; sourceTree = "<group>"; };
 		A200000E000000000000000E /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		A200000F000000000000000F /* AddPodcastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPodcastView.swift; sourceTree = "<group>"; };
+		A20000100000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000110000000000000011 /* SleepTimerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerStore.swift; sourceTree = "<group>"; };
 		A20000120000000000000012 /* EpisodePlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodePlaybackController.swift; sourceTree = "<group>"; };
-		A20000130000000000000013 /* MoonlexInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MoonlexInfo.plist; sourceTree = "<group>"; };
+		A20000130000000000000013 /* MoonmindInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MoonmindInfo.plist; sourceTree = "<group>"; };
 		A20000140000000000000014 /* PodcastArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PodcastArtworkView.swift; sourceTree = "<group>"; };
 		A20000150000000000000015 /* PodcastArtworkCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PodcastArtworkCache.swift; sourceTree = "<group>"; };
 		A20000160000000000000016 /* EpisodeDownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDownloadStore.swift; sourceTree = "<group>"; };
 		A20000170000000000000017 /* EpisodeDownloadAccessory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDownloadAccessory.swift; sourceTree = "<group>"; };
-		A20000100000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A2FFFF010000000000000001 /* Moonlex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Moonlex.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000180000000000000018 /* NewsletterFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsletterFeedView.swift; sourceTree = "<group>"; };
+		A2FFFF010000000000000001 /* moonmind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moonmind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,30 +74,30 @@
 		A40000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				A40000020000000000000002 /* Moonlex */,
+				A40000020000000000000002 /* moonmind */,
 				A40000030000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A40000020000000000000002 /* Moonlex */ = {
+		A40000020000000000000002 /* moonmind */ = {
 			isa = PBXGroup;
 			children = (
-				A20000010000000000000001 /* MoonlexApp.swift */,
+				A20000010000000000000001 /* MoonmindApp.swift */,
 				A20000020000000000000002 /* ContentView.swift */,
 				A40000040000000000000004 /* Models */,
 				A40000050000000000000005 /* Services */,
 				A40000060000000000000006 /* ViewModels */,
 				A40000070000000000000007 /* Views */,
 				A20000100000000000000010 /* Assets.xcassets */,
-				A20000130000000000000013 /* MoonlexInfo.plist */,
+				A20000130000000000000013 /* MoonmindInfo.plist */,
 			);
-			path = Moonlex;
+			path = moonmind;
 			sourceTree = "<group>";
 		};
 		A40000030000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A2FFFF010000000000000001 /* Moonlex.app */,
+				A2FFFF010000000000000001 /* moonmind.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -153,9 +153,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A50000010000000000000001 /* Moonlex */ = {
+		A50000010000000000000001 /* moonmind */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A70000020000000000000002 /* Build configuration list for PBXNativeTarget "Moonlex" */;
+			buildConfigurationList = A70000020000000000000002 /* Build configuration list for PBXNativeTarget "moonmind" */;
 			buildPhases = (
 				A50000020000000000000002 /* Sources */,
 				A30000010000000000000001 /* Frameworks */,
@@ -165,9 +165,9 @@
 			);
 			dependencies = (
 			);
-			name = Moonlex;
-			productName = Moonlex;
-			productReference = A2FFFF010000000000000001 /* Moonlex.app */;
+			name = moonmind;
+			productName = moonmind;
+			productReference = A2FFFF010000000000000001 /* moonmind.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -185,7 +185,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A70000010000000000000001 /* Build configuration list for PBXProject "Moonlex" */;
+			buildConfigurationList = A70000010000000000000001 /* Build configuration list for PBXProject "Moonmind" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -198,7 +198,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A50000010000000000000001 /* Moonlex */,
+				A50000010000000000000001 /* moonmind */,
 			);
 		};
 /* End PBXProject section */
@@ -219,7 +219,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000010000000000000001 /* MoonlexApp.swift in Sources */,
+				A10000010000000000000001 /* MoonmindApp.swift in Sources */,
 				A10000020000000000000002 /* ContentView.swift in Sources */,
 				A10000030000000000000003 /* Episode.swift in Sources */,
 				A10000040000000000000004 /* FeedCatalog.swift in Sources */,
@@ -376,8 +376,8 @@
 				DEVELOPMENT_TEAM = F34XBU4X46;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Moonlex/MoonlexInfo.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Moonlex;
+				INFOPLIST_FILE = moonmind/MoonmindInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Moonmind;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -389,7 +389,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.moonlex.Moonlex;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moonmind.moonmind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -407,8 +407,8 @@
 				DEVELOPMENT_TEAM = F34XBU4X46;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Moonlex/MoonlexInfo.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Moonlex;
+				INFOPLIST_FILE = moonmind/MoonmindInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Moonmind;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -420,7 +420,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.moonlex.Moonlex;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moonmind.moonmind;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -431,7 +431,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A70000010000000000000001 /* Build configuration list for PBXProject "Moonlex" */ = {
+		A70000010000000000000001 /* Build configuration list for PBXProject "Moonmind" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A80000010000000000000001 /* Debug */,
@@ -440,7 +440,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A70000020000000000000002 /* Build configuration list for PBXNativeTarget "Moonlex" */ = {
+		A70000020000000000000002 /* Build configuration list for PBXNativeTarget "moonmind" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A80000030000000000000003 /* Debug */,

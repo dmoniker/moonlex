@@ -73,7 +73,7 @@ struct HomeFeedView: View {
                 .listStyle(.plain)
             }
         }
-        .navigationTitle("Moonlex")
+        .navigationTitle("Moonmind")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

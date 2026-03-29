@@ -2,7 +2,7 @@ import Foundation
 
 @MainActor
 final class FeedFilters: ObservableObject {
-    private let key = "moonlex.feedEnabled"
+    private let key = "moonmind.feedEnabled"
 
     @Published private(set) var enabledByFeedID: [String: Bool] = [:]
 

@@ -57,6 +57,9 @@ struct ContentView: View {
         }
         .onAppear {
             episodePlayback.sleepTimerStore = sleepTimer
+            episodeDownloads.onDownloadReady = { _, remote, local in
+                episodePlayback.migrateStreamToLocalFileIfCurrentlyPlaying(remoteURL: remote, localURL: local)
+            }
         }
     }
 

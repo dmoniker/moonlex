@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct MoonlexApp: App {
+struct MoonmindApp: App {
     init() {
         PodcastArtworkCache.configure()
     }

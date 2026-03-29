@@ -29,8 +29,8 @@ enum SleepTimerPreset: String, CaseIterable, Identifiable {
 
 /// Persists the sleep timer **preset** (sticky). Countdown deadlines are also persisted so the timer survives backgrounding.
 final class SleepTimerStore: ObservableObject {
-    private let presetKey = "moonlex.sleepTimerPreset"
-    private let deadlineKey = "moonlex.sleepTimerFireDeadline"
+    private let presetKey = "moonmind.sleepTimerPreset"
+    private let deadlineKey = "moonmind.sleepTimerFireDeadline"
 
     @Published private(set) var preset: SleepTimerPreset
     @Published private(set) var fireDeadline: Date?
