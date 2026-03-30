@@ -1,0 +1,23 @@
+{
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/FeedFilterBar.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/HomeFeedView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/SelectableNotesView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SelectableNotesView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SelectableNotesView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SelectableNotesView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SelectableNotesView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/GD-nv-title/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/SelectableNotesView.swiftdeps"
+  }
+}

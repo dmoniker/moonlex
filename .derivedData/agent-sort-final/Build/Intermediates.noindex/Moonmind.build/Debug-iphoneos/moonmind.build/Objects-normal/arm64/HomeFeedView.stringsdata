@@ -1,0 +1,168 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/HomeFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Sorted by date, newest first",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sorted by date, oldest first",
+        "location": {
+          "startingColumn": 80,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "LunarCast",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 188
+        }
+      },
+      {
+        "comment": "",
+        "key": "Choose All or a show with the filters above.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading episodes…",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 92
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load feeds",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "No shows selected",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "All caught up",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "No episodes",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "Every episode from your shows is played, or turn off unplayed-only to see the full feed again.",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 157,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Played",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 143
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 154
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Played",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 160
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 171
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show all episodes",
+        "location": {
+          "startingColumn": 56,
+          "startingLine": 196
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show unplayed only",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 196
+        }
+      },
+      {
+        "comment": "",
+        "key": "Podcasts",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 201
+        }
+      }
+    ]
+  },
+  "version": 1
+}

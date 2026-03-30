@@ -1,0 +1,32 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/EpisodeDownloadAccessory.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Remove Download",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloaded",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "Not downloaded",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 55
+        }
+      }
+    ]
+  },
+  "version": 1
+}

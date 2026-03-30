@@ -1,0 +1,128 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AddPodcastView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Add feeds",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add manually",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "No shows yet. Search above, add an RSS link manually, or use Settings → Reset feeds to defaults to restore the built-in list.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "Elon Musk Interviews",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "Curated Elon-as-guest podcast episodes from over the years. Enjoy.",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your feeds",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 48
+        }
+      },
+      {
+        "comment": "",
+        "key": "Swipe left to remove any show—including built-ins. To bring back every default show and clear those you added, use Settings.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 50
+        }
+      },
+      {
+        "comment": "",
+        "key": "No matches.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search Apple Podcasts",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search Apple Podcasts",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search content courtesy of Apple Podcasts. Shows not listed here can be added below with a direct RSS URL.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show title",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 116
+        }
+      },
+      {
+        "comment": "",
+        "key": "RSS URL",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 134
+        }
+      }
+    ]
+  },
+  "version": 1
+}

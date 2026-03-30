@@ -1,0 +1,104 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/NewsletterFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Newsletters",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "Choose All or a feed above, or add a Substack RSS URL.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading posts…",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load newsletters",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "No newsletters selected",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 94
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Played",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 100
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Played",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 134
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feeds",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 151
+        }
+      }
+    ]
+  },
+  "version": 1
+}

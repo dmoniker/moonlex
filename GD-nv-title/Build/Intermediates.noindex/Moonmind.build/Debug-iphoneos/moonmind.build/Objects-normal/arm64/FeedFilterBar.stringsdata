@@ -1,0 +1,24 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/FeedFilterBar.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "selected",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "not selected",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 55
+        }
+      }
+    ]
+  },
+  "version": 1
+}

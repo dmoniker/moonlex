@@ -11,13 +11,36 @@ struct HomeFeedView: View {
     @Binding var showAppSettings: Bool
 
     @AppStorage("moonmind.feedShowUnplayedOnly") private var showUnplayedOnly = true
+    @AppStorage("moonmind.podcastFeedSortNewestFirst") private var sortNewestFirst = true
     @State private var navigationPath = NavigationPath()
 
+    @ViewBuilder
+    private var podcastEpisodesSortButton: some View {
+        Button {
+            sortNewestFirst.toggle()
+        } label: {
+            Image(systemName: "arrow.up.arrow.down")
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(sortNewestFirst ? "Sorted by date, newest first" : "Sorted by date, oldest first")
+    }
+
     private var displayedEpisodes: [Episode] {
-        guard showUnplayedOnly else { return model.episodes }
-        return model.episodes.filter { episode in
-            if episode.audioURL == nil { return true }
-            return !episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey)
+        let filtered: [Episode] = {
+            guard showUnplayedOnly else { return model.episodes }
+            return model.episodes.filter { episode in
+                if episode.audioURL == nil { return true }
+                return !episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey)
+            }
+        }()
+        return filtered.sorted { a, b in
+            let da = a.pubDate ?? .distantPast
+            let db = b.pubDate ?? .distantPast
+            if sortNewestFirst {
+                return da > db
+            } else {
+                return da < db
+            }
         }
     }
 
@@ -53,6 +76,18 @@ struct HomeFeedView: View {
     @ViewBuilder
     private var feedContents: some View {
         VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text("LunarCast")
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                podcastEpisodesSortButton
+                    .imageScale(.large)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 6)
+
             FeedFilterBar(feeds: catalog.podcastFeeds, scope: .podcast, filters: feedFilters) {
                 model.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
                 Task {
@@ -162,7 +197,9 @@ struct HomeFeedView: View {
                 .listStyle(.plain)
             }
         }
-        .navigationTitle("LunarCast")
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
