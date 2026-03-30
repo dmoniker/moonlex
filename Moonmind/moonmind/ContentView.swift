@@ -49,9 +49,15 @@ struct ContentView: View {
             }
             .tag(1)
 
-            NavigationStack {
-                FavoritesView(showAppSettings: $showAppSettings)
-            }
+            FavoritesView(
+                catalog: catalog,
+                podcastHome: home,
+                newsletterHome: newsletterHome,
+                episodePlayback: episodePlayback,
+                sleepTimer: sleepTimer,
+                episodeDownloads: episodeDownloads,
+                showAppSettings: $showAppSettings
+            )
             .tabItem {
                 Label("Saved", systemImage: "star.fill")
             }

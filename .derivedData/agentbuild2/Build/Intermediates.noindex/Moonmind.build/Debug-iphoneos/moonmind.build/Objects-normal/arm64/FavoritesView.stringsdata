@@ -6,48 +6,48 @@
         "comment": "",
         "key": "Saved",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 65
+          "startingColumn": 30,
+          "startingLine": 45
         }
       },
       {
         "comment": "",
         "key": "Favorite an episode or save a highlight from show notes.",
         "location": {
-          "startingColumn": 39,
-          "startingLine": 17
+          "startingColumn": 43,
+          "startingLine": 26
         }
       },
       {
         "comment": "",
         "key": "Nothing saved yet",
         "location": {
-          "startingColumn": 21,
-          "startingLine": 15
+          "startingColumn": 25,
+          "startingLine": 24
         }
       },
       {
         "comment": "",
         "key": "Favorites & highlights",
         "location": {
-          "startingColumn": 29,
-          "startingLine": 21
+          "startingColumn": 33,
+          "startingLine": 30
         }
       },
       {
         "comment": "",
         "key": "Episode",
         "location": {
-          "startingColumn": 47,
-          "startingLine": 30
+          "startingColumn": 27,
+          "startingLine": 75
         }
       },
       {
         "comment": "",
         "key": "Highlight",
         "location": {
-          "startingColumn": 47,
-          "startingLine": 34
+          "startingColumn": 27,
+          "startingLine": 79
         }
       }
     ]

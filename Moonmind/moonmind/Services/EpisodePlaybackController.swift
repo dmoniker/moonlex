@@ -649,6 +649,21 @@ final class EpisodePlaybackController: ObservableObject {
         }
     }
 
+    /// Loads local file or stream for the episode and starts playback. Returns `false` when there is no audio URL.
+    @MainActor
+    @discardableResult
+    func startPlayback(episode: Episode, downloads: EpisodeDownloadStore) -> Bool {
+        guard let url = downloads.playbackURL(for: episode) else { return false }
+        let meta = EpisodeNowPlayingMetadata(
+            title: episode.title,
+            showTitle: episode.showTitle,
+            artworkURL: episode.artworkURL
+        )
+        _ = load(url: url, nowPlaying: meta, episodeKey: episode.stableKey)
+        play()
+        return true
+    }
+
     /// Marks the episode as fully played without listening to the end. Pauses and moves the scrubber to the end if this episode is loaded; does not trigger autoplay.
     func markEpisodePlayed(episodeKey: String) {
         progressStore.markPlayed(forEpisodeKey: episodeKey)

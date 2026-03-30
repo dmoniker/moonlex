@@ -65,3 +65,20 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
         )
     }
 }
+
+extension Episode {
+    /// Reconstructs a playable episode from a saved item when the episode isn’t currently loaded in a feed list.
+    init(savedItem: SavedItem, contentKind: FeedContentKind) {
+        stableKey = savedItem.episodeKey
+        title = savedItem.episodeTitle
+        pubDate = savedItem.episodePubDate
+        audioURL = savedItem.audioURLString.flatMap { URL(string: $0) }
+        showTitle = savedItem.showTitle
+        feedID = savedItem.feedID
+        feedURLString = savedItem.feedURLString
+        linkURL = savedItem.linkURLString.flatMap { URL(string: $0) }
+        descriptionRaw = ""
+        artworkURL = nil
+        feedContentKind = contentKind
+    }
+}

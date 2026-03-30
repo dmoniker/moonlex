@@ -23,7 +23,7 @@
         "key": "Saved",
         "location": {
           "startingColumn": 23,
-          "startingLine": 56
+          "startingLine": 62
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Now playing, show episode",
         "location": {
           "startingColumn": 33,
-          "startingLine": 281
+          "startingLine": 287
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Pause",
         "location": {
           "startingColumn": 54,
-          "startingLine": 292
+          "startingLine": 298
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "Play",
         "location": {
           "startingColumn": 64,
-          "startingLine": 292
+          "startingLine": 298
         }
       }
     ]
