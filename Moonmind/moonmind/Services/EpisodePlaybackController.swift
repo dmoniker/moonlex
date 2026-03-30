@@ -868,6 +868,26 @@ final class EpisodePlaybackController: ObservableObject {
             }
             return .success
         }
+
+        // AirPods stem: double-press → next track, triple-press → previous track (maps to interval skip for podcasts).
+        center.nextTrackCommand.isEnabled = true
+        center.nextTrackCommand.addTarget { [weak self] _ in
+            guard let playback = self else { return .commandFailed }
+            DispatchQueue.main.async { [playback] in
+                guard let delta = playback.skipForwardIntervals.first else { return }
+                playback.skipForward(by: delta)
+            }
+            return .success
+        }
+        center.previousTrackCommand.isEnabled = true
+        center.previousTrackCommand.addTarget { [weak self] _ in
+            guard let playback = self else { return .commandFailed }
+            DispatchQueue.main.async { [playback] in
+                guard let delta = playback.skipBackwardIntervals.first else { return }
+                playback.skipBackward(by: delta)
+            }
+            return .success
+        }
     }
 
     private func handleAudioInterruption(_ notification: Notification) {
@@ -925,5 +945,7 @@ final class EpisodePlaybackController: ObservableObject {
         center.changePlaybackPositionCommand.removeTarget(nil)
         center.skipBackwardCommand.removeTarget(nil)
         center.skipForwardCommand.removeTarget(nil)
+        center.nextTrackCommand.removeTarget(nil)
+        center.previousTrackCommand.removeTarget(nil)
     }
 }
