@@ -172,7 +172,7 @@ final class HomeViewModel: ObservableObject {
             ($0.pubDate ?? .distantPast) > ($1.pubDate ?? .distantPast)
         }
 
-        downloads?.enqueueRecentEpisodeDownloads(episodes: episodes)
+        downloads?.enqueueRecentEpisodeDownloads(episodeCacheByFeedID: episodeCacheByFeedID)
 
         if !errors.isEmpty, merged.isEmpty {
             lastError = errors.joined(separator: "\n")

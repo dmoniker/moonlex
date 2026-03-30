@@ -336,6 +336,7 @@ private struct EpisodeDetailPlayerCard: View {
                 Spacer(minLength: 8)
                 EpisodeDetailSpeedPicker(episode: episode, playback: playback, downloads: downloads)
             }
+            .padding(.top, 16)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)

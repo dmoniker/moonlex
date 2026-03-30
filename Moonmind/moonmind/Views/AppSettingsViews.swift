@@ -39,6 +39,9 @@ struct AppSettingsSheetView: View {
     @AppStorage(EpisodePlaybackController.skipForwardRightDefaultsKey) private var skipForwardRight =
         Double(EpisodePlaybackController.defaultSkipForwardRight)
     @AppStorage(EpisodeDownloadStore.storageLimitMegabytesDefaultsKey) private var storageLimitMB = 0
+    @AppStorage(EpisodeDownloadStore.downloadRetentionModeDefaultsKey) private var downloadRetentionModeRaw =
+        EpisodeDownloadStore.DownloadRetentionMode.episodesPerShow.rawValue
+    @AppStorage(EpisodeDownloadStore.downloadEpisodesPerShowDefaultsKey) private var episodesPerShowStored = 3
 
     @Environment(\.dismiss) private var dismiss
     @State private var showClearDownloadsConfirm = false
@@ -55,10 +58,21 @@ struct AppSettingsSheetView: View {
         ByteCountFormatter.string(fromByteCount: downloads.totalStoredByteCount(), countStyle: .file)
     }
 
+    private var downloadRetentionMode: EpisodeDownloadStore.DownloadRetentionMode {
+        EpisodeDownloadStore.DownloadRetentionMode(rawValue: downloadRetentionModeRaw) ?? .episodesPerShow
+    }
+
     private var storageLimitSummary: String {
-        if storageLimitMB <= 0 { return "No limit — \(downloadsUsedLabel) stored" }
+        if downloadRetentionMode == .episodesPerShow {
+            return "\(downloadsUsedLabel) stored"
+        }
+        if storageLimitMB <= 0 { return "No cap — \(downloadsUsedLabel) stored" }
         let cap = Int64(storageLimitMB) * 1_048_576
         return "\(downloadsUsedLabel) of \(storageLimitByteFormatter.string(fromByteCount: cap))"
+    }
+
+    private var episodesPerShowForUI: Int {
+        max(1, episodesPerShowStored)
     }
 
     private var skipSecondsBounds: ClosedRange<Double> {
@@ -118,38 +132,6 @@ struct AppSettingsSheetView: View {
                     .foregroundStyle(.tint)
                 }
 
-                Section {
-                    Picker("Download storage limit", selection: $storageLimitMB) {
-                        Text("Unlimited").tag(0)
-                        Text("250 MB").tag(250)
-                        Text("500 MB").tag(500)
-                        Text("1 GB").tag(1024)
-                        Text("2 GB").tag(2048)
-                        Text("5 GB").tag(5120)
-                        Text("10 GB").tag(10240)
-                    }
-                    Text(storageLimitSummary)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                    Text(
-                        "When total downloads exceed this limit, older files are removed automatically (by date modified on disk)."
-                    )
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-
-                    Button {
-                        showClearDownloadsConfirm = true
-                    } label: {
-                        Text("Clear all downloads")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(.tint)
-                } header: {
-                    Text("Downloads")
-                }
-
                 Section("Playback speed") {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -205,6 +187,63 @@ struct AppSettingsSheetView: View {
                 }
 
                 Section {
+                    Picker("Limit downloads by", selection: $downloadRetentionModeRaw) {
+                        Text("Episodes per show").tag(
+                            EpisodeDownloadStore.DownloadRetentionMode.episodesPerShow.rawValue
+                        )
+                        Text("Total storage").tag(
+                            EpisodeDownloadStore.DownloadRetentionMode.totalStorageCap.rawValue
+                        )
+                    }
+                    .pickerStyle(.segmented)
+
+                    if downloadRetentionMode == .episodesPerShow {
+                        Stepper(
+                            "Latest \(episodesPerShowForUI) episode\(episodesPerShowForUI == 1 ? "" : "s") per show",
+                            value: $episodesPerShowStored,
+                            in: 1 ... 20,
+                            step: 1
+                        )
+                        Text(
+                            "Automatically downloads those episodes after a feed refresh and deletes older downloads for each show when new episodes arrive."
+                        )
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    } else {
+                        Picker("Download storage limit", selection: $storageLimitMB) {
+                            Text("Unlimited").tag(0)
+                            Text("250 MB").tag(250)
+                            Text("500 MB").tag(500)
+                            Text("1 GB").tag(1024)
+                            Text("2 GB").tag(2048)
+                            Text("5 GB").tag(5120)
+                            Text("10 GB").tag(10240)
+                        }
+                        Text(
+                            "When total downloads exceed this limit, older files are removed automatically (by date modified on disk)."
+                        )
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    }
+
+                    Text(storageLimitSummary)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+
+                    Button {
+                        showClearDownloadsConfirm = true
+                    } label: {
+                        Text("Clear all downloads")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.tint)
+                } header: {
+                    Text("Downloads")
+                }
+
+                Section {
                     Button {
                         showResetFeedsConfirm = true
                     } label: {
@@ -249,7 +288,13 @@ struct AppSettingsSheetView: View {
                 playback.refreshSkipIntervalsFromUserDefaults()
             }
             .onChange(of: storageLimitMB) { _, _ in
-                downloads.enforceStorageLimit()
+                downloads.reapplyRetentionUsingLastFeedCache()
+            }
+            .onChange(of: downloadRetentionModeRaw) { _, _ in
+                downloads.reapplyRetentionUsingLastFeedCache()
+            }
+            .onChange(of: episodesPerShowStored) { _, _ in
+                downloads.reapplyRetentionUsingLastFeedCache()
             }
             .confirmationDialog(
                 "Clear all downloads?",

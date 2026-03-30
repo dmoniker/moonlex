@@ -10,8 +10,28 @@ final class EpisodeDownloadStore: ObservableObject {
     }
 
     private static let indexDefaultsKey = "moonmind.episodeDownloadIndex.v1"
-    /// Stored in UserDefaults as megabytes. `0` means no limit.
+    /// Stored in UserDefaults as megabytes. `0` means no limit. Used when ``DownloadRetentionMode`` is ``totalStorageCap``.
     static let storageLimitMegabytesDefaultsKey = "moonmind.downloadStorageLimitMB.v1"
+    /// How automatic retention chooses what to delete / how much to prefetch.
+    static let downloadRetentionModeDefaultsKey = "moonmind.downloadRetentionMode.v1"
+    /// Latest _N_ episodes per show to keep (and prefetch) when mode is ``episodesPerShow``.
+    static let downloadEpisodesPerShowDefaultsKey = "moonmind.downloadEpisodesPerShow.v1"
+
+    enum DownloadRetentionMode: String, CaseIterable {
+        case episodesPerShow
+        case totalStorageCap
+    }
+
+    private static func retentionModeFromUserDefaults() -> DownloadRetentionMode {
+        let raw = UserDefaults.standard.string(forKey: downloadRetentionModeDefaultsKey)
+            ?? DownloadRetentionMode.episodesPerShow.rawValue
+        return DownloadRetentionMode(rawValue: raw) ?? .episodesPerShow
+    }
+
+    private static func episodesPerShowLimitFromUserDefaults() -> Int {
+        let n = UserDefaults.standard.integer(forKey: downloadEpisodesPerShowDefaultsKey)
+        return n > 0 ? n : 3
+    }
 
     /// Called on the main actor after a new file is written: stable episode key, remote URL, local file URL.
     var onDownloadReady: ((String, URL, URL) -> Void)?
@@ -24,13 +44,21 @@ final class EpisodeDownloadStore: ObservableObject {
     /// Episode keys purged because a feed was removed; in-flight downloads discard output instead of indexing.
     private var discardedDownloadKeys: Set<String> = []
 
+    /// Latest feed snapshots from the last home refresh; used for per-show retention when settings change or a download finishes.
+    private var lastEpisodeCacheByFeedID: [String: [Episode]] = [:]
+
     private var index: [String: IndexRecord] = [:]
     private let fm = FileManager.default
 
     init() {
         loadIndex()
         pruneMissingFiles()
-        enforceStorageLimit()
+        applyRetentionPolicy(episodeCacheByFeedID: lastEpisodeCacheByFeedID)
+    }
+
+    /// Re-runs retention using the episode lists from the most recent ``enqueueRecentEpisodeDownloads`` (e.g. after changing settings).
+    func reapplyRetentionUsingLastFeedCache() {
+        applyRetentionPolicy(episodeCacheByFeedID: lastEpisodeCacheByFeedID)
     }
 
     // MARK: - Public API
@@ -65,6 +93,16 @@ final class EpisodeDownloadStore: ObservableObject {
         bumpToken()
     }
 
+    /// Applies storage-cap or per-show rules per the current retention mode. An empty map skips per-show purges (and leaves downloads for feeds missing from the cache unchanged).
+    private func applyRetentionPolicy(episodeCacheByFeedID: [String: [Episode]]) {
+        switch Self.retentionModeFromUserDefaults() {
+        case .episodesPerShow:
+            enforceEpisodesPerShowLimit(episodeCacheByFeedID: episodeCacheByFeedID)
+        case .totalStorageCap:
+            enforceStorageLimit()
+        }
+    }
+
     /// Removes oldest downloads (by file modification date) until usage is at or below the user’s limit. No-op when limit is unlimited.
     func enforceStorageLimit() {
         let limitBytes = Self.storageLimitBytesFromUserDefaults()
@@ -74,6 +112,34 @@ final class EpisodeDownloadStore: ObservableObject {
             guard let victimKey = oldestStoredEpisodeKey() else { return }
             removeDownload(forEpisodeKey: victimKey)
         }
+    }
+
+    private func enforceEpisodesPerShowLimit(episodeCacheByFeedID: [String: [Episode]]) {
+        guard !episodeCacheByFeedID.isEmpty else { return }
+        let n = Self.episodesPerShowLimitFromUserDefaults()
+        var allowedKeys = Set<String>()
+        for (_, eps) in episodeCacheByFeedID {
+            let withAudio = eps.filter { $0.audioURL != nil }.sorted {
+                ($0.pubDate ?? .distantPast) > ($1.pubDate ?? .distantPast)
+            }
+            for ep in withAudio.prefix(n) {
+                allowedKeys.insert(ep.stableKey)
+            }
+        }
+        let toRemove = index.keys.filter { key in
+            guard !allowedKeys.contains(key) else { return false }
+            guard let feedID = feedIDParsed(fromEpisodeKey: key) else { return false }
+            return episodeCacheByFeedID[feedID] != nil
+        }
+        for key in toRemove {
+            removeDownload(forEpisodeKey: key)
+        }
+    }
+
+    private func feedIDParsed(fromEpisodeKey stableKey: String) -> String? {
+        guard let i = stableKey.firstIndex(of: "|") else { return nil }
+        let id = String(stableKey[..<i])
+        return id.isEmpty ? nil : id
     }
 
     func localFileURL(forEpisodeKey stableKey: String) -> URL? {
@@ -94,17 +160,27 @@ final class EpisodeDownloadStore: ObservableObject {
         activeDownloadKeys.contains(stableKey)
     }
 
-    /// After feed refresh: download the newest episode with audio for each feed, if not already stored.
-    func enqueueRecentEpisodeDownloads(episodes: [Episode]) {
-        let byFeed = Dictionary(grouping: episodes, by: \.feedID)
-        for (_, feedEpisodes) in byFeed {
-            let sorted = feedEpisodes.sorted {
+    /// After feed refresh: auto-download recent episodes per feed (how many depends on retention mode), then apply retention.
+    func enqueueRecentEpisodeDownloads(episodeCacheByFeedID: [String: [Episode]]) {
+        lastEpisodeCacheByFeedID = episodeCacheByFeedID
+        let prefetchCount: Int
+        switch Self.retentionModeFromUserDefaults() {
+        case .episodesPerShow:
+            prefetchCount = Self.episodesPerShowLimitFromUserDefaults()
+        case .totalStorageCap:
+            prefetchCount = 1
+        }
+
+        for (_, feedEpisodes) in episodeCacheByFeedID {
+            let sorted = feedEpisodes.filter { $0.audioURL != nil }.sorted {
                 ($0.pubDate ?? .distantPast) > ($1.pubDate ?? .distantPast)
             }
-            guard let newest = sorted.first, newest.audioURL != nil else { continue }
-            guard !isDownloaded(episodeKey: newest.stableKey), !isDownloading(episodeKey: newest.stableKey) else { continue }
-            Task { await downloadIfNeeded(episode: newest) }
+            for ep in sorted.prefix(prefetchCount) where !isDownloaded(episodeKey: ep.stableKey) && !isDownloading(episodeKey: ep.stableKey) {
+                Task { await downloadIfNeeded(episode: ep) }
+            }
         }
+
+        applyRetentionPolicy(episodeCacheByFeedID: episodeCacheByFeedID)
     }
 
     func downloadIfNeeded(episode: Episode) async {
@@ -142,7 +218,7 @@ final class EpisodeDownloadStore: ObservableObject {
             index[key] = IndexRecord(remoteURLString: remote.absoluteString, relativeFileName: fileName)
             saveIndex()
             onDownloadReady?(key, remote, dest)
-            enforceStorageLimit()
+            applyRetentionPolicy(episodeCacheByFeedID: lastEpisodeCacheByFeedID)
         } catch {
             try? fm.removeItem(at: episodesDirectory.appendingPathComponent(makeFileName(stableKey: key, remoteURL: remote), isDirectory: false))
         }
