@@ -12,11 +12,13 @@ struct ContentView: View {
     @StateObject private var newsletterHome = HomeViewModel()
     @State private var showAddFeeds = false
     @State private var showAppSettings = false
+    /// Matches `TabView` tag order: 0 Feed, 1 Newsletters, 2 Saved.
+    @State private var selectedTab = 0
     /// Measured from the real `UITabBar` frame (floating pills report a smaller value than `49 + safeArea.bottom`).
     @State private var tabBarTopFromWindowBottom: CGFloat?
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             HomeFeedView(
                 catalog: catalog,
                 feedFilters: feedFilters,
@@ -30,6 +32,7 @@ struct ContentView: View {
             .tabItem {
                 Label("Feed", systemImage: "list.bullet.rectangle")
             }
+            .tag(0)
 
             NewsletterFeedView(
                 catalog: catalog,
@@ -44,6 +47,7 @@ struct ContentView: View {
             .tabItem {
                 Label("Newsletters", systemImage: "newspaper")
             }
+            .tag(1)
 
             NavigationStack {
                 FavoritesView(showAppSettings: $showAppSettings)
@@ -51,6 +55,7 @@ struct ContentView: View {
             .tabItem {
                 Label("Saved", systemImage: "star.fill")
             }
+            .tag(2)
         }
         // Invisible reserve so lists don’t scroll under the overlay (see mini player in `.overlay`).
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -60,7 +65,9 @@ struct ContentView: View {
         }
         .overlay(alignment: .bottom) {
             if episodePlayback.loadedMediaURL != nil {
-                MiniPlayerBar(playback: episodePlayback)
+                MiniPlayerBar(playback: episodePlayback) {
+                    episodePlayback.openNowPlayingDetail { selectedTab = $0 }
+                }
                     .padding(.horizontal, 20)
                     .padding(.bottom, miniPlayerOverlayBottomInset)
                     // TabView can inset the overlay; pin padding to the display bottom so we clear the tab bar.
@@ -241,29 +248,37 @@ private enum MiniPlayerTabBarLayout {
 /// Compact capsule above the tab bar; visuals aligned with the tab bar’s rounded, material chrome.
 private struct MiniPlayerBar: View {
     @ObservedObject var playback: EpisodePlaybackController
+    var onOpenFullPlayer: () -> Void
 
     private let artworkSize: CGFloat = 36
 
     var body: some View {
         let meta = playback.nowPlayingMetadata
         HStack(spacing: 10) {
-            PodcastArtworkView(
-                url: meta?.artworkURL,
-                size: artworkSize,
-                cornerRadius: artworkSize * 0.22
-            )
+            Button(action: onOpenFullPlayer) {
+                HStack(spacing: 10) {
+                    PodcastArtworkView(
+                        url: meta?.artworkURL,
+                        size: artworkSize,
+                        cornerRadius: artworkSize * 0.22
+                    )
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(meta?.title ?? "Episode")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                Text(meta?.showTitle ?? "")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(meta?.title ?? "Episode")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                        Text(meta?.showTitle ?? "")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .buttonStyle(.plain)
+            .accessibilityLabel("Now playing, show episode")
 
             Button {
                 playback.togglePlayback()

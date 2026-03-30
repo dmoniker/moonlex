@@ -33,6 +33,12 @@ struct NewsletterFeedView: View {
             navigationPath.append(request.episode)
             episodePlayback.consumeAutoplayDetailNavigation()
         }
+        .onChange(of: episodePlayback.miniPlayerDetailNavigation) { _, request in
+            guard let request, request.feed == .newsletter else { return }
+            navigationPath = NavigationPath()
+            navigationPath.append(request.episode)
+            episodePlayback.consumeMiniPlayerDetailNavigation()
+        }
     }
 
     @ViewBuilder
@@ -80,13 +86,54 @@ struct NewsletterFeedView: View {
                                 NewsletterPostRow(episode: ep)
                             }
                             .contextMenu {
-                                if ep.audioURL != nil,
-                                   episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
-                                    Button {
-                                        episodePlayback.markEpisodeUnplayed(episodeKey: ep.stableKey)
-                                    } label: {
-                                        Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                                if ep.audioURL != nil {
+                                    if episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
+                                        Button {
+                                            episodePlayback.markEpisodeUnplayed(episodeKey: ep.stableKey)
+                                        } label: {
+                                            Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                                        }
+                                    } else {
+                                        Button {
+                                            episodePlayback.markEpisodePlayed(episodeKey: ep.stableKey)
+                                        } label: {
+                                            Label("Mark as Played", systemImage: "checkmark.circle")
+                                        }
                                     }
+                                }
+                            }
+                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                if ep.audioURL != nil {
+                                    if episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
+                                        Button {
+                                            episodePlayback.markEpisodeUnplayed(episodeKey: ep.stableKey)
+                                        } label: {
+                                            Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                                        }
+                                    } else {
+                                        Button {
+                                            episodePlayback.markEpisodePlayed(episodeKey: ep.stableKey)
+                                        } label: {
+                                            Label("Mark as Played", systemImage: "checkmark.circle")
+                                        }
+                                        .tint(.green)
+                                    }
+                                }
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                if episodeDownloads.isDownloaded(episodeKey: ep.stableKey) {
+                                    Button(role: .destructive) {
+                                        episodeDownloads.removeDownload(forEpisodeKey: ep.stableKey)
+                                    } label: {
+                                        Label("Remove download", systemImage: "trash")
+                                    }
+                                } else if ep.audioURL != nil {
+                                    Button {
+                                        Task { await episodeDownloads.downloadIfNeeded(episode: ep) }
+                                    } label: {
+                                        Label("Download", systemImage: "arrow.down.circle")
+                                    }
+                                    .tint(.accentColor)
                                 }
                             }
                         }

@@ -132,12 +132,21 @@ struct EpisodeDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                if episode.audioURL != nil, progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) {
-                    Button {
-                        playback.markEpisodeUnplayed(episodeKey: episode.stableKey)
-                        flash("Marked as unplayed")
-                    } label: {
-                        Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                if episode.audioURL != nil {
+                    if progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) {
+                        Button {
+                            playback.markEpisodeUnplayed(episodeKey: episode.stableKey)
+                            flash("Marked as unplayed")
+                        } label: {
+                            Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
+                        }
+                    } else {
+                        Button {
+                            playback.markEpisodePlayed(episodeKey: episode.stableKey)
+                            flash("Marked as played")
+                        } label: {
+                            Label("Mark as Played", systemImage: "checkmark.circle")
+                        }
                     }
                 }
                 if existingFavorite != nil {

@@ -1,0 +1,64 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/NewsletterFeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Newsletters",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "Choose All or a feed above, or add a Substack RSS URL.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading posts…",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load newsletters",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "No newsletters selected",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mark as Unplayed",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 94
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feeds",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 110
+        }
+      }
+    ]
+  },
+  "version": 1
+}

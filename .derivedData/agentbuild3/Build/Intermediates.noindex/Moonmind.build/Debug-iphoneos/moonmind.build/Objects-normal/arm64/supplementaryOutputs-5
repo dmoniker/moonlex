@@ -1,0 +1,23 @@
+{
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/EpisodeDetailView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/FavoritesView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/NewsletterFeedView.swift" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.dia",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.o",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/.derivedData/agentbuild3/Build/Intermediates.noindex/Moonmind.build/Debug-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.swiftdeps"
+  }
+}

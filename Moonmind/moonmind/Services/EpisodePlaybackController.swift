@@ -86,6 +86,9 @@ final class EpisodePlaybackController: ObservableObject {
 
     @Published private(set) var autoplayDetailNavigation: AutoplayDetailNavigation?
 
+    /// User tapped the mini player; owning feed tab should reset its stack and push this detail.
+    @Published private(set) var miniPlayerDetailNavigation: AutoplayDetailNavigation?
+
     var sleepTimerStore: SleepTimerStore?
     weak var downloadStore: EpisodeDownloadStore?
     weak var feedHomeModel: HomeViewModel?
@@ -217,6 +220,26 @@ final class EpisodePlaybackController: ObservableObject {
 
     func consumeAutoplayDetailNavigation() {
         autoplayDetailNavigation = nil
+    }
+
+    func consumeMiniPlayerDetailNavigation() {
+        miniPlayerDetailNavigation = nil
+    }
+
+    /// Call `selectTab` with `0` (Feed) or `1` (Newsletters), then publishes ``miniPlayerDetailNavigation`` when the episode is in that feed list.
+    @MainActor
+    func openNowPlayingDetail(selectTab: (Int) -> Void) {
+        guard let key = loadedEpisodeKey else { return }
+        if let ep = feedHomeModel?.episodes.first(where: { $0.stableKey == key }) {
+            selectTab(0)
+            miniPlayerDetailNavigation = AutoplayDetailNavigation(feed: .podcast, episode: ep)
+            return
+        }
+        if let ep = feedNewsletterModel?.episodes.first(where: { $0.stableKey == key }) {
+            selectTab(1)
+            miniPlayerDetailNavigation = AutoplayDetailNavigation(feed: .newsletter, episode: ep)
+            return
+        }
     }
 
     @MainActor
@@ -626,6 +649,24 @@ final class EpisodePlaybackController: ObservableObject {
         }
     }
 
+    /// Marks the episode as fully played without listening to the end. Pauses and moves the scrubber to the end if this episode is loaded; does not trigger autoplay.
+    func markEpisodePlayed(episodeKey: String) {
+        progressStore.markPlayed(forEpisodeKey: episodeKey)
+        guard loadedEpisodeKey == episodeKey else {
+            pushNowPlayingInfo()
+            return
+        }
+        player?.pause()
+        isPlaying = false
+        let d = duration
+        if d > 0, d.isFinite {
+            let cm = CMTime(seconds: d, preferredTimescale: 600)
+            player?.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero)
+            currentTime = d
+        }
+        pushNowPlayingInfo()
+    }
+
     /// Clears the fully-played flag (episode shows as unplayed again). If this episode is still loaded at the end, seeks to the start so it is not immediately marked played again.
     func markEpisodeUnplayed(episodeKey: String) {
         progressStore.clearPlayed(forEpisodeKey: episodeKey)
@@ -671,6 +712,7 @@ final class EpisodePlaybackController: ObservableObject {
         resetPlayer()
         loadedMediaURL = nil
         loadedEpisodeKey = nil
+        miniPlayerDetailNavigation = nil
         nowPlayingMetadata = nil
         cancelArtworkFetch()
         nowPlayingArtwork = nil

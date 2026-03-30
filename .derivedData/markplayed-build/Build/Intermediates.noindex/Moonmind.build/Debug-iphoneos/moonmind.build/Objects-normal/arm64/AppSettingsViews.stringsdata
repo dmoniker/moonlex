@@ -1,0 +1,344 @@
+{
+  "source": "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AppSettingsViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 15
+        }
+      },
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 226
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 255
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds to defaults?",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 267
+        }
+      },
+      {
+        "comment": "",
+        "key": "Skip buttons",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "Playback speed",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "When an episode finishes, plays the next not-fully-played episode with audio (newest-first order). Choose the whole feed or only the same podcast or newsletter. Stops if there isn’t a match.",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay next episode",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Autoplay from",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "Entire feed",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Same show",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "Rewind, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 94
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, inner: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 100
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast-forward, outer: %lld s",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 106
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 114
+        }
+      },
+      {
+        "comment": "",
+        "key": "When total downloads exceed this limit, older files are removed automatically (by date modified on disk).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 136
+        }
+      },
+      {
+        "comment": "",
+        "key": "Download storage limit",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unlimited",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 123
+        }
+      },
+      {
+        "comment": "",
+        "key": "250 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 124
+        }
+      },
+      {
+        "comment": "",
+        "key": "500 MB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "1 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "2 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "5 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "10 GB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloads",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "The player uses three speeds: slow, normal (1×), and fast.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 202
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 156
+        }
+      },
+      {
+        "comment": "",
+        "key": "Slow",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 167
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 180
+        }
+      },
+      {
+        "comment": "",
+        "key": "Fast",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds to defaults",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 211
+        }
+      },
+      {
+        "comment": "",
+        "key": "Feeds",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 217
+        }
+      },
+      {
+        "comment": "",
+        "key": "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Elon interviews from JRE / Dwarkesh / All-In / WTF, Innermost Loop, and the Innermost Loop newsletter).",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 220
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 230
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear all downloads",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 259
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 262
+        }
+      },
+      {
+        "comment": "",
+        "key": "Downloaded episode audio will be removed from this device. You can stream or download again anytime.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 264
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset feeds",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 271
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 279
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your added shows will be removed and every built-in feed will appear again.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 281
+        }
+      }
+    ]
+  },
+  "version": 1
+}
