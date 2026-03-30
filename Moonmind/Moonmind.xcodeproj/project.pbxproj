@@ -16,7 +16,6 @@
 		A10000070000000000000007 /* RSSFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RSSFeedService.swift */; };
 		A10000080000000000000008 /* FeedFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* FeedFilters.swift */; };
 		A10000090000000000000009 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000009 /* HomeViewModel.swift */; };
-		A100000A000000000000000A /* SelectableNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A000000000000000A /* SelectableNotesView.swift */; };
 		A100000B000000000000000B /* FeedFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B000000000000000B /* FeedFilterBar.swift */; };
 		A100000C000000000000000C /* HomeFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C000000000000000C /* HomeFeedView.swift */; };
 		A100000D000000000000000D /* EpisodeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D000000000000000D /* EpisodeDetailView.swift */; };
@@ -48,7 +47,6 @@
 		A20000070000000000000007 /* RSSFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedService.swift; sourceTree = "<group>"; };
 		A20000080000000000000008 /* FeedFilters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilters.swift; sourceTree = "<group>"; };
 		A20000090000000000000009 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
-		A200000A000000000000000A /* SelectableNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableNotesView.swift; sourceTree = "<group>"; };
 		A200000B000000000000000B /* FeedFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilterBar.swift; sourceTree = "<group>"; };
 		A200000C000000000000000C /* HomeFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeedView.swift; sourceTree = "<group>"; };
 		A200000D000000000000000D /* EpisodeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDetailView.swift; sourceTree = "<group>"; };
@@ -154,7 +152,6 @@
 		A40000070000000000000007 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A200000A000000000000000A /* SelectableNotesView.swift */,
 				A200000B000000000000000B /* FeedFilterBar.swift */,
 				A200000C000000000000000C /* HomeFeedView.swift */,
 				A20000180000000000000018 /* NewsletterFeedView.swift */,
@@ -246,7 +243,6 @@
 				A10000070000000000000007 /* RSSFeedService.swift in Sources */,
 				A10000080000000000000008 /* FeedFilters.swift in Sources */,
 				A10000090000000000000009 /* HomeViewModel.swift in Sources */,
-				A100000A000000000000000A /* SelectableNotesView.swift in Sources */,
 				A100000B000000000000000B /* FeedFilterBar.swift in Sources */,
 				A100000C000000000000000C /* HomeFeedView.swift in Sources */,
 				A10000180000000000000018 /* NewsletterFeedView.swift in Sources */,

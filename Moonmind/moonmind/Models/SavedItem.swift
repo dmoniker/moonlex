@@ -16,7 +16,7 @@ final class SavedItem {
     var episodePubDate: Date?
     var linkURLString: String?
 
-    /// When non-empty, this is a highlight of that text; when empty, the whole episode is favorited.
+    /// Kept empty for episode favorites (legacy rows may still store non-empty values in the database).
     var excerpt: String
     var note: String?
 

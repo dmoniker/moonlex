@@ -1,8 +1,32 @@
 import SwiftData
 import SwiftUI
 
+private struct EpisodeDetailScrollTopGlobalYKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct EpisodeDetailScrollContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        let n = nextValue()
+        if n > 0 { value = max(value, n) }
+    }
+}
+
+private struct EpisodeDetailScrollViewportHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        let n = nextValue()
+        if n > 0 { value = n }
+    }
+}
+
 struct EpisodeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var detailBottomChrome: DetailBottomChromeState
     @Query private var saved: [SavedItem]
 
     let episode: Episode
@@ -11,11 +35,7 @@ struct EpisodeDetailView: View {
     @ObservedObject var progressStore: EpisodePlaybackProgressStore
     @ObservedObject var sleepTimer: SleepTimerStore
     @ObservedObject var downloads: EpisodeDownloadStore
-    @StateObject private var notesReader = NotesSelectionReader()
 
-    @State private var highlightDraft = ""
-    @State private var noteDraft = ""
-    @State private var showManualHighlight = false
     @State private var toast: String?
     @State private var newsletterAttributedBody: NSAttributedString?
 
@@ -33,157 +53,250 @@ struct EpisodeDetailView: View {
         )
     }
 
+    @State private var detailScrollAnchorGlobalY: CGFloat?
+    @State private var episodeDetailScrollContentHeight: CGFloat = 0
+    @State private var episodeDetailScrollViewportHeight: CGFloat = 0
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(episode.showTitle)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        Text(episode.title)
-                            .font(.title2.weight(.bold))
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        if let d = episode.pubDate {
-                            Text(d.formatted(date: .long, time: .omitted))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
+        episodeDetailScrollView
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
+            .toolbar {
+                ToolbarItemGroup(placement: .primaryAction) {
                     if episode.audioURL != nil {
-                        EpisodeDownloadAccessory(episode: episode, downloads: downloads, interactive: true)
-                    }
-                }
-
-                if episode.audioURL != nil {
-                    EpisodeDetailPlayerCard(
-                        episode: episode,
-                        playback: playback,
-                        sleepTimer: sleepTimer,
-                        downloads: downloads
-                    )
-                } else if episode.feedContentKind == .newsletter, let url = episode.linkURL {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Link(destination: url) {
-                            Label("Open on Substack", systemImage: "safari")
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                } else {
-                    Label("No audio enclosure in this feed item", systemImage: "waveform.slash")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                if !episode.descriptionPlain.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(episode.feedContentKind == .newsletter ? "Article" : "Show notes")
-                            .font(.headline)
-                        SelectableNotesView(
-                            text: episode.descriptionPlain,
-                            attributedFallback: newsletterAttributedBody,
-                            reader: notesReader
-                        )
-                            .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
-                        HStack {
-                            Button("Save selected text") {
-                                if let sel = notesReader.selectedExcerpt {
-                                    highlightDraft = sel
-                                }
-                                showManualHighlight = true
+                        if progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) {
+                            Button {
+                                playback.markEpisodeUnplayed(episodeKey: episode.stableKey)
+                                flash("Marked as unplayed")
+                            } label: {
+                                Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
                             }
-                            .buttonStyle(.borderedProminent)
-
-                            Button("Paste quote") {
-                                showManualHighlight = true
+                        } else {
+                            Button {
+                                playback.markEpisodePlayed(episodeKey: episode.stableKey)
+                                flash("Marked as played")
+                            } label: {
+                                Label("Mark as Played", systemImage: "checkmark.circle")
                             }
-                            .buttonStyle(.bordered)
                         }
                     }
-                }
-
-                if showManualHighlight {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Highlight")
-                            .font(.headline)
-                        TextField("Quoted text", text: $highlightDraft, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
-                            .lineLimit(3 ... 8)
-                        TextField("Optional note", text: $noteDraft, axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
-                            .lineLimit(1 ... 4)
-                        Button("Save highlight") { saveHighlight() }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(highlightDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-                    .padding(.top, 8)
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                if episode.audioURL != nil {
-                    if progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) {
-                        Button {
-                            playback.markEpisodeUnplayed(episodeKey: episode.stableKey)
-                            flash("Marked as unplayed")
-                        } label: {
-                            Label("Mark as Unplayed", systemImage: "arrow.uturn.backward.circle")
-                        }
+                    if existingFavorite != nil {
+                        Label("Favorited", systemImage: "star.fill")
+                            .foregroundStyle(.yellow)
                     } else {
                         Button {
-                            playback.markEpisodePlayed(episodeKey: episode.stableKey)
-                            flash("Marked as played")
+                            saveFavorite()
                         } label: {
-                            Label("Mark as Played", systemImage: "checkmark.circle")
+                            Label("Favorite episode", systemImage: "star")
                         }
                     }
                 }
-                if existingFavorite != nil {
-                    Label("Favorited", systemImage: "star.fill")
-                        .foregroundStyle(.yellow)
+            }
+            .overlay(alignment: .bottom) {
+                if let t = toast {
+                    Text(t)
+                        .font(.subheadline.weight(.semibold))
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding()
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut, value: toast)
+            .task(id: episode.stableKey) {
+                detailScrollAnchorGlobalY = nil
+                episodeDetailScrollContentHeight = 0
+                episodeDetailScrollViewportHeight = 0
+                detailBottomChrome.shortEpisodeDetailLocksCompactChrome = false
+                // Episode detail always defaults to compact: tab bar hides immediately, giving
+                // the full screen to content. The user can restore the tab bar via the feed-icon
+                // button; short-page reconciliation below may also reinforce the lock.
+                if playback.loadedMediaURL != nil {
+                    withAnimation(PlayerChromeAnimation.morph) {
+                        detailBottomChrome.isCompact = true
+                    }
+                }
+                playback.sleepTimerStore = sleepTimer
+                applyPlaybackSource()
+                if episode.feedContentKind == .newsletter {
+                    newsletterAttributedBody = episode.descriptionRaw.attributedArticleFromHTML()
                 } else {
-                    Button {
-                        saveFavorite()
-                    } label: {
-                        Label("Favorite episode", systemImage: "star")
+                    newsletterAttributedBody = nil
+                }
+            }
+            .onChange(of: newsletterAttributedBody?.length) { _, _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+                    reconcileShortEpisodeDetailChrome()
+                }
+            }
+            .onChange(of: downloads.changeToken) { _, _ in
+                applyPlaybackSource()
+            }
+            .onChange(of: episodeDetailScrollContentHeight) { _, _ in
+                reconcileShortEpisodeDetailChrome()
+            }
+            .onChange(of: episodeDetailScrollViewportHeight) { _, _ in
+                reconcileShortEpisodeDetailChrome()
+            }
+            .onChange(of: detailBottomChrome.isCompact) { _, compact in
+                guard !compact,
+                      detailBottomChrome.shortEpisodeDetailLocksCompactChrome,
+                      playback.loadedMediaURL != nil else { return }
+                // Short pages can’t scroll enough to earn compact mode; expanding covers the bottom — snap back.
+                DispatchQueue.main.async {
+                    withAnimation(PlayerChromeAnimation.morph) {
+                        detailBottomChrome.isCompact = true
+                    }
+                }
+            }
+            .onDisappear {
+                detailBottomChrome.shortEpisodeDetailLocksCompactChrome = false
+            }
+    }
+
+    @ViewBuilder
+    private var episodeDetailScrollView: some View {
+        // No scroll-offset tracking here: the detail defaults to compact on load (see task above).
+        // Scroll position on the detail page does not flip chrome modes — the feed-list coordinator
+        // re-applies the correct state when the user navigates back.
+        scrollViewCore
+    }
+
+    /// ScrollView + height probes (short pages never scroll enough to trigger compact via offset alone).
+    private var scrollViewCore: some View {
+        ScrollView {
+            episodeDetailScrollContent
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(
+                            key: EpisodeDetailScrollContentHeightKey.self,
+                            value: geo.size.height
+                        )
+                    }
+                )
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: EpisodeDetailScrollViewportHeightKey.self,
+                    value: geo.size.height
+                )
+            }
+        )
+        .onPreferenceChange(EpisodeDetailScrollContentHeightKey.self) { episodeDetailScrollContentHeight = $0 }
+        .onPreferenceChange(EpisodeDetailScrollViewportHeightKey.self) { episodeDetailScrollViewportHeight = $0 }
+        .onAppear {
+            // Fire as soon as the first layout pass is done; the guard inside bails if heights are still 0.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                reconcileShortEpisodeDetailChrome()
+            }
+        }
+    }
+
+    private var episodeDetailScrollContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Color.clear
+                .frame(height: 1)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(
+                            key: EpisodeDetailScrollTopGlobalYKey.self,
+                            value: geo.frame(in: .global).minY
+                        )
+                    }
+                )
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(episode.showTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(episode.title)
+                        .font(.title2.weight(.bold))
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let d = episode.pubDate {
+                        Text(d.formatted(date: .long, time: .omitted))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if episode.audioURL != nil {
+                    EpisodeDownloadAccessory(episode: episode, downloads: downloads, interactive: true)
+                }
+            }
+
+            if episode.audioURL != nil {
+                EpisodeDetailPlayerCard(
+                    episode: episode,
+                    playback: playback,
+                    sleepTimer: sleepTimer,
+                    downloads: downloads
+                )
+            } else if episode.feedContentKind == .newsletter, let url = episode.linkURL {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Link(destination: url) {
+                        Label("Open on Substack", systemImage: "safari")
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            } else {
+                Label("No audio enclosure in this feed item", systemImage: "waveform.slash")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !episode.descriptionPlain.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(episode.feedContentKind == .newsletter ? "Article" : "Show notes")
+                        .font(.headline)
+                    if let attr = newsletterAttributedBody, attr.length > 0 {
+                        Text(AttributedString(attr))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text(episode.descriptionPlain)
+                            .font(.body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
         }
-        .overlay(alignment: .bottom) {
-            if let t = toast {
-                Text(t)
-                    .font(.subheadline.weight(.semibold))
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding()
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// When show notes fit in one screen, scroll offset never crosses the compact threshold — force compact while playing.
+    private func reconcileShortEpisodeDetailChrome() {
+        guard playback.loadedMediaURL != nil else {
+            detailBottomChrome.shortEpisodeDetailLocksCompactChrome = false
+            return
         }
-        .animation(.easeInOut, value: toast)
-        .task(id: episode.stableKey) {
-            playback.sleepTimerStore = sleepTimer
-            applyPlaybackSource()
-            if episode.feedContentKind == .newsletter {
-                newsletterAttributedBody = episode.descriptionRaw.attributedArticleFromHTML()
-            } else {
-                newsletterAttributedBody = nil
+        guard episodeDetailScrollViewportHeight > 100,
+              episodeDetailScrollViewportHeight < 8000,
+              episodeDetailScrollContentHeight > 0 else { return }
+
+        // Hysteresis: rubber-band / layout can briefly make “content taller than viewport”; don’t drop the lock in the fuzzy band.
+        let enterShortSlack: CGFloat = 32
+        let exitShortSlack: CGFloat = 76
+        let ch = episodeDetailScrollContentHeight
+        let vh = episodeDetailScrollViewportHeight
+
+        if ch <= vh + enterShortSlack {
+            detailBottomChrome.shortEpisodeDetailLocksCompactChrome = true
+            if !detailBottomChrome.isCompact {
+                withAnimation(PlayerChromeAnimation.morph) {
+                    detailBottomChrome.isCompact = true
+                }
             }
-        }
-        .onChange(of: downloads.changeToken) { _, _ in
-            applyPlaybackSource()
+        } else if ch > vh + exitShortSlack {
+            detailBottomChrome.shortEpisodeDetailLocksCompactChrome = false
         }
     }
 
@@ -220,30 +333,6 @@ struct EpisodeDetailView: View {
         )
         modelContext.insert(item)
         flash("Saved to favorites")
-    }
-
-    private func saveHighlight() {
-        let excerpt = highlightDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !excerpt.isEmpty else { return }
-
-        let note = noteDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-        let item = SavedItem(
-            episodeKey: episode.stableKey,
-            episodeTitle: episode.title,
-            showTitle: episode.showTitle,
-            feedID: episode.feedID,
-            feedURLString: episode.feedURLString,
-            audioURLString: episode.audioURL?.absoluteString,
-            episodePubDate: episode.pubDate,
-            linkURLString: episode.linkURL?.absoluteString,
-            excerpt: excerpt,
-            note: note.isEmpty ? nil : note
-        )
-        modelContext.insert(item)
-        highlightDraft = ""
-        noteDraft = ""
-        showManualHighlight = false
-        flash("Highlight saved")
     }
 }
 

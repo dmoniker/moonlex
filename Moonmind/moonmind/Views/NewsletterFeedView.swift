@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NewsletterFeedView: View {
+    @EnvironmentObject private var detailBottomChrome: DetailBottomChromeState
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var feedFilters: FeedFilters
     @ObservedObject var model: HomeViewModel
@@ -11,6 +12,7 @@ struct NewsletterFeedView: View {
     @Binding var showAppSettings: Bool
 
     @State private var navigationPath = NavigationPath()
+    @State private var newsletterListScrollY: CGFloat = 0
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -39,6 +41,16 @@ struct NewsletterFeedView: View {
             navigationPath.append(request.episode)
             episodePlayback.consumeMiniPlayerDetailNavigation()
         }
+        .onChange(of: navigationPath.count) { _, _ in
+            if navigationPath.isEmpty {
+                MiniPlayerChromeScrollCoordinator.applyContentOffsetY(
+                    newsletterListScrollY,
+                    detailChrome: detailBottomChrome,
+                    playback: episodePlayback
+                )
+            }
+        }
+        .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
     }
 
     @ViewBuilder
@@ -140,6 +152,7 @@ struct NewsletterFeedView: View {
                     }
                 }
                 .listStyle(.plain)
+                .miniPlayerChromeScrollTracking(playback: episodePlayback, scrollOffset: $newsletterListScrollY)
             }
         }
         .navigationTitle("Newsletters")

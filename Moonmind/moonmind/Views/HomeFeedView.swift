@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeFeedView: View {
+    @EnvironmentObject private var detailBottomChrome: DetailBottomChromeState
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var feedFilters: FeedFilters
     @ObservedObject var model: HomeViewModel
@@ -13,6 +14,7 @@ struct HomeFeedView: View {
     @AppStorage("moonmind.feedShowUnplayedOnly") private var showUnplayedOnly = true
     @AppStorage("moonmind.podcastFeedSortNewestFirst") private var sortNewestFirst = true
     @State private var navigationPath = NavigationPath()
+    @State private var feedListScrollY: CGFloat = 0
 
     @ViewBuilder
     private var podcastEpisodesSortButton: some View {
@@ -71,6 +73,16 @@ struct HomeFeedView: View {
             navigationPath.append(request.episode)
             episodePlayback.consumeMiniPlayerDetailNavigation()
         }
+        .onChange(of: navigationPath.count) { _, _ in
+            if navigationPath.isEmpty {
+                MiniPlayerChromeScrollCoordinator.applyContentOffsetY(
+                    feedListScrollY,
+                    detailChrome: detailBottomChrome,
+                    playback: episodePlayback
+                )
+            }
+        }
+        .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
     }
 
     @ViewBuilder
@@ -195,6 +207,7 @@ struct HomeFeedView: View {
                     }
                 }
                 .listStyle(.plain)
+                .miniPlayerChromeScrollTracking(playback: episodePlayback, scrollOffset: $feedListScrollY)
             }
         }
         .navigationTitle("")

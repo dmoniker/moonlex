@@ -2,7 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct FavoritesView: View {
-    @Query(sort: \SavedItem.createdAt, order: .reverse)
+    @EnvironmentObject private var detailBottomChrome: DetailBottomChromeState
+    @Query(
+        filter: #Predicate<SavedItem> { $0.excerpt == "" },
+        sort: \SavedItem.createdAt,
+        order: .reverse
+    )
     private var items: [SavedItem]
 
     @Environment(\.modelContext) private var modelContext
@@ -15,6 +20,7 @@ struct FavoritesView: View {
     @Binding var showAppSettings: Bool
 
     @State private var navigationPath = NavigationPath()
+    @State private var favoritesListScrollY: CGFloat = 0
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -23,11 +29,11 @@ struct FavoritesView: View {
                     ContentUnavailableView(
                         "Nothing saved yet",
                         systemImage: "star",
-                        description: Text("Favorite an episode or save a highlight from show notes.")
+                        description: Text("Favorite an episode to see it here.")
                     )
                 } else {
                     List {
-                        Section("Favorites & highlights") {
+                        Section("Favorites") {
                             ForEach(items) { item in
                                 Button {
                                     openSavedItem(item)
@@ -40,6 +46,7 @@ struct FavoritesView: View {
                         }
                     }
                     .listStyle(.insetGrouped)
+                    .miniPlayerChromeScrollTracking(playback: episodePlayback, scrollOffset: $favoritesListScrollY)
                 }
             }
             .navigationTitle("Saved")
@@ -58,6 +65,16 @@ struct FavoritesView: View {
                 )
             }
         }
+        .onChange(of: navigationPath.count) { _, _ in
+            if navigationPath.isEmpty {
+                MiniPlayerChromeScrollCoordinator.applyContentOffsetY(
+                    favoritesListScrollY,
+                    detailChrome: detailBottomChrome,
+                    playback: episodePlayback
+                )
+            }
+        }
+        .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
         .onAppear {
             episodePlayback.sleepTimerStore = sleepTimer
         }
@@ -71,29 +88,13 @@ struct FavoritesView: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
-                if item.isEpisodeFavorite {
-                    Label("Episode", systemImage: "star.fill")
-                        .font(.caption2)
-                        .foregroundStyle(.yellow)
-                } else {
-                    Label("Highlight", systemImage: "quote.opening")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
+                Label("Episode", systemImage: "star.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.yellow)
             }
             Text(item.displayTitle)
                 .font(.headline)
                 .foregroundStyle(.primary)
-            if !item.isEpisodeFavorite {
-                Text(item.episodeTitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            if let note = item.note, !note.isEmpty {
-                Text(note)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
             if let d = item.episodePubDate {
                 Text(d.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption2)
