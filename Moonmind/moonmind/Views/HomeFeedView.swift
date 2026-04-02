@@ -11,25 +11,27 @@ struct HomeFeedView: View {
     @ObservedObject var episodeDownloads: EpisodeDownloadStore
     @Binding var showAppSettings: Bool
 
-    @AppStorage("moonmind.feedShowUnplayedOnly") private var showUnplayedOnly = true
-    @AppStorage("moonmind.podcastFeedSortNewestFirst") private var sortNewestFirst = true
     @State private var navigationPath = NavigationPath()
     @State private var feedListScrollY: CGFloat = 0
 
     @ViewBuilder
     private var podcastEpisodesSortButton: some View {
         Button {
-            sortNewestFirst.toggle()
+            feedFilters.togglePodcastFeedSortOrder()
         } label: {
             Image(systemName: "arrow.up.arrow.down")
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(sortNewestFirst ? "Sorted by date, newest first" : "Sorted by date, oldest first")
+        .accessibilityLabel(
+            feedFilters.podcastFeedSortNewestFirst
+                ? "Sorted by date, newest first"
+                : "Sorted by date, oldest first"
+        )
     }
 
     private var displayedEpisodes: [Episode] {
         let filtered: [Episode] = {
-            guard showUnplayedOnly else { return model.episodes }
+            guard feedFilters.feedShowUnplayedOnly else { return model.episodes }
             return model.episodes.filter { episode in
                 if episode.audioURL == nil { return true }
                 return !episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey)
@@ -38,7 +40,7 @@ struct HomeFeedView: View {
         return filtered.sorted { a, b in
             let da = a.pubDate ?? .distantPast
             let db = b.pubDate ?? .distantPast
-            if sortNewestFirst {
+            if feedFilters.podcastFeedSortNewestFirst {
                 return da > db
             } else {
                 return da < db
@@ -129,9 +131,13 @@ struct HomeFeedView: View {
                 )
             } else if displayedEpisodes.isEmpty {
                 ContentUnavailableView(
-                    showUnplayedOnly ? "All caught up" : "No episodes",
+                    feedFilters.feedShowUnplayedOnly ? "All caught up" : "No episodes",
                     systemImage: "checkmark.circle",
-                    description: Text(showUnplayedOnly ? "Every episode from your shows is played, or turn off unplayed-only to see the full feed again." : "")
+                    description: Text(
+                        feedFilters.feedShowUnplayedOnly
+                            ? "Every episode from your shows is played, or turn off unplayed-only to see the full feed again."
+                            : ""
+                    )
                 )
             } else {
                 List {
@@ -216,11 +222,13 @@ struct HomeFeedView: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
-                    showUnplayedOnly.toggle()
+                    feedFilters.toggleFeedShowUnplayedOnly()
                 } label: {
-                    Image(systemName: showUnplayedOnly ? "checkmark.circle.fill" : "checkmark.circle")
+                    Image(systemName: feedFilters.feedShowUnplayedOnly ? "checkmark.circle.fill" : "checkmark.circle")
                 }
-                .accessibilityLabel(showUnplayedOnly ? "Show all episodes" : "Show unplayed only")
+                .accessibilityLabel(
+                    feedFilters.feedShowUnplayedOnly ? "Show all episodes" : "Show unplayed only"
+                )
 
                 Button {
                     showAddFeeds = true

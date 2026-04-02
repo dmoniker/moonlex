@@ -42,8 +42,10 @@ struct AppSettingsSheetView: View {
     @AppStorage(EpisodeDownloadStore.downloadRetentionModeDefaultsKey) private var downloadRetentionModeRaw =
         EpisodeDownloadStore.DownloadRetentionMode.episodesPerShow.rawValue
     @AppStorage(EpisodeDownloadStore.downloadEpisodesPerShowDefaultsKey) private var episodesPerShowStored = 3
+    @AppStorage(MoonmindSyncSettings.preferICloudSyncKey) private var preferICloudSync = true
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showQuitReopenHint = false
     @State private var showClearDownloadsConfirm = false
     @State private var showResetFeedsConfirm = false
 
@@ -79,9 +81,87 @@ struct AppSettingsSheetView: View {
         Double(EpisodePlaybackController.skipSecondsMin)...Double(EpisodePlaybackController.skipSecondsMax)
     }
 
+    private var cloudKitInactiveThisSession: Bool {
+        UserDefaults.standard.bool(forKey: MoonmindSyncSettings.cloudKitInactiveKey)
+    }
+
+    private var iCloudStatusTitle: String {
+        if !cloudKitInactiveThisSession { return "iCloud sync on" }
+        if preferICloudSync { return "iCloud sync unavailable" }
+        return "Device only"
+    }
+
+    private var iCloudSyncUnavailable: Bool {
+        preferICloudSync && cloudKitInactiveThisSession
+    }
+
+    private var iCloudStatusSubtitle: String? {
+        if !cloudKitInactiveThisSession {
+            return "This session is using your iCloud database."
+        }
+        if preferICloudSync { return nil }
+        return "Data stays on this device. Turn sync on and reopen the app to use iCloud."
+    }
+
+    private var iCloudStatusColor: Color {
+        if !cloudKitInactiveThisSession { return .green }
+        if preferICloudSync { return .orange }
+        return .gray
+    }
+
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Circle()
+                            .fill(iCloudStatusColor)
+                            .frame(width: 10, height: 10)
+                            .overlay {
+                                Circle().strokeBorder(Color.white.opacity(0.2), lineWidth: 0.5)
+                            }
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(iCloudStatusTitle)
+                                .font(.body)
+                            if let sub = iCloudStatusSubtitle {
+                                Text(sub)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .accessibilityElement(children: .combine)
+
+                    Toggle("Sync with iCloud", isOn: $preferICloudSync)
+                        .onChange(of: preferICloudSync) { _, enabled in
+                            if !enabled {
+                                showQuitReopenHint = true
+                            } else if cloudKitInactiveThisSession {
+                                showQuitReopenHint = true
+                            } else {
+                                showQuitReopenHint = false
+                            }
+                        }
+
+                    if iCloudSyncUnavailable {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Quit and reopen the app for the changes to take effect.")
+                            Text(
+                                "If this doesn’t work, check Settings → Apple ID → iCloud and the app’s iCloud capability, then try quitting and reopening the app again."
+                            )
+                        }
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    } else if showQuitReopenHint {
+                        Text("Quit and reopen the app for the changes to take effect.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("iCloud")
+                }
+
                 Section {
                     Toggle("Autoplay next episode", isOn: $autoplayNextInFeed)
                     if autoplayNextInFeed {

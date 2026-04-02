@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 enum FeedContentKind: String, Codable, Hashable, Sendable {
     /// Audio-first RSS (podcasts).
@@ -148,8 +149,7 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
 
 @MainActor
 final class FeedCatalog: ObservableObject {
-    private let customFeedsKey = "moonmind.customFeedsJSON"
-    private let hiddenBuiltinsKey = "moonmind.hiddenBuiltinFeedIDsJSON"
+    private var modelContext: ModelContext?
 
     @Published private(set) var customFeeds: [PodcastFeed] = []
     /// Built-in feeds the user has removed; restoring defaults clears this set.
@@ -161,6 +161,58 @@ final class FeedCatalog: ObservableObject {
         loadHiddenBuiltins()
     }
 
+    /// Call from the root view once `modelContext` is available so feeds sync via iCloud.
+    func attach(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        let customCount = (try? modelContext.fetchCount(FetchDescriptor<UserCustomFeed>())) ?? 0
+        let hiddenCount = (try? modelContext.fetchCount(FetchDescriptor<HiddenBuiltinFeedRecord>())) ?? 0
+
+        if customCount > 0 || hiddenCount > 0 {
+            reloadFromSwiftData(using: modelContext)
+            dedupeCatalogRows(in: modelContext)
+            Self.clearCatalogUserDefaults()
+            return
+        }
+
+        for feed in customFeeds {
+            modelContext.insert(
+                UserCustomFeed(
+                    id: feed.id,
+                    title: feed.title,
+                    rssURLString: feed.rssURLString,
+                    chipTitle: feed.chipTitle,
+                    contentKindRaw: feed.contentKind.rawValue
+                )
+            )
+        }
+        for id in hiddenBuiltinFeedIDs {
+            modelContext.insert(HiddenBuiltinFeedRecord(feedID: id))
+        }
+        try? modelContext.save()
+        dedupeCatalogRows(in: modelContext)
+        Self.clearCatalogUserDefaults()
+    }
+
+    /// CloudKit cannot enforce uniqueness; remove duplicate rows after sync.
+    private func dedupeCatalogRows(in context: ModelContext) {
+        let customs = (try? context.fetch(FetchDescriptor<UserCustomFeed>(sortBy: [SortDescriptor(\.addedAt)]))) ?? []
+        var seenCustom = Set<String>()
+        for row in customs {
+            if seenCustom.insert(row.id).inserted == false {
+                context.delete(row)
+            }
+        }
+        let hidden = (try? context.fetch(FetchDescriptor<HiddenBuiltinFeedRecord>())) ?? []
+        var seenHidden = Set<String>()
+        for row in hidden {
+            if seenHidden.insert(row.feedID).inserted == false {
+                context.delete(row)
+            }
+        }
+        try? context.save()
+        reloadFromSwiftData(using: context)
+    }
+
     /// Replaces the pre–RSS-merge virtual feed id so settings stay consistent.
     private static func migrateLegacyElonGuestFeedIDIfNeeded() {
         let legacy = PodcastFeed.elonGuestInterviewsFeedIDLegacy
@@ -169,7 +221,7 @@ final class FeedCatalog: ObservableObject {
         for key in ["moonmind.podcastFilterExclusiveFeedID", "moonmind.newsletterFilterExclusiveFeedID"] {
             if ud.string(forKey: key) == legacy { ud.set(id, forKey: key) }
         }
-        let hiddenKey = "moonmind.hiddenBuiltinFeedIDsJSON"
+        let hiddenKey = FeedCatalogLegacyKeys.hiddenBuiltins
         guard let data = ud.data(forKey: hiddenKey),
               var ids = try? JSONDecoder().decode([String].self, from: data),
               let idx = ids.firstIndex(of: legacy)
@@ -208,7 +260,7 @@ final class FeedCatalog: ObservableObject {
             contentKind: kind
         )
         customFeeds.append(feed)
-        persistCustom()
+        persistCatalog()
     }
 
     func removeFeed(_ feed: PodcastFeed) {
@@ -216,10 +268,10 @@ final class FeedCatalog: ObservableObject {
             var next = hiddenBuiltinFeedIDs
             next.insert(feed.id)
             hiddenBuiltinFeedIDs = next
-            persistHiddenBuiltins()
+            persistCatalog()
         } else {
             customFeeds.removeAll { $0.id == feed.id }
-            persistCustom()
+            persistCatalog()
         }
     }
 
@@ -227,36 +279,106 @@ final class FeedCatalog: ObservableObject {
     func resetFeedsToFactoryDefaults() {
         customFeeds = []
         hiddenBuiltinFeedIDs = []
-        persistCustom()
-        persistHiddenBuiltins()
+        persistCatalog()
     }
 
     private func loadCustom() {
-        guard let data = UserDefaults.standard.data(forKey: customFeedsKey) else { return }
+        guard let data = UserDefaults.standard.data(forKey: FeedCatalogLegacyKeys.customFeeds) else { return }
         if let decoded = try? JSONDecoder().decode([PodcastFeed].self, from: data) {
             customFeeds = decoded
         }
     }
 
-    private func persistCustom() {
-        if let data = try? JSONEncoder().encode(customFeeds) {
-            UserDefaults.standard.set(data, forKey: customFeedsKey)
-        }
-    }
-
     private func loadHiddenBuiltins() {
-        guard let data = UserDefaults.standard.data(forKey: hiddenBuiltinsKey),
+        guard let data = UserDefaults.standard.data(forKey: FeedCatalogLegacyKeys.hiddenBuiltins),
               let ids = try? JSONDecoder().decode([String].self, from: data)
         else { return }
         hiddenBuiltinFeedIDs = Set(ids)
     }
 
-    private func persistHiddenBuiltins() {
+    private func reloadFromSwiftData(using context: ModelContext) {
+        let customFD = FetchDescriptor<UserCustomFeed>(sortBy: [SortDescriptor(\.addedAt)])
+        let hiddenFD = FetchDescriptor<HiddenBuiltinFeedRecord>()
+        let customs = (try? context.fetch(customFD)) ?? []
+        let hiddenRows = (try? context.fetch(hiddenFD)) ?? []
+        var seen = Set<String>()
+        customFeeds = []
+        for row in customs where seen.insert(row.id).inserted {
+            customFeeds.append(row.asPodcastFeed())
+        }
+        hiddenBuiltinFeedIDs = Set(hiddenRows.map(\.feedID))
+    }
+
+    private func fetchCustomFeed(id: String, in context: ModelContext) throws -> UserCustomFeed? {
+        var fd = FetchDescriptor<UserCustomFeed>(predicate: #Predicate { $0.id == id })
+        fd.fetchLimit = 1
+        return try context.fetch(fd).first
+    }
+
+    private func persistCatalog() {
+        guard let context = modelContext else {
+            Self.persistCatalogToUserDefaults(customFeeds: customFeeds, hiddenBuiltinFeedIDs: hiddenBuiltinFeedIDs)
+            return
+        }
+
+        let targetCustomIDs = Set(customFeeds.map(\.id))
+        let targetHidden = hiddenBuiltinFeedIDs
+
+        let existingCustom = (try? context.fetch(FetchDescriptor<UserCustomFeed>())) ?? []
+        for row in existingCustom where !targetCustomIDs.contains(row.id) {
+            context.delete(row)
+        }
+        for feed in customFeeds {
+            if let row = try? fetchCustomFeed(id: feed.id, in: context) {
+                row.title = feed.title
+                row.rssURLString = feed.rssURLString
+                row.chipTitle = feed.chipTitle
+                row.contentKindRaw = feed.contentKind.rawValue
+            } else {
+                context.insert(
+                    UserCustomFeed(
+                        id: feed.id,
+                        title: feed.title,
+                        rssURLString: feed.rssURLString,
+                        chipTitle: feed.chipTitle,
+                        contentKindRaw: feed.contentKind.rawValue
+                    )
+                )
+            }
+        }
+
+        let existingHidden = (try? context.fetch(FetchDescriptor<HiddenBuiltinFeedRecord>())) ?? []
+        for row in existingHidden {
+            context.delete(row)
+        }
+        for id in targetHidden {
+            context.insert(HiddenBuiltinFeedRecord(feedID: id))
+        }
+
+        try? context.save()
+    }
+
+    private static func persistCatalogToUserDefaults(customFeeds: [PodcastFeed], hiddenBuiltinFeedIDs: Set<String>) {
+        let ud = UserDefaults.standard
+        if let data = try? JSONEncoder().encode(customFeeds) {
+            ud.set(data, forKey: FeedCatalogLegacyKeys.customFeeds)
+        }
         let sortedIDs = hiddenBuiltinFeedIDs.sorted()
         if let data = try? JSONEncoder().encode(sortedIDs) {
-            UserDefaults.standard.set(data, forKey: hiddenBuiltinsKey)
+            ud.set(data, forKey: FeedCatalogLegacyKeys.hiddenBuiltins)
         }
     }
+
+    private static func clearCatalogUserDefaults() {
+        let ud = UserDefaults.standard
+        ud.removeObject(forKey: FeedCatalogLegacyKeys.customFeeds)
+        ud.removeObject(forKey: FeedCatalogLegacyKeys.hiddenBuiltins)
+    }
+}
+
+private enum FeedCatalogLegacyKeys {
+    static let customFeeds = "moonmind.customFeedsJSON"
+    static let hiddenBuiltins = "moonmind.hiddenBuiltinFeedIDsJSON"
 }
 
 enum FeedCatalogError: LocalizedError {

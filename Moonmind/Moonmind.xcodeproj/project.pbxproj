@@ -12,6 +12,7 @@
 		A10000030000000000000003 /* Episode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* Episode.swift */; };
 		A10000040000000000000004 /* FeedCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* FeedCatalog.swift */; };
 		A10000050000000000000005 /* SavedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* SavedItem.swift */; };
+		A100002A000000000000002A /* CloudSyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200002A000000000000002A /* CloudSyncModels.swift */; };
 		A10000060000000000000006 /* String+HTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* String+HTML.swift */; };
 		A10000070000000000000007 /* RSSFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RSSFeedService.swift */; };
 		A10000080000000000000008 /* FeedFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* FeedFilters.swift */; };
@@ -38,11 +39,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		98A26A9A2F7DEA6100B0E8D5 /* moonmind.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = moonmind.entitlements; sourceTree = "<group>"; };
 		A20000010000000000000001 /* MoonmindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonmindApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A20000030000000000000003 /* Episode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Episode.swift; sourceTree = "<group>"; };
 		A20000040000000000000004 /* FeedCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCatalog.swift; sourceTree = "<group>"; };
 		A20000050000000000000005 /* SavedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedItem.swift; sourceTree = "<group>"; };
+		A200002A000000000000002A /* CloudSyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncModels.swift; sourceTree = "<group>"; };
 		A20000060000000000000006 /* String+HTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+HTML.swift"; sourceTree = "<group>"; };
 		A20000070000000000000007 /* RSSFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedService.swift; sourceTree = "<group>"; };
 		A20000080000000000000008 /* FeedFilters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilters.swift; sourceTree = "<group>"; };
@@ -92,6 +95,7 @@
 		A40000020000000000000002 /* moonmind */ = {
 			isa = PBXGroup;
 			children = (
+				98A26A9A2F7DEA6100B0E8D5 /* moonmind.entitlements */,
 				A20000010000000000000001 /* MoonmindApp.swift */,
 				A20000020000000000000002 /* ContentView.swift */,
 				A40000040000000000000004 /* Models */,
@@ -118,6 +122,7 @@
 				A20000030000000000000003 /* Episode.swift */,
 				A20000040000000000000004 /* FeedCatalog.swift */,
 				A20000050000000000000005 /* SavedItem.swift */,
+				A200002A000000000000002A /* CloudSyncModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -239,6 +244,7 @@
 				A10000030000000000000003 /* Episode.swift in Sources */,
 				A10000040000000000000004 /* FeedCatalog.swift in Sources */,
 				A10000050000000000000005 /* SavedItem.swift in Sources */,
+				A100002A000000000000002A /* CloudSyncModels.swift in Sources */,
 				A10000060000000000000006 /* String+HTML.swift in Sources */,
 				A10000070000000000000007 /* RSSFeedService.swift in Sources */,
 				A10000080000000000000008 /* FeedFilters.swift in Sources */,
@@ -391,6 +397,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = moonmind/moonmind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = F34XBU4X46;
@@ -422,6 +429,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = moonmind/moonmind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = F34XBU4X46;

@@ -163,6 +163,8 @@ final class DetailBottomChromeState: ObservableObject {
 }
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+
     @StateObject private var catalog = FeedCatalog()
     @StateObject private var feedFilters = FeedFilters()
     @StateObject private var home = HomeViewModel()
@@ -284,6 +286,9 @@ struct ContentView: View {
             )
         }
         .onAppear {
+            catalog.attach(modelContext: modelContext)
+            feedFilters.attach(modelContext: modelContext)
+            episodePlayback.progressStore.attach(modelContext: modelContext)
             scheduleTabBarGeometryRefresh()
             episodePlayback.sleepTimerStore = sleepTimer
             episodePlayback.downloadStore = episodeDownloads

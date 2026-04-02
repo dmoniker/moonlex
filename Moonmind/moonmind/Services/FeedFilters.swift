@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 enum FeedFilterBarScope: String, Sendable {
     case podcast
@@ -18,9 +19,31 @@ final class FeedFilters: ObservableObject {
     @Published private(set) var podcastExclusiveFeedID: String?
     @Published private(set) var newsletterExclusiveFeedID: String?
 
+    /// Podcast home: hide played episodes when true.
+    @Published private(set) var feedShowUnplayedOnly: Bool = true
+    /// Podcast home episode sort direction.
+    @Published private(set) var podcastFeedSortNewestFirst: Bool = true
+
+    private var modelContext: ModelContext?
+    private var prefs: SyncedAppPreferences?
+
     init() {
-        podcastExclusiveFeedID = Self.loadExclusiveID(key: FeedFilterBarScope.podcast.storageKey)
-        newsletterExclusiveFeedID = Self.loadExclusiveID(key: FeedFilterBarScope.newsletter.storageKey)
+        podcastExclusiveFeedID = Self.loadExclusiveIDFromUserDefaults(key: FeedFilterBarScope.podcast.storageKey)
+        newsletterExclusiveFeedID = Self.loadExclusiveIDFromUserDefaults(key: FeedFilterBarScope.newsletter.storageKey)
+        let ud = UserDefaults.standard
+        feedShowUnplayedOnly = ud.object(forKey: "moonmind.feedShowUnplayedOnly") as? Bool ?? true
+        podcastFeedSortNewestFirst = ud.object(forKey: "moonmind.podcastFeedSortNewestFirst") as? Bool ?? true
+    }
+
+    func attach(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        let p = SyncedAppPreferences.loadOrInsert(in: modelContext)
+        prefs = p
+        podcastExclusiveFeedID = p.podcastExclusiveFeedID
+        newsletterExclusiveFeedID = p.newsletterExclusiveFeedID
+        feedShowUnplayedOnly = p.feedShowUnplayedOnly
+        podcastFeedSortNewestFirst = p.podcastFeedSortNewestFirst
+        Self.clearMigratedUserDefaultsKeys()
     }
 
     func exclusiveFeedID(for scope: FeedFilterBarScope) -> String? {
@@ -35,11 +58,12 @@ final class FeedFilters: ObservableObject {
         switch scope {
         case .podcast:
             podcastExclusiveFeedID = feedID
-            Self.persistExclusiveID(feedID, key: scope.storageKey)
+            prefs?.podcastExclusiveFeedID = feedID
         case .newsletter:
             newsletterExclusiveFeedID = feedID
-            Self.persistExclusiveID(feedID, key: scope.storageKey)
+            prefs?.newsletterExclusiveFeedID = feedID
         }
+        try? modelContext?.save()
     }
 
     func isOn(_ feedID: String, scope: FeedFilterBarScope) -> Bool {
@@ -47,16 +71,36 @@ final class FeedFilters: ObservableObject {
         return feedID == only
     }
 
-    private static func loadExclusiveID(key: String) -> String? {
+    func setFeedShowUnplayedOnly(_ value: Bool) {
+        feedShowUnplayedOnly = value
+        prefs?.feedShowUnplayedOnly = value
+        try? modelContext?.save()
+    }
+
+    func toggleFeedShowUnplayedOnly() {
+        setFeedShowUnplayedOnly(!feedShowUnplayedOnly)
+    }
+
+    func setPodcastFeedSortNewestFirst(_ value: Bool) {
+        podcastFeedSortNewestFirst = value
+        prefs?.podcastFeedSortNewestFirst = value
+        try? modelContext?.save()
+    }
+
+    func togglePodcastFeedSortOrder() {
+        setPodcastFeedSortNewestFirst(!podcastFeedSortNewestFirst)
+    }
+
+    private static func loadExclusiveIDFromUserDefaults(key: String) -> String? {
         guard UserDefaults.standard.object(forKey: key) != nil else { return nil }
         return UserDefaults.standard.string(forKey: key)
     }
 
-    private static func persistExclusiveID(_ id: String?, key: String) {
-        if let id {
-            UserDefaults.standard.set(id, forKey: key)
-        } else {
-            UserDefaults.standard.removeObject(forKey: key)
-        }
+    private static func clearMigratedUserDefaultsKeys() {
+        let ud = UserDefaults.standard
+        ud.removeObject(forKey: "moonmind.podcastFilterExclusiveFeedID")
+        ud.removeObject(forKey: "moonmind.newsletterFilterExclusiveFeedID")
+        ud.removeObject(forKey: "moonmind.feedShowUnplayedOnly")
+        ud.removeObject(forKey: "moonmind.podcastFeedSortNewestFirst")
     }
 }

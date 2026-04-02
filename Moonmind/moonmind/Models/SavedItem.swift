@@ -3,21 +3,23 @@ import SwiftData
 
 @Model
 final class SavedItem {
-    @Attribute(.unique) var id: UUID
-    var createdAt: Date
+    /// CloudKit-backed SwiftData cannot use `@Attribute(.unique)`; treat `id` as unique in app logic.
+    /// CloudKit requires non-optional attributes to have default values at the property declaration.
+    var id: UUID = UUID()
+    var createdAt: Date = Date.now
 
-    var episodeKey: String
-    var episodeTitle: String
-    var showTitle: String
-    var feedID: String
-    var feedURLString: String
+    var episodeKey: String = ""
+    var episodeTitle: String = ""
+    var showTitle: String = ""
+    var feedID: String = ""
+    var feedURLString: String = ""
 
     var audioURLString: String?
     var episodePubDate: Date?
     var linkURLString: String?
 
     /// Kept empty for episode favorites (legacy rows may still store non-empty values in the database).
-    var excerpt: String
+    var excerpt: String = ""
     var note: String?
 
     init(
