@@ -1,10 +1,15 @@
 import Foundation
 import UIKit
 
+private enum PlainTextLinkDetection {
+    static let detector: NSDataDetector? = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+}
+
 extension String {
     /// Minimal HTML → plain text for show notes (good enough for podcast RSS).
     var strippingHTML: String {
         var s = Self.removingScriptsAndStyles(from: self)
+        s = Self.expandingAnchorsToPlainTextWithHrefs(s)
         let patterns: [(String, String)] = [
             ("<br\\s*/?>", "\n"),
             ("</p>", "\n\n"),
@@ -16,12 +21,13 @@ extension String {
                 s = regex.stringByReplacingMatches(in: s, range: NSRange(s.startIndex..., in: s), withTemplate: repl)
             }
         }
-        return Self.normalizingPlainAfterHTMLStrip(s)
+        return Self.normalizingPlainAfterHTMLStrip(s).insertingNewlinesBeforeBracketTimestamps()
     }
 
     /// Plain text for newsletter HTML: block structure, lists, fewer run-on paragraphs.
     var strippingHTMLNewsletter: String {
         var s = Self.removingScriptsAndStyles(from: self)
+        s = Self.expandingAnchorsToPlainTextWithHrefs(s)
         let patterns: [(String, String)] = [
             ("(?s)<figure.*?</figure>", "\n"),
             ("(?s)<picture.*?</picture>", ""),
@@ -45,6 +51,37 @@ extension String {
             }
         }
         return Self.normalizingPlainAfterHTMLStrip(Self.decodingNumericHTMLEntities(s))
+            .insertingNewlinesBeforeBracketTimestamps()
+    }
+
+    /// Many podcast feeds pack chapter markers in one HTML block (`…segment.</a><a…>[00:02:12]…`), which
+    /// becomes a single run-on paragraph after tag stripping. Break before `[H:MM:SS]`-style timestamps.
+    func insertingNewlinesBeforeBracketTimestamps() -> String {
+        guard let regex = try? NSRegularExpression(
+            pattern: #"(.)(\[(?:\d{1,2}):(?:\d{2}):(?:\d{2})\])"#,
+            options: []
+        ) else { return self }
+        let range = NSRange(startIndex..., in: self)
+        return regex.stringByReplacingMatches(in: self, range: range, withTemplate: "$1\n$2")
+    }
+
+    /// Detects `http`/`https` URLs etc. for plain-text show notes; link spans use `UIColor.link` and open on tap in `Text(AttributedString)`.
+    func attributedPlainTextDetectingLinks() -> AttributedString {
+        guard !isEmpty else { return AttributedString() }
+        let mas = NSMutableAttributedString(string: self, attributes: [.foregroundColor: UIColor.label])
+        guard let detector = PlainTextLinkDetection.detector else { return AttributedString(mas) }
+        let full = NSRange(location: 0, length: (self as NSString).length)
+        for match in detector.matches(in: self, options: [], range: full).reversed() {
+            guard let url = match.url else { continue }
+            mas.addAttributes(
+                [
+                    .link: url,
+                    .foregroundColor: UIColor.link,
+                ],
+                range: match.range
+            )
+        }
+        return AttributedString(mas)
     }
 
     /// Rich text for article bodies (Substack `content:encoded`, etc.), scaled for Dynamic Type.
@@ -69,6 +106,69 @@ extension String {
         Self.applySemanticTextColors(to: raw)
         Self.normalizeArticleFonts(raw)
         return raw
+    }
+
+    /// RSS show notes often use `<a href="https://…">X</a>`; stripping tags leaves "X" with no URL. Inline the
+    /// `href` next to the anchor text (when the text isn’t already a URL) so `NSDataDetector` can make it tappable.
+    private static func expandingAnchorsToPlainTextWithHrefs(_ html: String) -> String {
+        guard let regex = try? NSRegularExpression(
+            pattern: #"(?is)<a[^>]*href\s*=\s*["']([^"']+)["'][^>]*>(.*?)</a>"#,
+            options: []
+        ) else { return html }
+        let ns = html as NSString
+        let full = NSRange(location: 0, length: ns.length)
+        let matches = regex.matches(in: html, options: [], range: full)
+        if matches.isEmpty { return html }
+        var result = ""
+        var lastEnd = 0
+        for match in matches {
+            let matchRange = match.range
+            if matchRange.location > lastEnd {
+                result += ns.substring(with: NSRange(location: lastEnd, length: matchRange.location - lastEnd))
+            }
+            let hrefRaw = decodeMinimalHTMLEntities(ns.substring(with: match.range(at: 1)))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let inner = anchorFragmentToPlain(ns.substring(with: match.range(at: 2)))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let hrefVisible: String = {
+                if hrefRaw.hasPrefix("//") { return "https:\(hrefRaw)" }
+                return hrefRaw
+            }()
+            let merged: String
+            if inner.isEmpty {
+                merged = hrefVisible
+            } else if inner.range(of: #"^(https?://|mailto:)"#, options: .regularExpression) != nil {
+                merged = inner
+            } else if inner.caseInsensitiveCompare(hrefVisible) == .orderedSame {
+                merged = hrefVisible
+            } else {
+                merged = "\(inner) \(hrefVisible)"
+            }
+            result += merged
+            lastEnd = matchRange.location + matchRange.length
+        }
+        if lastEnd < ns.length {
+            result += ns.substring(from: lastEnd)
+        }
+        return result
+    }
+
+    private static func anchorFragmentToPlain(_ innerHTML: String) -> String {
+        var s = innerHTML
+        if let regex = try? NSRegularExpression(pattern: "<[^>]+>", options: [.caseInsensitive]) {
+            s = regex.stringByReplacingMatches(in: s, range: NSRange(s.startIndex..., in: s), withTemplate: "")
+        }
+        return decodeMinimalHTMLEntities(s)
+    }
+
+    private static func decodeMinimalHTMLEntities(_ s: String) -> String {
+        s
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
     }
 
     private static func removingScriptsAndStyles(from html: String) -> String {

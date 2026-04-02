@@ -66,7 +66,10 @@ private final class RSSParser: NSObject, XMLParserDelegate {
     private var pubDateBuf = ""
     private var enclosureURL: String?
     private var enclosureTypeLower: String?
-    private var descriptionBuf = ""
+    /// RSS `<description>` (HTML blurb). Kept separate so we don’t concatenate with `content:encoded` / `itunes:summary` (feeds often duplicate the same text in all three).
+    private var itemDescriptionFieldBuf = ""
+    private var itemContentEncodedBuf = ""
+    private var itemItunesSummaryBuf = ""
 
     /// Show-level artwork (persists for all items in this feed document).
     private var channelArtworkURL: String?
@@ -147,8 +150,12 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         case "link": linkBuf += string
         case "guid": guidBuf += string
         case "pubdate": pubDateBuf += string
-        case "description", "content:encoded", "itunes:summary":
-            descriptionBuf += string
+        case "description":
+            itemDescriptionFieldBuf += string
+        case "content:encoded":
+            itemContentEncodedBuf += string
+        case "itunes:summary":
+            itemItunesSummaryBuf += string
         default: break
         }
     }
@@ -208,8 +215,20 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         pubDateBuf = ""
         enclosureURL = nil
         enclosureTypeLower = nil
-        descriptionBuf = ""
+        itemDescriptionFieldBuf = ""
+        itemContentEncodedBuf = ""
+        itemItunesSummaryBuf = ""
         itemArtworkURL = nil
+    }
+
+    /// Prefer full show notes / article body, then short description, then iTunes summary — never merge (duplicate triplets are common).
+    private var chosenItemDescriptionRaw: String {
+        let encoded = itemContentEncodedBuf.trimmingCharacters(in: .whitespacesAndNewlines)
+        let description = itemDescriptionFieldBuf.trimmingCharacters(in: .whitespacesAndNewlines)
+        let summary = itemItunesSummaryBuf.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !encoded.isEmpty { return encoded }
+        if !description.isEmpty { return description }
+        return summary
     }
 
     private func makeEpisode() -> Episode? {
@@ -238,7 +257,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             feedID: feed.id,
             feedURLString: feed.rssURLString,
             linkURL: page,
-            descriptionRaw: descriptionBuf.trimmingCharacters(in: .whitespacesAndNewlines),
+            descriptionRaw: chosenItemDescriptionRaw,
             artworkURL: artwork,
             feedContentKind: feed.contentKind
         )

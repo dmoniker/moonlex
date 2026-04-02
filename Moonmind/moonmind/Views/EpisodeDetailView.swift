@@ -262,9 +262,12 @@ struct EpisodeDetailView: View {
                         Text(AttributedString(attr))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
-                        Text(episode.descriptionPlain)
-                            .font(.body)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        EpisodeShowNotesFormatted(
+                            text: episode.descriptionPlain,
+                            episode: episode,
+                            playback: playback,
+                            downloads: downloads
+                        )
                     }
                 }
             }
@@ -341,6 +344,97 @@ struct EpisodeDetailView: View {
             return
         }
         flash("Saved to favorites")
+    }
+}
+
+// MARK: - Show notes (chapter timestamps)
+
+private enum ShowNotesBracketTimestamp {
+    private static let headAndTail = try! NSRegularExpression(
+        pattern: #"^(\s*)(\[(?:\d{1,2}):(?:\d{2}):(?:\d{2})\])\s*(.*)$"#,
+        options: []
+    )
+
+    /// Leading whitespace + `[H:MM:SS]` (tappable seek) vs remainder (plain + URLs), for lines that open with a chapter timestamp.
+    static func chapterSeekHeadAndTail(_ line: String) -> (head: String, tail: String, seconds: TimeInterval)? {
+        let ns = line as NSString
+        let range = NSRange(location: 0, length: ns.length)
+        guard let m = headAndTail.firstMatch(in: line, range: range), m.numberOfRanges >= 4 else { return nil }
+        let bracket = ns.substring(with: m.range(at: 2))
+        let inner = bracket.dropFirst().dropLast()
+        let comps = inner.split(separator: ":")
+        guard comps.count == 3,
+              let h = Int(comps[0]),
+              let mm = Int(comps[1]),
+              let sec = Int(comps[2]) else { return nil }
+        let seconds = TimeInterval(h * 3600 + mm * 60 + sec)
+        let head = ns.substring(with: m.range(at: 1)) + bracket
+        let tail = ns.substring(with: m.range(at: 3))
+        return (head, tail, seconds)
+    }
+}
+
+private struct EpisodeShowNotesFormatted: View {
+    let text: String
+    let episode: Episode
+    let playback: EpisodePlaybackController
+    let downloads: EpisodeDownloadStore
+
+    private var lines: [String] {
+        text.components(separatedBy: "\n")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                showNoteLine(line)
+            }
+        }
+        .font(.body)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func showNoteLine(_ line: String) -> some View {
+        if line.trimmingCharacters(in: .whitespaces).isEmpty {
+            Color.clear.frame(height: 2)
+        } else if episode.audioURL != nil,
+                  let chapter = ShowNotesBracketTimestamp.chapterSeekHeadAndTail(line) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Button {
+                    if EpisodeDetailPlaybackBinder.isPlaybackBound(
+                        episode: episode,
+                        playback: playback,
+                        downloads: downloads
+                    ) {
+                        playback.seek(to: chapter.seconds)
+                        playback.play()
+                    } else {
+                        EpisodeDetailPlaybackBinder.takeOverThisEpisodeThen(
+                            episode: episode,
+                            playback: playback,
+                            downloads: downloads
+                        ) {
+                            playback.seek(to: chapter.seconds)
+                        }
+                    }
+                } label: {
+                    Text(chapter.head)
+                        .multilineTextAlignment(.leading)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
+                if !chapter.tail.isEmpty {
+                    Text(chapter.tail.attributedPlainTextDetectingLinks())
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            Text(line.attributedPlainTextDetectingLinks())
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 }
 
