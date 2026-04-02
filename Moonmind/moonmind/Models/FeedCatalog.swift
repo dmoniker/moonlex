@@ -213,6 +213,13 @@ final class FeedCatalog: ObservableObject {
         reloadFromSwiftData(using: context)
     }
 
+    /// Call when `NSPersistentStoreRemoteChange` fires so rows imported from CloudKit refresh `customFeeds` / hidden built-ins.
+    func refreshFromCloudKitImport(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        reloadFromSwiftData(using: modelContext)
+        dedupeCatalogRows(in: modelContext)
+    }
+
     /// Replaces the pre–RSS-merge virtual feed id so settings stay consistent.
     private static func migrateLegacyElonGuestFeedIDIfNeeded() {
         let legacy = PodcastFeed.elonGuestInterviewsFeedIDLegacy

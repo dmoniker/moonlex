@@ -43,7 +43,22 @@ final class FeedFilters: ObservableObject {
         newsletterExclusiveFeedID = p.newsletterExclusiveFeedID
         feedShowUnplayedOnly = p.feedShowUnplayedOnly
         podcastFeedSortNewestFirst = p.podcastFeedSortNewestFirst
+        Self.applyAutoplayFromSyncedPreferences(p)
+        SyncedAppPreferences.applyDownloadRetentionFromSyncedPreferences(p)
         Self.clearMigratedUserDefaultsKeys()
+    }
+
+    /// Call when `NSPersistentStoreRemoteChange` fires so prefs imported from CloudKit replace stale in-memory state.
+    func refreshFromCloudKitImport(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        let p = SyncedAppPreferences.loadOrInsert(in: modelContext)
+        prefs = p
+        podcastExclusiveFeedID = p.podcastExclusiveFeedID
+        newsletterExclusiveFeedID = p.newsletterExclusiveFeedID
+        feedShowUnplayedOnly = p.feedShowUnplayedOnly
+        podcastFeedSortNewestFirst = p.podcastFeedSortNewestFirst
+        Self.applyAutoplayFromSyncedPreferences(p)
+        SyncedAppPreferences.applyDownloadRetentionFromSyncedPreferences(p)
     }
 
     func exclusiveFeedID(for scope: FeedFilterBarScope) -> String? {
@@ -89,6 +104,12 @@ final class FeedFilters: ObservableObject {
 
     func togglePodcastFeedSortOrder() {
         setPodcastFeedSortNewestFirst(!podcastFeedSortNewestFirst)
+    }
+
+    static func applyAutoplayFromSyncedPreferences(_ p: SyncedAppPreferences) {
+        let ud = UserDefaults.standard
+        ud.set(p.autoplayNextInFeed, forKey: EpisodePlaybackController.autoplayNextDefaultsKey)
+        ud.set(p.autoplayScopeRaw, forKey: EpisodePlaybackController.autoplayScopeDefaultsKey)
     }
 
     private static func loadExclusiveIDFromUserDefaults(key: String) -> String? {

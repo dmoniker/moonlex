@@ -1,3 +1,4 @@
+import CoreData
 import SwiftData
 import SwiftUI
 import UIKit
@@ -164,6 +165,7 @@ final class DetailBottomChromeState: ObservableObject {
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var catalog = FeedCatalog()
     @StateObject private var feedFilters = FeedFilters()
@@ -272,6 +274,9 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             scheduleTabBarGeometryRefresh()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)) { _ in
+            applyRemoteStoreMergeAfterCloudKit()
+        }
         .sheet(isPresented: $showAddFeeds) {
             NavigationStack {
                 AddPodcastView(catalog: catalog, downloads: episodeDownloads, onFeedsChanged: feedsChanged)
@@ -297,7 +302,29 @@ struct ContentView: View {
             episodeDownloads.onDownloadReady = { _, remote, local in
                 episodePlayback.migrateStreamToLocalFileIfCurrentlyPlaying(remoteURL: remote, localURL: local)
             }
+            episodeDownloads.reapplyRetentionUsingLastFeedCache()
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                applyRemoteStoreMergeAfterCloudKit()
+            }
         }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                episodePlayback.flushListeningProgressToStore()
+                try? modelContext.save()
+            }
+            if phase == .active {
+                applyRemoteStoreMergeAfterCloudKit()
+            }
+        }
+    }
+
+    /// Re-reads SwiftData after CloudKit merges (`NSPersistentStoreRemoteChange` or returning to the app).
+    private func applyRemoteStoreMergeAfterCloudKit() {
+        catalog.refreshFromCloudKitImport(modelContext: modelContext)
+        feedFilters.refreshFromCloudKitImport(modelContext: modelContext)
+        episodePlayback.progressStore.refreshFromCloudKitImport(modelContext: modelContext)
+        episodeDownloads.reapplyRetentionUsingLastFeedCache()
     }
 
     private var miniPlayerOverlayBottomInset: CGFloat {

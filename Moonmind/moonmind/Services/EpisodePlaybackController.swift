@@ -664,6 +664,11 @@ final class EpisodePlaybackController: ObservableObject {
         return true
     }
 
+    /// Persists current playback position / played state before app background or termination.
+    func flushListeningProgressToStore() {
+        persistListeningProgressIfNeeded()
+    }
+
     /// Marks the episode as fully played without listening to the end. Pauses and moves the scrubber to the end if this episode is loaded; does not trigger autoplay.
     func markEpisodePlayed(episodeKey: String) {
         progressStore.markPlayed(forEpisodeKey: episodeKey)

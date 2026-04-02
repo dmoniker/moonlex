@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 // MARK: - Settings toolbar
@@ -44,6 +45,7 @@ struct AppSettingsSheetView: View {
     @AppStorage(EpisodeDownloadStore.downloadEpisodesPerShowDefaultsKey) private var episodesPerShowStored = 3
     @AppStorage(MoonmindSyncSettings.preferICloudSyncKey) private var preferICloudSync = true
 
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var showQuitReopenHint = false
     @State private var showClearDownloadsConfirm = false
@@ -349,6 +351,24 @@ struct AppSettingsSheetView: View {
                     Button("Done") { dismiss() }
                 }
             }
+            .onChange(of: autoplayNextInFeed) { _, _ in
+                persistAutoplayToSyncedPreferences()
+            }
+            .onChange(of: autoplayScopeRaw) { _, _ in
+                persistAutoplayToSyncedPreferences()
+            }
+            .onChange(of: storageLimitMB) { _, _ in
+                persistDownloadRetentionToSyncedPreferences()
+                downloads.reapplyRetentionUsingLastFeedCache()
+            }
+            .onChange(of: downloadRetentionModeRaw) { _, _ in
+                persistDownloadRetentionToSyncedPreferences()
+                downloads.reapplyRetentionUsingLastFeedCache()
+            }
+            .onChange(of: episodesPerShowStored) { _, _ in
+                persistDownloadRetentionToSyncedPreferences()
+                downloads.reapplyRetentionUsingLastFeedCache()
+            }
             .onChange(of: slowRateStored) { _, _ in
                 playback.refreshPlaybackRateTiersFromUserDefaults()
             }
@@ -366,15 +386,6 @@ struct AppSettingsSheetView: View {
             }
             .onChange(of: skipForwardRight) { _, _ in
                 playback.refreshSkipIntervalsFromUserDefaults()
-            }
-            .onChange(of: storageLimitMB) { _, _ in
-                downloads.reapplyRetentionUsingLastFeedCache()
-            }
-            .onChange(of: downloadRetentionModeRaw) { _, _ in
-                downloads.reapplyRetentionUsingLastFeedCache()
-            }
-            .onChange(of: episodesPerShowStored) { _, _ in
-                downloads.reapplyRetentionUsingLastFeedCache()
             }
             .confirmationDialog(
                 "Clear all downloads?",
@@ -408,6 +419,21 @@ struct AppSettingsSheetView: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+    }
+
+    private func persistAutoplayToSyncedPreferences() {
+        let p = SyncedAppPreferences.loadOrInsert(in: modelContext)
+        p.autoplayNextInFeed = autoplayNextInFeed
+        p.autoplayScopeRaw = autoplayScopeRaw
+        try? modelContext.save()
+    }
+
+    private func persistDownloadRetentionToSyncedPreferences() {
+        let p = SyncedAppPreferences.loadOrInsert(in: modelContext)
+        p.downloadStorageLimitMB = storageLimitMB
+        p.downloadRetentionModeRaw = downloadRetentionModeRaw
+        p.downloadEpisodesPerShow = max(1, episodesPerShowStored)
+        try? modelContext.save()
     }
 
     private func resetSkipIntervalsToDefaults() {

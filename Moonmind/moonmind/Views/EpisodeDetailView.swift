@@ -1,3 +1,4 @@
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -332,6 +333,13 @@ struct EpisodeDetailView: View {
             note: nil
         )
         modelContext.insert(item)
+        do {
+            try modelContext.save()
+        } catch {
+            Logger(subsystem: "com.moonmind.moonmind", category: "Favorites").error("Save favorite failed: \(error.localizedDescription)")
+            flash("Couldn’t save favorite")
+            return
+        }
         flash("Saved to favorites")
     }
 }
@@ -439,8 +447,9 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
     @ObservedObject var playback: EpisodePlaybackController
     @ObservedObject var downloads: EpisodeDownloadStore
 
-    /// SF Symbols only define `gobackward` / `goforward` with specific second values; fall back to the undecorated symbol when needed.
-    private static let skipGlyphSeconds = Set([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120])
+    /// SF Symbols only ship decorated skip glyphs for a limited set of durations.
+    /// For custom values, compose the plain skip symbol with an overlaid number.
+    private static let nativeSkipGlyphSeconds = Set([10, 15, 30, 45, 60])
 
     private var isBound: Bool {
         EpisodeDetailPlaybackBinder.isPlaybackBound(episode: episode, playback: playback, downloads: downloads)
@@ -506,12 +515,28 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
         isBound && playback.isPlaying
     }
 
-    private func skipRewindSymbol(seconds: Int) -> String {
-        Self.skipGlyphSeconds.contains(seconds) ? "gobackward.\(seconds)" : "gobackward"
-    }
+    @ViewBuilder
+    private func skipButtonIcon(seconds: Int, isForward: Bool) -> some View {
+        if Self.nativeSkipGlyphSeconds.contains(seconds) {
+            Image(systemName: "\(isForward ? "goforward" : "gobackward").\(seconds)")
+                .font(.system(size: 32))
+                .symbolRenderingMode(.hierarchical)
+                .frame(minWidth: 44, minHeight: 44)
+        } else {
+            ZStack {
+                Image(systemName: isForward ? "goforward" : "gobackward")
+                    .font(.system(size: 32))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.secondary)
 
-    private func skipAheadSymbol(seconds: Int) -> String {
-        Self.skipGlyphSeconds.contains(seconds) ? "goforward.\(seconds)" : "goforward"
+                Text("\(seconds)")
+                    .font(.system(size: seconds >= 100 ? 12 : 16, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
+                    .offset(y: 1)
+            }
+            .frame(minWidth: 44, minHeight: 44)
+        }
     }
 
     var body: some View {
@@ -552,12 +577,10 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
                 HStack(spacing: 4) {
                     if back.count >= 2 {
                         skipBackButton(
-                            seconds: Int(back[0]),
-                            systemName: skipRewindSymbol(seconds: Int(back[0]))
+                            seconds: Int(back[0])
                         )
                         skipBackButton(
-                            seconds: Int(back[1]),
-                            systemName: skipRewindSymbol(seconds: Int(back[1]))
+                            seconds: Int(back[1])
                         )
                     }
                 }
@@ -585,12 +608,10 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
                 HStack(spacing: 4) {
                     if fwd.count >= 2 {
                         skipForwardButton(
-                            seconds: Int(fwd[0]),
-                            systemName: skipAheadSymbol(seconds: Int(fwd[0]))
+                            seconds: Int(fwd[0])
                         )
                         skipForwardButton(
-                            seconds: Int(fwd[1]),
-                            systemName: skipAheadSymbol(seconds: Int(fwd[1]))
+                            seconds: Int(fwd[1])
                         )
                     }
                 }
@@ -600,7 +621,7 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
     }
 
     @ViewBuilder
-    private func skipBackButton(seconds: Int, systemName: String) -> some View {
+    private func skipBackButton(seconds: Int) -> some View {
         Button {
             if isBound {
                 playback.skipBackward(by: TimeInterval(seconds))
@@ -614,17 +635,14 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
                 }
             }
         } label: {
-            Image(systemName: systemName)
-                .font(.system(size: 32))
-                .symbolRenderingMode(.hierarchical)
-                .frame(minWidth: 44, minHeight: 44)
+            skipButtonIcon(seconds: seconds, isForward: false)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Rewind \(seconds) seconds")
     }
 
     @ViewBuilder
-    private func skipForwardButton(seconds: Int, systemName: String) -> some View {
+    private func skipForwardButton(seconds: Int) -> some View {
         Button {
             if isBound {
                 playback.skipForward(by: TimeInterval(seconds))
@@ -638,10 +656,7 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
                 }
             }
         } label: {
-            Image(systemName: systemName)
-                .font(.system(size: 32))
-                .symbolRenderingMode(.hierarchical)
-                .frame(minWidth: 44, minHeight: 44)
+            skipButtonIcon(seconds: seconds, isForward: true)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Fast forward \(seconds) seconds")

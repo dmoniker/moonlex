@@ -3,9 +3,9 @@ import SwiftData
 
 @Model
 final class SavedItem {
-    /// CloudKit-backed SwiftData cannot use `@Attribute(.unique)`; treat `id` as unique in app logic.
-    /// CloudKit requires non-optional attributes to have default values at the property declaration.
-    var id: UUID = UUID()
+    /// Stable client id as `String` (same pattern as `UserCustomFeed.id`) — avoids CloudKit mirroring issues seen with `UUID` on this entity.
+    @Attribute(originalName: "id")
+    var favoriteId: String = ""
     var createdAt: Date = Date.now
 
     var episodeKey: String = ""
@@ -23,7 +23,7 @@ final class SavedItem {
     var note: String?
 
     init(
-        id: UUID = UUID(),
+        favoriteId: String = UUID().uuidString,
         createdAt: Date = .now,
         episodeKey: String,
         episodeTitle: String,
@@ -36,7 +36,7 @@ final class SavedItem {
         excerpt: String = "",
         note: String? = nil
     ) {
-        self.id = id
+        self.favoriteId = favoriteId
         self.createdAt = createdAt
         self.episodeKey = episodeKey
         self.episodeTitle = episodeTitle

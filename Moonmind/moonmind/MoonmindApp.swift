@@ -1,5 +1,7 @@
-import SwiftUI
+import CloudKit
+import CoreData
 import SwiftData
+import SwiftUI
 
 @main
 struct MoonmindApp: App {
@@ -55,11 +57,11 @@ struct MoonmindApp: App {
         }
 
         do {
-            // `.automatic` uses the first CloudKit container from entitlements (matches Xcode capability UI).
+            // Explicit container avoids rare `.automatic` resolution issues; must match `moonmind.entitlements`.
             let config = ModelConfiguration(
                 schema: syncSchema,
                 url: cloudStoreURL,
-                cloudKitDatabase: .automatic
+                cloudKitDatabase: .private(MoonmindCloudKit.containerIdentifier)
             )
             let container = try ModelContainer(for: syncSchema, configurations: [config])
             UserDefaults.standard.set(false, forKey: MoonmindSyncSettings.cloudKitInactiveKey)
@@ -111,7 +113,11 @@ struct MoonmindApp: App {
         PodcastArtworkCache.configure()
         _ = Self.sharedModelContainer
         Self.migrateLegacySavedItemsIfNeeded()
+        Self.repairSavedItemFavoriteIdsIfNeeded()
         Self.dedupeSavedItemsIfNeeded()
+        Self.mergeSyncedAppPreferencesAfterCloudKitImportIfNeeded()
+        Self.observeCloudKitSyncEvents()
+        Self.logCloudKitAccountStatusIfNeeded()
     }
 
     var body: some Scene {
@@ -146,7 +152,7 @@ struct MoonmindApp: App {
 
         for item in legacyItems {
             let copy = SavedItem(
-                id: item.id,
+                favoriteId: item.favoriteId.isEmpty ? UUID().uuidString : item.favoriteId,
                 createdAt: item.createdAt,
                 episodeKey: item.episodeKey,
                 episodeTitle: item.episodeTitle,
@@ -164,15 +170,91 @@ struct MoonmindApp: App {
         try? mainContext.save()
     }
 
+    /// After UUID → String migration, rows can briefly have an empty `favoriteId`; ensure each has a unique value before deduping.
+    private static func repairSavedItemFavoriteIdsIfNeeded() {
+        let context = Self.sharedModelContainer.mainContext
+        let all = (try? context.fetch(FetchDescriptor<SavedItem>())) ?? []
+        var changed = false
+        for item in all where item.favoriteId.isEmpty {
+            item.favoriteId = UUID().uuidString
+            changed = true
+        }
+        if changed { try? context.save() }
+    }
+
     private static func dedupeSavedItemsIfNeeded() {
         let context = Self.sharedModelContainer.mainContext
         let all = (try? context.fetch(FetchDescriptor<SavedItem>())) ?? []
-        var byId: [UUID: [SavedItem]] = [:]
-        for item in all { byId[item.id, default: []].append(item) }
-        for group in byId.values where group.count > 1 {
+        var byFavoriteId: [String: [SavedItem]] = [:]
+        for item in all { byFavoriteId[item.favoriteId, default: []].append(item) }
+        for group in byFavoriteId.values where group.count > 1 {
+            let sorted = group.sorted { $0.createdAt < $1.createdAt }
+            for extra in sorted.dropFirst() { context.delete(extra) }
+        }
+        var byEpisodeFavorite: [String: [SavedItem]] = [:]
+        for item in all where item.excerpt.isEmpty {
+            byEpisodeFavorite[item.episodeKey, default: []].append(item)
+        }
+        for group in byEpisodeFavorite.values where group.count > 1 {
             let sorted = group.sorted { $0.createdAt < $1.createdAt }
             for extra in sorted.dropFirst() { context.delete(extra) }
         }
         try? context.save()
+    }
+
+    /// Collapse duplicate preference rows (common when `id` was not `"default"` on imported CloudKit rows).
+    private static func mergeSyncedAppPreferencesAfterCloudKitImportIfNeeded() {
+        let ctx = sharedModelContainer.mainContext
+        SyncedAppPreferences.mergeDuplicatesIfNeeded(in: ctx)
+        try? ctx.save()
+    }
+
+    private static func logCloudKitAccountStatusIfNeeded() {
+        let prefersCloud: Bool = {
+            if UserDefaults.standard.object(forKey: MoonmindSyncSettings.preferICloudSyncKey) == nil { return true }
+            return UserDefaults.standard.bool(forKey: MoonmindSyncSettings.preferICloudSyncKey)
+        }()
+        guard prefersCloud, UserDefaults.standard.bool(forKey: MoonmindSyncSettings.cloudKitInactiveKey) == false else { return }
+        Task { @MainActor in
+            let container = CKContainer(identifier: MoonmindCloudKit.containerIdentifier)
+            do {
+                let status = try await container.accountStatus()
+                switch status {
+                case .available:
+                    break
+                case .couldNotDetermine, .restricted, .noAccount, .temporarilyUnavailable:
+                    print("moonmind: iCloud for CloudKit is not fully available (status: \(String(describing: status))). Check Settings → Apple ID → iCloud.")
+                @unknown default:
+                    print("moonmind: iCloud account status unknown: \(String(describing: status))")
+                }
+            } catch {
+                print("moonmind: Could not read iCloud account status for CloudKit: \(error)")
+            }
+        }
+    }
+
+    private static func observeCloudKitSyncEvents() {
+        NotificationCenter.default.addObserver(
+            forName: NSPersistentCloudKitContainer.eventChangedNotification,
+            object: nil,
+            queue: OperationQueue.main
+        ) { notification in
+            guard let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey]
+                as? NSPersistentCloudKitContainer.Event
+            else { return }
+            guard event.endDate != nil else { return }
+            if !event.succeeded {
+                print("""
+                moonmind: CloudKit sync event failed
+                type: \(String(describing: event.type))
+                error: \(event.error.map { "\($0)" } ?? "nil")
+                """)
+                return
+            }
+            guard event.type == .import else { return }
+            let ctx = Self.sharedModelContainer.mainContext
+            SyncedAppPreferences.mergeDuplicatesIfNeeded(in: ctx)
+            try? ctx.save()
+        }
     }
 }

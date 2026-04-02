@@ -133,5 +133,6 @@ struct FavoritesView: View {
         for i in offsets {
             modelContext.delete(items[i])
         }
+        try? modelContext.save()
     }
 }

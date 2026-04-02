@@ -12,7 +12,6 @@
 		A10000030000000000000003 /* Episode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* Episode.swift */; };
 		A10000040000000000000004 /* FeedCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* FeedCatalog.swift */; };
 		A10000050000000000000005 /* SavedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* SavedItem.swift */; };
-		A100002A000000000000002A /* CloudSyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200002A000000000000002A /* CloudSyncModels.swift */; };
 		A10000060000000000000006 /* String+HTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* String+HTML.swift */; };
 		A10000070000000000000007 /* RSSFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RSSFeedService.swift */; };
 		A10000080000000000000008 /* FeedFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* FeedFilters.swift */; };
@@ -36,6 +35,7 @@
 		A10000270000000000000027 /* ElonGuestEpisodeFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000270000000000000027 /* ElonGuestEpisodeFilter.swift */; };
 		A10000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift */; };
 		A10000290000000000000029 /* ElonSupplementalInterviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000290000000000000029 /* ElonSupplementalInterviews.swift */; };
+		A100002A000000000000002A /* CloudSyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200002A000000000000002A /* CloudSyncModels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,7 +45,6 @@
 		A20000030000000000000003 /* Episode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Episode.swift; sourceTree = "<group>"; };
 		A20000040000000000000004 /* FeedCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCatalog.swift; sourceTree = "<group>"; };
 		A20000050000000000000005 /* SavedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedItem.swift; sourceTree = "<group>"; };
-		A200002A000000000000002A /* CloudSyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncModels.swift; sourceTree = "<group>"; };
 		A20000060000000000000006 /* String+HTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+HTML.swift"; sourceTree = "<group>"; };
 		A20000070000000000000007 /* RSSFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedService.swift; sourceTree = "<group>"; };
 		A20000080000000000000008 /* FeedFilters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFilters.swift; sourceTree = "<group>"; };
@@ -70,6 +69,7 @@
 		A20000270000000000000027 /* ElonGuestEpisodeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElonGuestEpisodeFilter.swift; sourceTree = "<group>"; };
 		A20000280000000000000028 /* ElonGuestInterviewEpisodeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElonGuestInterviewEpisodeCache.swift; sourceTree = "<group>"; };
 		A20000290000000000000029 /* ElonSupplementalInterviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElonSupplementalInterviews.swift; sourceTree = "<group>"; };
+		A200002A000000000000002A /* CloudSyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncModels.swift; sourceTree = "<group>"; };
 		A2FFFF010000000000000001 /* moonmind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moonmind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -395,11 +395,12 @@
 		A80000030000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = moonmind/moonmind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = F34XBU4X46;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -427,11 +428,12 @@
 		A80000040000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = moonmind/moonmind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = F34XBU4X46;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
