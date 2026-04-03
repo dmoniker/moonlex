@@ -226,6 +226,13 @@ final class EpisodePlaybackController: ObservableObject {
         miniPlayerDetailNavigation = nil
     }
 
+    /// Switch to the Feed tab and push this podcast episode’s detail (e.g. newsletter “play podcast” affordance).
+    @MainActor
+    func presentPodcastEpisodeInFeedTab(episode: Episode, selectFeedTab: () -> Void) {
+        miniPlayerDetailNavigation = AutoplayDetailNavigation(feed: .podcast, episode: episode)
+        selectFeedTab()
+    }
+
     /// Call `selectTab` with `0` (Feed) or `1` (Newsletters), then publishes ``miniPlayerDetailNavigation`` when the episode is in that feed list.
     @MainActor
     func openNowPlayingDetail(selectTab: (Int) -> Void) {
@@ -403,6 +410,7 @@ final class EpisodePlaybackController: ObservableObject {
                             playback.statusObservation = nil
                             playback.resumeSetupComplete = true
                             playback.pushNowPlayingInfo()
+                            playback.reassertPlaybackIfUserRequestedPlaying()
                         }
                     }
                 } else {
@@ -410,6 +418,7 @@ final class EpisodePlaybackController: ObservableObject {
                     playback.statusObservation = nil
                     playback.resumeSetupComplete = true
                     playback.pushNowPlayingInfo()
+                    playback.reassertPlaybackIfUserRequestedPlaying()
                 }
             }
         }
@@ -632,6 +641,15 @@ final class EpisodePlaybackController: ObservableObject {
         p.play()
         isPlaying = true
         pushNowPlayingInfo()
+    }
+
+    /// Call after the current item becomes ready or after a seek so an early `play()` actually starts decoding.
+    private func reassertPlaybackIfUserRequestedPlaying() {
+        guard isPlaying, let p = player else { return }
+        p.automaticallyWaitsToMinimizeStalling = true
+        p.defaultRate = playbackRate
+        p.rate = playbackRate
+        p.play()
     }
 
     func pause() {

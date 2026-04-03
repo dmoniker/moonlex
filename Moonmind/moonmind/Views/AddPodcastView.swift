@@ -16,43 +16,21 @@ struct AddPodcastView: View {
     @State private var urlString = ""
     @State private var manualError: String?
     @State private var searchAddError: String?
+    @State private var toast: String?
+    @State private var showManualAddSheet = false
 
     var body: some View {
         Form {
             Section {
-                if catalog.allFeeds.isEmpty {
-                    Text("No shows yet. Search above, add an RSS link manually, or use Settings → Reset feeds to defaults to restore the built-in list.")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(catalog.allFeeds) { feed in
-                        VStack(alignment: .leading, spacing: 4) {
-                            if feed.id == PodcastFeed.elonGuestInterviewsFeedID {
-                                Text("Elon Musk Interviews")
-                                    .font(.headline)
-                                Text("Curated Elon-as-guest podcast episodes from over the years. Enjoy.")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text(feed.title)
-                                    .font(.headline)
-                                Text(feed.rssURLString)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .textSelection(.enabled)
-                            }
-                        }
-                    }
-                    .onDelete(perform: deleteFeed)
-                }
-            } header: {
-                Text("Your feeds")
-            } footer: {
-                Text("Swipe left to remove any show—including built-ins. To bring back every default show and clear those you added, use Settings.")
-            }
-
-            Section {
                 TextField("Search Apple Podcasts", text: $searchText)
                     .textInputAutocapitalization(.words)
+
+                Button {
+                    manualError = nil
+                    showManualAddSheet = true
+                } label: {
+                    Label("Add manually", systemImage: "link")
+                }
 
                 if isSearching {
                     HStack {
@@ -107,24 +85,37 @@ struct AddPodcastView: View {
                 }
             } header: {
                 Text("Search Apple Podcasts")
-            } footer: {
-                Text("Search content courtesy of Apple Podcasts. Shows not listed here can be added below with a direct RSS URL.")
-                    .font(.footnote)
             }
 
-            Section("Add manually") {
-                TextField("Show title", text: $title)
-                TextField("RSS URL", text: $urlString)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.URL)
-                    .textContentType(.URL)
-                if let manualError {
-                    Text(manualError)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
+            Section {
+                if catalog.allFeeds.isEmpty {
+                    Text("No shows yet. Search above, use Add manually for an RSS link, or use Settings → Reset feeds to defaults to restore the built-in list.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(catalog.allFeeds) { feed in
+                        VStack(alignment: .leading, spacing: 4) {
+                            if feed.id == PodcastFeed.elonGuestInterviewsFeedID {
+                                Text("Elon Musk Interviews")
+                                    .font(.headline)
+                                Text("Curated Elon-as-guest podcast episodes from over the years. Enjoy.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text(feed.title)
+                                    .font(.headline)
+                                Text(feed.rssURLString)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }
+                        }
+                    }
+                    .onDelete(perform: deleteFeed)
                 }
-                Button("Add") { addManual() }
-                    .disabled(isManualAddDisabled)
+            } header: {
+                Text("Your feeds")
+            } footer: {
+                Text("Swipe left to remove any show—including built-ins. To bring back every default show and clear those you added, use Settings.")
             }
         }
         .navigationTitle("Add feeds")
@@ -141,11 +132,37 @@ struct AddPodcastView: View {
             searchTask?.cancel()
             searchTask = nil
         }
+        .overlay(alignment: .bottom) {
+            if let t = toast {
+                Text(t)
+                    .font(.subheadline.weight(.semibold))
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut, value: toast)
+        .sheet(isPresented: $showManualAddSheet) {
+            AddFeedManuallySheet(
+                title: $title,
+                urlString: $urlString,
+                manualError: $manualError,
+                onAdd: {
+                    if addManual() {
+                        showManualAddSheet = false
+                    }
+                }
+            )
+        }
     }
 
-    private var isManualAddDisabled: Bool {
-        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || urlString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    private func flash(_ message: String) {
+        toast = message
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            toast = nil
+        }
     }
 
     private func scheduleSearch() {
@@ -185,6 +202,7 @@ struct AddPodcastView: View {
         searchAddError = nil
         do {
             try catalog.addCustom(title: match.title, rssURL: match.rssURL)
+            flash("Added to feeds")
             searchText = ""
             searchResults = []
             searchError = nil
@@ -194,22 +212,26 @@ struct AddPodcastView: View {
         }
     }
 
-    private func addManual() {
+    @discardableResult
+    private func addManual() -> Bool {
         let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let u = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         searchAddError = nil
         guard let url = URL(string: u) else {
             manualError = FeedCatalogError.invalidURL.localizedDescription
-            return
+            return false
         }
         do {
             try catalog.addCustom(title: t, rssURL: url)
+            flash("Added to feeds")
             title = ""
             urlString = ""
             manualError = nil
             onFeedsChanged()
+            return true
         } catch {
             manualError = error.localizedDescription
+            return false
         }
     }
 
@@ -221,5 +243,54 @@ struct AddPodcastView: View {
             catalog.removeFeed(feed)
         }
         onFeedsChanged()
+    }
+}
+
+// MARK: - Manual RSS sheet
+
+private struct AddFeedManuallySheet: View {
+    @Binding var title: String
+    @Binding var urlString: String
+    @Binding var manualError: String?
+    var onAdd: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var isAddDisabled: Bool {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || urlString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Show title", text: $title)
+                    TextField("RSS URL", text: $urlString)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                        .textContentType(.URL)
+                }
+
+                if let manualError {
+                    Section {
+                        Text(manualError)
+                            .foregroundStyle(.red)
+                            .font(.footnote)
+                    }
+                }
+            }
+            .navigationTitle("Add manually")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") { onAdd() }
+                        .disabled(isAddDisabled)
+                }
+            }
+        }
     }
 }

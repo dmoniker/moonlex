@@ -1,6 +1,21 @@
 import OSLog
 import SwiftData
 import SwiftUI
+import UIKit
+
+private extension View {
+    /// Transparent navigation bar and light toolbar items so the back button reads on a dark hero image.
+    @ViewBuilder
+    func newsletterHeroNavigationChrome(_ enabled: Bool) -> some View {
+        if enabled {
+            self
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbarColorScheme(.dark, for: .navigationBar)
+        } else {
+            self
+        }
+    }
+}
 
 private struct EpisodeDetailScrollTopGlobalYKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
@@ -25,12 +40,66 @@ private struct EpisodeDetailScrollViewportHeightKey: PreferenceKey {
     }
 }
 
+/// UIKit adds top ``adjustedContentInset`` under a ``UINavigationBar``; that pushes SwiftUI scroll content down until
+/// the user overscrolls. Disabling automatic adjustment matches transparent nav + hero ``ignoresSafeArea`` (“true” top bleed at rest).
+private struct ScrollContentInsetAdjustmentBridge: UIViewRepresentable {
+    var disableAutomaticInsets: Bool
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeUIView(context: Context) -> UIView {
+        let v = UIView()
+        v.isUserInteractionEnabled = false
+        v.backgroundColor = .clear
+        return v
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        DispatchQueue.main.async {
+            guard let scroll = Self.enclosingScrollView(from: uiView) else { return }
+            if context.coordinator.trackedScrollView !== scroll {
+                if let previous = context.coordinator.trackedScrollView {
+                    previous.contentInsetAdjustmentBehavior = context.coordinator.storedBehavior
+                }
+                context.coordinator.trackedScrollView = scroll
+                context.coordinator.storedBehavior = scroll.contentInsetAdjustmentBehavior
+            }
+            scroll.contentInsetAdjustmentBehavior = disableAutomaticInsets ? .never : context.coordinator.storedBehavior
+        }
+    }
+
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        coordinator.trackedScrollView?.contentInsetAdjustmentBehavior = coordinator.storedBehavior
+        coordinator.trackedScrollView = nil
+    }
+
+    final class Coordinator {
+        weak var trackedScrollView: UIScrollView?
+        var storedBehavior: UIScrollView.ContentInsetAdjustmentBehavior = .automatic
+    }
+
+    private static func enclosingScrollView(from view: UIView) -> UIScrollView? {
+        var node: UIView? = view.superview
+        while let cur = node {
+            if let scroll = cur as? UIScrollView { return scroll }
+            node = cur.superview
+        }
+        return nil
+    }
+}
+
 struct EpisodeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var detailBottomChrome: DetailBottomChromeState
     @Query private var saved: [SavedItem]
 
     let episode: Episode
+    /// Main Feed tab model: used to resolve Innermost Loop podcast audio for a newsletter post (same normalized `linkURL`).
+    @ObservedObject var podcastHome: HomeViewModel
+    /// When playing the companion podcast from a newsletter, switches to tab 0 so the podcast detail can be presented.
+    var onSelectFeedTab: (() -> Void)? = nil
     let playback: EpisodePlaybackController
     /// Observed separately from `playback` so high‑frequency `currentTime` ticks do not rebuild the detail shell (e.g. sleep timer menu).
     @ObservedObject var progressStore: EpisodePlaybackProgressStore
@@ -58,9 +127,35 @@ struct EpisodeDetailView: View {
     @State private var episodeDetailScrollContentHeight: CGFloat = 0
     @State private var episodeDetailScrollViewportHeight: CGFloat = 0
 
+    /// Edge-to-edge hero for newsletter posts (see ``newsletterHeroArtwork``).
+    private var usesNewsletterHero: Bool {
+        episode.feedContentKind == .newsletter && episode.artworkURL != nil
+    }
+
+    private var innermostLoopCompanionPodcast: Episode? {
+        guard episode.feedContentKind == .newsletter,
+              episode.feedID == PodcastFeed.innermostLoopID,
+              episode.audioURL == nil
+        else { return nil }
+        let podcastRows = podcastHome.episodes.filter {
+            $0.feedID == PodcastFeed.innermostLoopPodcastID && $0.audioURL != nil
+        }
+        if let key = episode.normalizedPostLinkKey,
+           let match = podcastRows.first(where: { $0.normalizedPostLinkKey == key }) {
+            return match
+        }
+        // Fallback: Substack usually shares titles; link shapes can still diverge between RSS variants.
+        let cal = Calendar.current
+        return podcastRows.first { ep in
+            guard let dNews = episode.pubDate, let dPod = ep.pubDate else { return false }
+            return ep.title == episode.title && cal.isDate(dNews, inSameDayAs: dPod)
+        }
+    }
+
     var body: some View {
         episodeDetailScrollView
             .navigationBarTitleDisplayMode(.inline)
+            .newsletterHeroNavigationChrome(usesNewsletterHero)
             .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -168,6 +263,15 @@ struct EpisodeDetailView: View {
     private var scrollViewCore: some View {
         ScrollView {
             episodeDetailScrollContent
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .overlay(alignment: .topLeading) {
+                    if usesNewsletterHero {
+                        ScrollContentInsetAdjustmentBridge(disableAutomaticInsets: true)
+                            .frame(width: 1, height: 1)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+                }
                 .background(
                     GeometryReader { geo in
                         Color.clear.preference(
@@ -178,6 +282,7 @@ struct EpisodeDetailView: View {
                 )
         }
         .scrollBounceBehavior(.basedOnSize)
+        .scrollClipDisabled(usesNewsletterHero)
         .background(
             GeometryReader { geo in
                 Color.clear.preference(
@@ -197,91 +302,145 @@ struct EpisodeDetailView: View {
     }
 
     private var episodeDetailScrollContent: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Color.clear
-                .frame(height: 1)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear.preference(
-                            key: EpisodeDetailScrollTopGlobalYKey.self,
-                            value: geo.frame(in: .global).minY
-                        )
-                    }
-                )
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(episode.showTitle)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Text(episode.title)
-                        .font(.title2.weight(.bold))
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 0) {
+            if usesNewsletterHero {
+                newsletterHeroArtwork
+            }
 
-                    if let d = episode.pubDate {
-                        Text(d.formatted(date: .long, time: .omitted))
-                            .font(.subheadline)
+            VStack(alignment: .leading, spacing: usesNewsletterHero ? 12 : 20) {
+                Color.clear
+                    .frame(height: 1)
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.preference(
+                                key: EpisodeDetailScrollTopGlobalYKey.self,
+                                value: geo.frame(in: .global).minY
+                            )
+                        }
+                    )
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: usesNewsletterHero ? 4 : 6) {
+                        Text(episode.showTitle)
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
+                            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                        Text(episode.title)
+                            .font(usesNewsletterHero ? .title3.weight(.bold) : .title2.weight(.bold))
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+
+                        if episode.feedContentKind == .newsletter,
+                           (episode.authorName.map { !$0.isEmpty } ?? false) || episode.authorAvatarURL != nil {
+                            HStack(alignment: .center, spacing: 10) {
+                                PodcastArtworkView(url: episode.authorAvatarURL, size: 40, cornerRadius: 20)
+                                if let name = episode.authorName, !name.isEmpty {
+                                    Text(name)
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                        .multilineTextAlignment(.leading)
+                                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                                }
+                                if let companion = innermostLoopCompanionPodcast {
+                                    Button {
+                                        playCompanionPodcast(companion)
+                                    } label: {
+                                        ZStack {
+                                            Circle()
+                                                .fill(usesNewsletterHero ? Color.white : Color(uiColor: .tertiarySystemFill))
+                                            Image(systemName: "play.fill")
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundStyle(usesNewsletterHero ? Color.black : Color.primary)
+                                                // Play triangles read left-heavy; nudge for optical center.
+                                                .offset(x: 1.5)
+                                        }
+                                        .frame(width: 44, height: 44)
+                                        .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel("Play podcast episode")
+                                } else {
+                                    Spacer(minLength: 0)
+                                }
+                            }
+                            .padding(.top, 2)
+                        }
+
+                        if let d = episode.pubDate {
+                            Text(d.formatted(date: .long, time: .omitted))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+
+                    if episode.audioURL != nil {
+                        EpisodeDownloadAccessory(episode: episode, downloads: downloads, interactive: true)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if episode.audioURL == nil, episode.artworkURL != nil, !usesNewsletterHero {
+                    HStack {
+                        Spacer(minLength: 0)
+                        PodcastArtworkView(url: episode.artworkURL, size: 220, cornerRadius: 14)
+                        Spacer(minLength: 0)
+                    }
+                }
 
                 if episode.audioURL != nil {
-                    EpisodeDownloadAccessory(episode: episode, downloads: downloads, interactive: true)
-                }
-            }
-
-            if episode.audioURL == nil, episode.artworkURL != nil {
-                HStack {
-                    Spacer(minLength: 0)
-                    PodcastArtworkView(url: episode.artworkURL, size: 220, cornerRadius: 14)
-                    Spacer(minLength: 0)
-                }
-            }
-
-            if episode.audioURL != nil {
-                EpisodeDetailPlayerCard(
-                    episode: episode,
-                    playback: playback,
-                    sleepTimer: sleepTimer,
-                    downloads: downloads
-                )
-            } else if episode.feedContentKind == .newsletter, let url = episode.linkURL {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("AI voiceover and full layout are on Substack; this feed only includes the article text in RSS.")
+                    EpisodeDetailPlayerCard(
+                        episode: episode,
+                        playback: playback,
+                        sleepTimer: sleepTimer,
+                        downloads: downloads
+                    )
+                } else if episode.feedContentKind != .newsletter {
+                    Label("No audio enclosure in this feed item", systemImage: "waveform.slash")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Link(destination: url) {
-                        Label("Open on Substack", systemImage: "safari")
-                    }
-                    .buttonStyle(.borderedProminent)
                 }
-            } else {
-                Label("No audio enclosure in this feed item", systemImage: "waveform.slash")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
 
-            if !episode.descriptionPlain.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(episode.feedContentKind == .newsletter ? "Article" : "Show notes")
-                        .font(.headline)
-                    if let attr = newsletterAttributedBody, attr.length > 0 {
-                        Text(AttributedString(attr))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        EpisodeShowNotesFormatted(
-                            text: episode.descriptionPlain,
-                            episode: episode,
-                            playback: playback,
-                            downloads: downloads
-                        )
+                if !episode.descriptionPlain.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        if episode.feedContentKind != .newsletter {
+                            Text("Show notes")
+                                .font(.headline)
+                        }
+                        if let attr = newsletterAttributedBody, attr.length > 0 {
+                            NewsletterArticleAttributedBody(attributed: attr)
+                        } else {
+                            EpisodeShowNotesFormatted(
+                                text: episode.descriptionPlain,
+                                episode: episode,
+                                playback: playback,
+                                downloads: downloads
+                            )
+                        }
                     }
+                    .padding(.top, usesNewsletterHero ? 10 : 0)
                 }
             }
+            .padding()
+            .padding(.bottom, newsletterScrollExtraBottomPadding)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// When the tab bar is visible, reserve space so the article tail isn’t tucked under the bar.
+    private var newsletterScrollExtraBottomPadding: CGFloat {
+        guard usesNewsletterHero, !detailBottomChrome.isCompact else { return 0 }
+        return 56
+    }
+
+    /// Short enough to leave room for the headline block and first lines of the article on a typical phone.
+    /// Top bleed only: extending **horizontal** safe area widened scroll content and clipped leading `Text`; body
+    /// indents + `minWidth: 0` keep typography stable under the toolbar.
+    private var newsletterHeroArtwork: some View {
+        PodcastArtworkView(url: episode.artworkURL, cornerRadius: 0, bannerHeight: 200)
+            .frame(maxWidth: .infinity)
+            .ignoresSafeArea(edges: .top)
     }
 
     /// When show notes fit in one screen, scroll offset never crosses the compact threshold — force compact while playing.
@@ -315,7 +474,7 @@ struct EpisodeDetailView: View {
     /// Keeps the current player when browsing other episodes or non-audio posts; only syncs metadata when this episode is already loaded.
     private func applyPlaybackSource() {
         guard let url = episodePlaybackURL else { return }
-        guard playback.loadedMediaURL == url else { return }
+        guard playback.loadedEpisodeKey == episode.stableKey else { return }
         _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
     }
 
@@ -323,6 +482,27 @@ struct EpisodeDetailView: View {
         toast = message
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
             toast = nil
+        }
+    }
+
+    private func playCompanionPodcast(_ companion: Episode) {
+        let url = downloads.playbackURL(for: companion) ?? companion.audioURL
+        guard let url else {
+            flash("Couldn’t find audio for this episode")
+            return
+        }
+        let meta = EpisodeNowPlayingMetadata(
+            title: companion.title,
+            showTitle: companion.showTitle,
+            artworkURL: companion.artworkURL
+        )
+        _ = playback.load(url: url, nowPlaying: meta, episodeKey: companion.stableKey)
+        if let selectFeed = onSelectFeedTab {
+            playback.presentPodcastEpisodeInFeedTab(episode: companion, selectFeedTab: selectFeed)
+        }
+        // Defer past tab + navigation updates so `HomeFeedView` can observe `miniPlayerDetailNavigation` / `selectedTab`.
+        DispatchQueue.main.async {
+            playback.play()
         }
     }
 
@@ -352,6 +532,44 @@ struct EpisodeDetailView: View {
             return
         }
         flash("Saved to favorites")
+    }
+}
+
+// MARK: - Newsletter HTML body (SwiftUI `Text` ignores much of `NSParagraphStyle`; stack paragraphs explicitly)
+
+private struct NewsletterArticleAttributedBody: View {
+    let attributed: NSAttributedString
+
+    /// Extra space between blocks; within each block, `.lineSpacing` relaxes line metrics (SwiftUI ignores most paragraph spacing).
+    private let paragraphGap: CGFloat = 22
+    private let lineRelaxation: CGFloat = 12
+
+    private var pieces: [NSAttributedString] {
+        let ns = attributed.string as NSString
+        let length = ns.length
+        guard length > 0 else { return [] }
+        var out: [NSAttributedString] = []
+        ns.enumerateSubstrings(in: NSRange(location: 0, length: length), options: [.byParagraphs]) { _, _, enclosingRange, _ in
+            out.append(attributed.attributedSubstring(from: enclosingRange))
+        }
+        return out
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: paragraphGap) {
+            ForEach(Array(pieces.enumerated()), id: \.offset) { _, piece in
+                let trimmed = piece.string.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.isEmpty {
+                    Color.clear.frame(height: paragraphGap * 0.35)
+                } else {
+                    Text(AttributedString(piece))
+                        .lineSpacing(lineRelaxation)
+                        .multilineTextAlignment(.leading)
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -392,20 +610,30 @@ private struct EpisodeShowNotesFormatted: View {
         text.components(separatedBy: "\n")
     }
 
+    private var isNewsletterBody: Bool {
+        episode.feedContentKind == .newsletter
+    }
+
+    private var blockSpacing: CGFloat { isNewsletterBody ? 22 : 6 }
+
+    private var paragraphBreakHeight: CGFloat { isNewsletterBody ? 24 : 2 }
+
+    private var textLineSpacing: CGFloat { isNewsletterBody ? 14 : 0 }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: blockSpacing) {
             ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                 showNoteLine(line)
             }
         }
         .font(.body)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
     private func showNoteLine(_ line: String) -> some View {
         if line.trimmingCharacters(in: .whitespaces).isEmpty {
-            Color.clear.frame(height: 2)
+            Color.clear.frame(height: paragraphBreakHeight)
         } else if episode.audioURL != nil,
                   let chapter = ShowNotesBracketTimestamp.chapterSeekHeadAndTail(line) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
@@ -433,15 +661,26 @@ private struct EpisodeShowNotesFormatted: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(Color.accentColor)
                 if !chapter.tail.isEmpty {
-                    Text(chapter.tail.attributedPlainTextDetectingLinks())
-                        .multilineTextAlignment(.leading)
+                    linkedText(chapter.tail.attributedPlainTextDetectingLinks())
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         } else {
-            Text(line.attributedPlainTextDetectingLinks())
+            linkedText(line.attributedPlainTextDetectingLinks())
+        }
+    }
+
+    @ViewBuilder
+    private func linkedText(_ content: AttributedString) -> some View {
+        if textLineSpacing > 0 {
+            Text(content)
+                .lineSpacing(textLineSpacing)
                 .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        } else {
+            Text(content)
+                .multilineTextAlignment(.leading)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         }
     }
 }

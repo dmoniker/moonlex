@@ -14,6 +14,7 @@ struct FavoritesView: View {
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var podcastHome: HomeViewModel
     @ObservedObject var newsletterHome: HomeViewModel
+    let onSelectFeedTab: () -> Void
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
     @ObservedObject var episodeDownloads: EpisodeDownloadStore
@@ -58,6 +59,8 @@ struct FavoritesView: View {
             .navigationDestination(for: Episode.self) { episode in
                 EpisodeDetailView(
                     episode: episode,
+                    podcastHome: podcastHome,
+                    onSelectFeedTab: onSelectFeedTab,
                     playback: episodePlayback,
                     progressStore: episodePlayback.progressStore,
                     sleepTimer: sleepTimer,

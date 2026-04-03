@@ -13,6 +13,9 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
     let linkURL: URL?
     let descriptionRaw: String
     let artworkURL: URL?
+    /// Post author when the feed provides it (e.g. RSS `dc:creator`); publication/feed avatar when `authorAvatarURL` is set.
+    let authorName: String?
+    let authorAvatarURL: URL?
     let feedContentKind: FeedContentKind
 
     var descriptionPlain: String {
@@ -22,6 +25,16 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
         case .newsletter:
             return descriptionRaw.strippingHTMLNewsletter
         }
+    }
+
+    /// Normalized article URL for pairing items across feeds (e.g. Innermost Loop newsletter + podcast).
+    var normalizedPostLinkKey: String? {
+        guard let url = linkURL else { return nil }
+        var c = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        c?.fragment = nil
+        c?.query = nil
+        guard let normalized = c?.url else { return nil }
+        return normalized.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
 
     static func < (lhs: Episode, rhs: Episode) -> Bool {
@@ -44,6 +57,8 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
             linkURL: linkURL,
             descriptionRaw: descriptionRaw,
             artworkURL: url,
+            authorName: authorName,
+            authorAvatarURL: authorAvatarURL,
             feedContentKind: feedContentKind
         )
     }
@@ -61,6 +76,8 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
             linkURL: linkURL,
             descriptionRaw: descriptionRaw,
             artworkURL: artworkURL,
+            authorName: authorName,
+            authorAvatarURL: authorAvatarURL,
             feedContentKind: feedContentKind
         )
     }
@@ -79,6 +96,8 @@ extension Episode {
         linkURL = savedItem.linkURLString.flatMap { URL(string: $0) }
         descriptionRaw = ""
         artworkURL = nil
+        authorName = nil
+        authorAvatarURL = nil
         feedContentKind = contentKind
     }
 }

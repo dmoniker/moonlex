@@ -5,6 +5,133 @@ private enum PlainTextLinkDetection {
     static let detector: NSDataDetector? = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
 }
 
+/// HTML → `NSAttributedString` post-processing lives outside `extension String` so calls like `max(_:_:)` are not
+/// resolved to `String`’s APIs (Swift 6 / newer SDKs).
+private enum ArticleAttributedFormatting {
+    static func applySemanticColors(to attributed: NSMutableAttributedString) {
+        let full = NSRange(location: 0, length: attributed.length)
+        attributed.addAttribute(.foregroundColor, value: UIColor.label, range: full)
+        tuneupLinkSpansInArticleBody(attributed)
+    }
+
+    private static func tuneupLinkSpansInArticleBody(_ attributed: NSMutableAttributedString) {
+        let full = NSRange(location: 0, length: attributed.length)
+        attributed.enumerateAttribute(.link, in: full, options: [.longestEffectiveRangeNotRequired]) { value, range, _ in
+            guard value != nil else { return }
+            attributed.addAttribute(.foregroundColor, value: UIColor.label, range: range)
+            attributed.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
+        }
+    }
+
+    static func normalizeFonts(_ attributed: NSMutableAttributedString) {
+        let body = UIFont.preferredFont(forTextStyle: .body)
+        let full = NSRange(location: 0, length: attributed.length)
+        guard full.length > 0 else { return }
+
+        attributed.enumerateAttribute(.font, in: full, options: []) { value, range, _ in
+            guard let old = value as? UIFont else {
+                attributed.addAttribute(.font, value: body, range: range)
+                return
+            }
+            let traits = old.fontDescriptor.symbolicTraits
+            var descriptor = body.fontDescriptor
+            if traits.contains(.traitBold) {
+                descriptor = descriptor.withSymbolicTraits(.traitBold) ?? descriptor
+            }
+            if traits.contains(.traitItalic) {
+                let next = descriptor.symbolicTraits.union(.traitItalic)
+                descriptor = descriptor.withSymbolicTraits(next) ?? descriptor
+            }
+            let font = UIFont(descriptor: descriptor, size: body.pointSize)
+            attributed.addAttribute(.font, value: font, range: range)
+        }
+    }
+
+    /// HTML importers often change `NSParagraphStyle` at `<p>` boundaries without inserting `\n`. SwiftUI `Text`
+    /// largely ignores `paragraphSpacing`, so we add explicit newline characters for real paragraph breaks.
+    static func insertNewlinesAtParagraphStyleBoundaries(_ attributed: NSMutableAttributedString) {
+        let ns = attributed.string as NSString
+        let length = ns.length
+        guard length > 1 else { return }
+        var toInsert: [Int] = []
+        var i = 1
+        while i < length {
+            let prevUnit = ns.character(at: i - 1)
+            if let scalar = UnicodeScalar(prevUnit), CharacterSet.newlines.contains(scalar) {
+                i += 1
+                continue
+            }
+            let psPrev = attributed.attribute(.paragraphStyle, at: i - 1, effectiveRange: nil) as? NSParagraphStyle
+            let psHere = attributed.attribute(.paragraphStyle, at: i, effectiveRange: nil) as? NSParagraphStyle
+            let stylesDiffer: Bool = {
+                switch (psPrev, psHere) {
+                case (nil, nil): return false
+                case let (a?, b?): return !a.isEqual(b)
+                default: return true
+                }
+            }()
+            if stylesDiffer { toInsert.append(i) }
+            i += 1
+        }
+        for pos in toInsert.sorted(by: >) {
+            let attrs = attributed.attributes(at: max(0, pos - 1), effectiveRange: nil)
+            attributed.insert(NSAttributedString(string: "\n", attributes: attrs), at: pos)
+        }
+    }
+
+    /// Loose line spacing and clearer gaps between paragraphs for newsletter reading.
+    static func applyReadableLayout(to attributed: NSMutableAttributedString) {
+        let ns = attributed.string as NSString
+        let length = ns.length
+        guard length > 0 else { return }
+
+        let body = UIFont.preferredFont(forTextStyle: .body)
+        let minimumLineHeight = ceil(body.lineHeight * 1.52)
+        let lineSpacing: CGFloat = 22
+        let lineHeightMultiple: CGFloat = 1.68
+        let paragraphSpacing: CGFloat = 36
+        let paragraphSpacingBefore: CGFloat = 0
+        var furthestParagraphEnd = 0
+
+        ns.enumerateSubstrings(in: NSRange(location: 0, length: length), options: [.byParagraphs]) { _, _, enclosingRange, _ in
+            guard enclosingRange.length > 0 else { return }
+            let m = NSMutableParagraphStyle()
+            if let p = attributed.attribute(.paragraphStyle, at: enclosingRange.location, effectiveRange: nil) as? NSParagraphStyle {
+                m.setParagraphStyle(p)
+            }
+            // HTML import can carry negative / odd indents; SwiftUI Text often clips the left edge of the run.
+            m.headIndent = 0
+            m.firstLineHeadIndent = 0
+            m.tailIndent = 0
+            m.paragraphSpacingBefore = paragraphSpacingBefore
+            m.minimumLineHeight = minimumLineHeight
+            m.lineSpacing = lineSpacing
+            m.lineHeightMultiple = lineHeightMultiple
+            m.paragraphSpacing = paragraphSpacing
+            attributed.addAttribute(.paragraphStyle, value: m, range: enclosingRange)
+            let paraEnd = enclosingRange.location + enclosingRange.length
+            if paraEnd > furthestParagraphEnd { furthestParagraphEnd = paraEnd }
+        }
+
+        if furthestParagraphEnd < length {
+            let tailRange = NSRange(location: furthestParagraphEnd, length: length - furthestParagraphEnd)
+            let m = NSMutableParagraphStyle()
+            if let p = attributed.attribute(.paragraphStyle, at: tailRange.location, effectiveRange: nil) as? NSParagraphStyle {
+                m.setParagraphStyle(p)
+            }
+            m.headIndent = 0
+            m.firstLineHeadIndent = 0
+            m.tailIndent = 0
+            m.paragraphSpacingBefore = paragraphSpacingBefore
+            m.minimumLineHeight = minimumLineHeight
+            m.lineSpacing = lineSpacing
+            m.lineHeightMultiple = lineHeightMultiple
+            m.paragraphSpacing = paragraphSpacing
+            attributed.addAttribute(.paragraphStyle, value: m, range: tailRange)
+        }
+    }
+}
+
 extension String {
     /// Minimal HTML → plain text for show notes (good enough for podcast RSS).
     var strippingHTML: String {
@@ -27,6 +154,7 @@ extension String {
     /// Plain text for newsletter HTML: block structure, lists, fewer run-on paragraphs.
     var strippingHTMLNewsletter: String {
         var s = Self.removingScriptsAndStyles(from: self)
+        s = Self.strippingSubscriptionCTABlocks(from: s)
         s = Self.expandingAnchorsToPlainTextWithHrefs(s)
         let patterns: [(String, String)] = [
             ("(?s)<figure.*?</figure>", "\n"),
@@ -65,21 +193,20 @@ extension String {
         return regex.stringByReplacingMatches(in: self, range: range, withTemplate: "$1\n$2")
     }
 
-    /// Detects `http`/`https` URLs etc. for plain-text show notes; link spans use `UIColor.link` and open on tap in `Text(AttributedString)`.
+    /// Detects `http`/`https` URLs etc. for plain-text show notes; link spans match body text color, underlined, and open on tap in `Text(AttributedString)`.
     func attributedPlainTextDetectingLinks() -> AttributedString {
         guard !isEmpty else { return AttributedString() }
         let mas = NSMutableAttributedString(string: self, attributes: [.foregroundColor: UIColor.label])
         guard let detector = PlainTextLinkDetection.detector else { return AttributedString(mas) }
         let full = NSRange(location: 0, length: (self as NSString).length)
+        let linkExtras: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.label,
+            .underlineStyle: NSUnderlineStyle.single.rawValue,
+        ]
         for match in detector.matches(in: self, options: [], range: full).reversed() {
             guard let url = match.url else { continue }
-            mas.addAttributes(
-                [
-                    .link: url,
-                    .foregroundColor: UIColor.link,
-                ],
-                range: match.range
-            )
+            mas.addAttribute(.link, value: url, range: match.range)
+            mas.addAttributes(linkExtras, range: match.range)
         }
         return AttributedString(mas)
     }
@@ -87,13 +214,33 @@ extension String {
     /// Rich text for article bodies (Substack `content:encoded`, etc.), scaled for Dynamic Type.
     func attributedArticleFromHTML() -> NSAttributedString? {
         var body = Self.removingScriptsAndStyles(from: self)
+        body = Self.strippingSubscriptionCTABlocks(from: body)
         body = Self.strippingHeavyVisualHTML(from: body)
         let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
+        var forImport = trimmed
+        if let gapP = try? NSRegularExpression(pattern: #"</p>\s*<p"#, options: [.caseInsensitive]) {
+            let r = NSRange(forImport.startIndex..., in: forImport)
+            forImport = gapP.stringByReplacingMatches(in: forImport, range: r, withTemplate: "</p>\n<p")
+        }
+        if let gapDiv = try? NSRegularExpression(pattern: #"</div>\s*<div"#, options: [.caseInsensitive]) {
+            let r = NSRange(forImport.startIndex..., in: forImport)
+            forImport = gapDiv.stringByReplacingMatches(in: forImport, range: r, withTemplate: "</div>\n<div")
+        }
+        // Substack-style articles often use one `<p>` with `<br><br>` as paragraph boundaries.
+        if forImport.localizedCaseInsensitiveContains("<p"),
+           let brPara = try? NSRegularExpression(pattern: #"(?is)(<br\s*/?>\s*){2,}"#, options: []) {
+            let range = NSRange(forImport.startIndex..., in: forImport)
+            forImport = brPara.stringByReplacingMatches(in: forImport, range: range, withTemplate: "</p><p>")
+        }
+
         let wrapped = """
         <!DOCTYPE html>
-        <html><head><meta charset=\"utf-8\"></head><body>\(trimmed)</body></html>
+        <html><head><meta charset=\"utf-8\"><style>
+          body { -webkit-text-size-adjust: 100%; }
+          p, li { line-height: 1.85; }
+        </style></head><body>\(forImport)</body></html>
         """
         guard let data = wrapped.data(using: .utf8) else { return nil }
         let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [
@@ -103,8 +250,10 @@ extension String {
         guard let raw = try? NSMutableAttributedString(data: data, options: options, documentAttributes: nil) else {
             return nil
         }
-        Self.applySemanticTextColors(to: raw)
-        Self.normalizeArticleFonts(raw)
+        ArticleAttributedFormatting.applySemanticColors(to: raw)
+        ArticleAttributedFormatting.normalizeFonts(raw)
+        ArticleAttributedFormatting.insertNewlinesAtParagraphStyleBoundaries(raw)
+        ArticleAttributedFormatting.applyReadableLayout(to: raw)
         return raw
     }
 
@@ -182,6 +331,25 @@ extension String {
         return s
     }
 
+    /// Substack (and similar) inject `subscription-widget-wrap-editor` subscribe CTAs **inside** long posts, so the same
+    /// “Thanks for reading…” block can appear mid-article and again at the end. Strip those widgets entirely for reading.
+    private static func strippingSubscriptionCTABlocks(from html: String) -> String {
+        let patterns = [
+            #"(?is)<div[^>]*subscription-widget-wrap-editor[^>]*>.*?</form>(?:\s*</div>){3}\s*"#,
+            #"(?is)<div[^>]*subscription-widget-wrap-editor[^>]*>.*?</form>(?:\s*</div>){2}\s*"#,
+        ]
+        var result = html
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { continue }
+            while true {
+                let full = NSRange(location: 0, length: (result as NSString).length)
+                guard let match = regex.firstMatch(in: result, options: [], range: full) else { break }
+                result = (result as NSString).replacingCharacters(in: match.range, with: "")
+            }
+        }
+        return result
+    }
+
     /// Drops embedded figures and inline SVG so the HTML importer focuses on copy and links.
     private static func strippingHeavyVisualHTML(from html: String) -> String {
         var s = html
@@ -248,37 +416,4 @@ extension String {
             .replacingOccurrences(of: "&#39;", with: "'")
     }
 
-    private static func applySemanticTextColors(to attributed: NSMutableAttributedString) {
-        let full = NSRange(location: 0, length: attributed.length)
-        attributed.addAttribute(.foregroundColor, value: UIColor.label, range: full)
-        attributed.enumerateAttribute(.link, in: full, options: [.longestEffectiveRangeNotRequired]) { value, range, _ in
-            if value != nil {
-                attributed.addAttribute(.foregroundColor, value: UIColor.link, range: range)
-            }
-        }
-    }
-
-    private static func normalizeArticleFonts(_ attributed: NSMutableAttributedString) {
-        let body = UIFont.preferredFont(forTextStyle: .body)
-        let full = NSRange(location: 0, length: attributed.length)
-        guard full.length > 0 else { return }
-
-        attributed.enumerateAttribute(.font, in: full, options: []) { value, range, _ in
-            guard let old = value as? UIFont else {
-                attributed.addAttribute(.font, value: body, range: range)
-                return
-            }
-            let traits = old.fontDescriptor.symbolicTraits
-            var descriptor = body.fontDescriptor
-            if traits.contains(.traitBold) {
-                descriptor = descriptor.withSymbolicTraits(.traitBold) ?? descriptor
-            }
-            if traits.contains(.traitItalic) {
-                let next = descriptor.symbolicTraits.union(.traitItalic)
-                descriptor = descriptor.withSymbolicTraits(next) ?? descriptor
-            }
-            let font = UIFont(descriptor: descriptor, size: body.pointSize)
-            attributed.addAttribute(.font, value: font, range: range)
-        }
-    }
 }

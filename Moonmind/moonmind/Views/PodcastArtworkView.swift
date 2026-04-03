@@ -6,14 +6,17 @@ struct PodcastArtworkView: View {
     let url: URL?
     var size: CGFloat = 56
     var cornerRadius: CGFloat = 8
+    /// Full-width hero strip (fixed height, square crop fills via ``AspectRatio`` `.fill`). When set, ``size`` is unused.
+    var bannerHeight: CGFloat?
 
     @State private var loadedImage: UIImage?
     @State private var didFail = false
 
-    init(url: URL?, size: CGFloat = 56, cornerRadius: CGFloat = 8) {
+    init(url: URL?, size: CGFloat = 56, cornerRadius: CGFloat = 8, bannerHeight: CGFloat? = nil) {
         self.url = url
         self.size = size
         self.cornerRadius = cornerRadius
+        self.bannerHeight = bannerHeight
         _loadedImage = State(initialValue: url.flatMap { PodcastArtworkCache.cachedImage(for: $0) })
     }
 
@@ -33,9 +36,10 @@ struct PodcastArtworkView: View {
                 placeholderSurface
             }
         }
-        .frame(width: size, height: size)
+        .frame(maxWidth: bannerHeight != nil ? .infinity : nil)
+        .frame(width: bannerHeight == nil ? size : nil, height: bannerHeight ?? size)
         .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: bannerHeight != nil ? 0 : cornerRadius, style: .continuous))
         .task(id: url?.absoluteString) {
             await loadArtwork()
         }

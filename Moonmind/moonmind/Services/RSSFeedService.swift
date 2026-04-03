@@ -70,6 +70,11 @@ private final class RSSParser: NSObject, XMLParserDelegate {
     private var itemDescriptionFieldBuf = ""
     private var itemContentEncodedBuf = ""
     private var itemItunesSummaryBuf = ""
+    private var itemDcCreatorBuf = ""
+    private var itemItunesAuthorBuf = ""
+
+    /// Channel `<itunes:author>` (fallback when an item has no creator).
+    private var channelItunesAuthorBuf = ""
 
     /// Show-level artwork (persists for all items in this feed document).
     private var channelArtworkURL: String?
@@ -144,7 +149,12 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             channelImageURLAccum += string
             return
         }
-        guard inItem else { return }
+        if !inItem {
+            if leaf == "itunes:author" {
+                channelItunesAuthorBuf += string
+            }
+            return
+        }
         switch leaf {
         case "title": titleBuf += string
         case "link": linkBuf += string
@@ -156,6 +166,10 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             itemContentEncodedBuf += string
         case "itunes:summary":
             itemItunesSummaryBuf += string
+        case "dc:creator":
+            itemDcCreatorBuf += string
+        case "itunes:author":
+            itemItunesAuthorBuf += string
         default: break
         }
     }
@@ -218,6 +232,8 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         itemDescriptionFieldBuf = ""
         itemContentEncodedBuf = ""
         itemItunesSummaryBuf = ""
+        itemDcCreatorBuf = ""
+        itemItunesAuthorBuf = ""
         itemArtworkURL = nil
     }
 
@@ -248,6 +264,22 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         let trimmedArt = rawArt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let artwork = trimmedArt.isEmpty ? nil : URL(string: trimmedArt)
 
+        let fromCreator = itemDcCreatorBuf.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fromItemAuthor = itemItunesAuthorBuf.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fromChannelAuthor = channelItunesAuthorBuf.trimmingCharacters(in: .whitespacesAndNewlines)
+        let authorName: String? = {
+            if !fromCreator.isEmpty { return fromCreator }
+            if !fromItemAuthor.isEmpty { return fromItemAuthor }
+            if !fromChannelAuthor.isEmpty { return fromChannelAuthor }
+            return nil
+        }()
+
+        let authorAvatarURL: URL? = {
+            guard feed.contentKind == .newsletter else { return nil }
+            let ch = channelArtworkURL?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return ch.isEmpty ? nil : URL(string: ch)
+        }()
+
         return Episode(
             stableKey: stableKey,
             title: title,
@@ -259,6 +291,8 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             linkURL: page,
             descriptionRaw: chosenItemDescriptionRaw,
             artworkURL: artwork,
+            authorName: authorName,
+            authorAvatarURL: authorAvatarURL,
             feedContentKind: feed.contentKind
         )
     }

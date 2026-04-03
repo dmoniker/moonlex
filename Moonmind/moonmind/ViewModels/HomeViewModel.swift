@@ -280,7 +280,7 @@ final class HomeViewModel: ObservableObject {
     private static func innermostNewsletterHeroByNormalizedLink(from episodes: [Episode]) -> [String: URL] {
         var heroByLink: [String: URL] = [:]
         for ep in episodes where ep.feedID == PodcastFeed.innermostLoopID {
-            guard let key = normalizedPostLinkKey(ep.linkURL), let art = ep.artworkURL else { continue }
+            guard let key = ep.normalizedPostLinkKey, let art = ep.artworkURL else { continue }
             heroByLink[key] = art
         }
         return heroByLink
@@ -290,19 +290,10 @@ final class HomeViewModel: ObservableObject {
         guard !heroByLink.isEmpty else { return episodes }
         return episodes.map { ep in
             guard ep.feedID == PodcastFeed.innermostLoopPodcastID,
-                  let key = normalizedPostLinkKey(ep.linkURL),
+                  let key = ep.normalizedPostLinkKey,
                   let hero = heroByLink[key]
             else { return ep }
             return ep.replacingArtwork(with: hero)
         }
-    }
-
-    private static func normalizedPostLinkKey(_ url: URL?) -> String? {
-        guard let url else { return nil }
-        var c = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        c?.fragment = nil
-        c?.query = nil
-        guard let normalized = c?.url else { return nil }
-        return normalized.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
 }
