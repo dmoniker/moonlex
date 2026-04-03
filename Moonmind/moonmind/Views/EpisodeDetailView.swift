@@ -231,6 +231,14 @@ struct EpisodeDetailView: View {
                 }
             }
 
+            if episode.audioURL == nil, episode.artworkURL != nil {
+                HStack {
+                    Spacer(minLength: 0)
+                    PodcastArtworkView(url: episode.artworkURL, size: 220, cornerRadius: 14)
+                    Spacer(minLength: 0)
+                }
+            }
+
             if episode.audioURL != nil {
                 EpisodeDetailPlayerCard(
                     episode: episode,

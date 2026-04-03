@@ -93,6 +93,8 @@ final class SyncedAppPreferences {
     static let singletonID = "default"
 
     var id: String = ""
+    /// Last local write time for duplicate-resolution after CloudKit imports orphaned rows.
+    var updatedAt: Date = Date()
     var podcastExclusiveFeedID: String?
     var newsletterExclusiveFeedID: String?
     var feedShowUnplayedOnly: Bool = true
@@ -110,6 +112,7 @@ final class SyncedAppPreferences {
 
     init(
         id: String,
+        updatedAt: Date = Date(),
         podcastExclusiveFeedID: String?,
         newsletterExclusiveFeedID: String?,
         feedShowUnplayedOnly: Bool,
@@ -121,6 +124,7 @@ final class SyncedAppPreferences {
         downloadEpisodesPerShow: Int = 3
     ) {
         self.id = id
+        self.updatedAt = updatedAt
         self.podcastExclusiveFeedID = podcastExclusiveFeedID
         self.newsletterExclusiveFeedID = newsletterExclusiveFeedID
         self.feedShowUnplayedOnly = feedShowUnplayedOnly
@@ -130,6 +134,10 @@ final class SyncedAppPreferences {
         self.downloadStorageLimitMB = downloadStorageLimitMB
         self.downloadRetentionModeRaw = downloadRetentionModeRaw
         self.downloadEpisodesPerShow = downloadEpisodesPerShow
+    }
+
+    func touch() {
+        updatedAt = Date()
     }
 
     /// Push download retention fields into `UserDefaults` so `EpisodeDownloadStore` reads current values.
@@ -168,25 +176,68 @@ final class SyncedAppPreferences {
             return s
         }
 
-        let sorted = all.sorted { score($0) > score($1) }
+        let sorted = all.sorted {
+            if $0.updatedAt != $1.updatedAt {
+                return $0.updatedAt > $1.updatedAt
+            }
+            return score($0) > score($1)
+        }
         guard let canonical = sorted.first else { return }
+
+        func preferNonDefault<T: Equatable>(_ preferred: T, _ fallback: T, defaultValue: T) -> T {
+            let preferredIsDefault = preferred == defaultValue
+            let fallbackIsDefault = fallback == defaultValue
+            switch (preferredIsDefault, fallbackIsDefault) {
+            case (true, false):
+                return fallback
+            default:
+                return preferred
+            }
+        }
 
         func merge(into winner: SyncedAppPreferences, from loser: SyncedAppPreferences) {
             if winner.podcastExclusiveFeedID == nil { winner.podcastExclusiveFeedID = loser.podcastExclusiveFeedID }
             if winner.newsletterExclusiveFeedID == nil {
                 winner.newsletterExclusiveFeedID = loser.newsletterExclusiveFeedID
             }
-            if loser.autoplayNextInFeed { winner.autoplayNextInFeed = true }
-            if winner.autoplayScopeRaw == "feed", loser.autoplayScopeRaw != "feed" {
-                winner.autoplayScopeRaw = loser.autoplayScopeRaw
-            }
-            if loser.feedShowUnplayedOnly == false { winner.feedShowUnplayedOnly = false }
-            if loser.podcastFeedSortNewestFirst == false { winner.podcastFeedSortNewestFirst = false }
-            winner.downloadStorageLimitMB = max(winner.downloadStorageLimitMB, loser.downloadStorageLimitMB)
-            if winner.downloadRetentionModeRaw == "episodesPerShow", loser.downloadRetentionModeRaw == "totalStorageCap" {
-                winner.downloadRetentionModeRaw = loser.downloadRetentionModeRaw
-            }
-            winner.downloadEpisodesPerShow = max(winner.downloadEpisodesPerShow, loser.downloadEpisodesPerShow)
+            winner.autoplayNextInFeed = preferNonDefault(
+                winner.autoplayNextInFeed,
+                loser.autoplayNextInFeed,
+                defaultValue: false
+            )
+            winner.autoplayScopeRaw = preferNonDefault(
+                winner.autoplayScopeRaw,
+                loser.autoplayScopeRaw,
+                defaultValue: "feed"
+            )
+            winner.feedShowUnplayedOnly = preferNonDefault(
+                winner.feedShowUnplayedOnly,
+                loser.feedShowUnplayedOnly,
+                defaultValue: true
+            )
+            winner.podcastFeedSortNewestFirst = preferNonDefault(
+                winner.podcastFeedSortNewestFirst,
+                loser.podcastFeedSortNewestFirst,
+                defaultValue: true
+            )
+            // Keep the canonical row's value unless it is still at the default and the duplicate has
+            // a real user-chosen value. This avoids duplicate cleanup "restoring" stale larger values
+            // like `episodesPerShow = 3` over a valid current choice of `1` or `2`.
+            winner.downloadStorageLimitMB = preferNonDefault(
+                winner.downloadStorageLimitMB,
+                loser.downloadStorageLimitMB,
+                defaultValue: 0
+            )
+            winner.downloadRetentionModeRaw = preferNonDefault(
+                winner.downloadRetentionModeRaw,
+                loser.downloadRetentionModeRaw,
+                defaultValue: "episodesPerShow"
+            )
+            winner.downloadEpisodesPerShow = preferNonDefault(
+                winner.downloadEpisodesPerShow,
+                loser.downloadEpisodesPerShow,
+                defaultValue: 3
+            )
         }
 
         for loser in sorted.dropFirst() {
@@ -194,6 +245,7 @@ final class SyncedAppPreferences {
             context.delete(loser)
         }
         canonical.id = sid
+        canonical.updatedAt = sorted.map(\.updatedAt).max() ?? canonical.updatedAt
         try? context.save()
     }
 
@@ -234,6 +286,7 @@ final class SyncedAppPreferences {
         if dlEps <= 0 { dlEps = 3 }
         return SyncedAppPreferences(
             id: singletonID,
+            updatedAt: Date(),
             podcastExclusiveFeedID: podcastEx,
             newsletterExclusiveFeedID: newsletterEx,
             feedShowUnplayedOnly: showUnplayed,

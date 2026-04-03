@@ -1,10 +1,12 @@
 import CloudKit
 import CoreData
+import OSLog
 import SwiftData
 import SwiftUI
 
 @main
 struct MoonmindApp: App {
+    private static let syncLogger = Logger(subsystem: "com.moonmind.moonmind", category: "CloudSync")
     private static let syncSchema = Schema([
         SavedItem.self,
         UserCustomFeed.self,
@@ -112,10 +114,12 @@ struct MoonmindApp: App {
     init() {
         PodcastArtworkCache.configure()
         _ = Self.sharedModelContainer
+        Self.syncLogger.notice("app init: SwiftData container ready")
         Self.migrateLegacySavedItemsIfNeeded()
         Self.repairSavedItemFavoriteIdsIfNeeded()
         Self.dedupeSavedItemsIfNeeded()
         Self.mergeSyncedAppPreferencesAfterCloudKitImportIfNeeded()
+        Self.logCloudSnapshot(reason: "app init post-repair")
         Self.observeCloudKitSyncEvents()
         Self.logCloudKitAccountStatusIfNeeded()
     }
@@ -209,6 +213,23 @@ struct MoonmindApp: App {
         try? ctx.save()
     }
 
+    @MainActor
+    private static func logCloudSnapshot(reason: String) {
+        let ctx = sharedModelContainer.mainContext
+        let favoritesFD = FetchDescriptor<SavedItem>(predicate: #Predicate { $0.excerpt == "" })
+        let favorites = (try? ctx.fetchCount(favoritesFD)) ?? -1
+        let progress = (try? ctx.fetchCount(FetchDescriptor<PlaybackProgressRecord>())) ?? -1
+        let prefs = (try? ctx.fetchCount(FetchDescriptor<SyncedAppPreferences>())) ?? -1
+        let customFeeds = (try? ctx.fetchCount(FetchDescriptor<UserCustomFeed>())) ?? -1
+        let hiddenFeeds = (try? ctx.fetchCount(FetchDescriptor<HiddenBuiltinFeedRecord>())) ?? -1
+        let prefRow = (try? ctx.fetch(FetchDescriptor<SyncedAppPreferences>()))?.first
+        syncLogger.notice(
+            """
+            snapshot[\(reason, privacy: .public)] favorites=\(favorites) progress=\(progress) prefs=\(prefs) customFeeds=\(customFeeds) hiddenBuiltinFeeds=\(hiddenFeeds) prefID=\(prefRow?.id ?? "nil", privacy: .public) prefUpdatedAt=\(String(describing: prefRow?.updatedAt), privacy: .public)
+            """
+        )
+    }
+
     private static func logCloudKitAccountStatusIfNeeded() {
         let prefersCloud: Bool = {
             if UserDefaults.standard.object(forKey: MoonmindSyncSettings.preferICloudSyncKey) == nil { return true }
@@ -219,6 +240,7 @@ struct MoonmindApp: App {
             let container = CKContainer(identifier: MoonmindCloudKit.containerIdentifier)
             do {
                 let status = try await container.accountStatus()
+                syncLogger.notice("iCloud account status: \(String(describing: status), privacy: .public)")
                 switch status {
                 case .available:
                     break
@@ -243,6 +265,9 @@ struct MoonmindApp: App {
                 as? NSPersistentCloudKitContainer.Event
             else { return }
             guard event.endDate != nil else { return }
+            syncLogger.notice(
+                "cloud event finished type=\(String(describing: event.type), privacy: .public) succeeded=\(event.succeeded, privacy: .public) error=\(String(describing: event.error), privacy: .public)"
+            )
             if !event.succeeded {
                 print("""
                 moonmind: CloudKit sync event failed
@@ -252,9 +277,12 @@ struct MoonmindApp: App {
                 return
             }
             guard event.type == .import else { return }
-            let ctx = Self.sharedModelContainer.mainContext
-            SyncedAppPreferences.mergeDuplicatesIfNeeded(in: ctx)
-            try? ctx.save()
+            Task { @MainActor in
+                let ctx = Self.sharedModelContainer.mainContext
+                SyncedAppPreferences.mergeDuplicatesIfNeeded(in: ctx)
+                try? ctx.save()
+                Self.logCloudSnapshot(reason: "cloud import event")
+            }
         }
     }
 }

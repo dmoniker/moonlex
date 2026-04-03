@@ -1,4 +1,5 @@
 import CoreData
+import OSLog
 import SwiftData
 import SwiftUI
 import UIKit
@@ -164,6 +165,7 @@ final class DetailBottomChromeState: ObservableObject {
 }
 
 struct ContentView: View {
+    private let syncLogger = Logger(subsystem: "com.moonmind.moonmind", category: "CloudSync")
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
@@ -275,6 +277,7 @@ struct ContentView: View {
             scheduleTabBarGeometryRefresh()
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)) { _ in
+            syncLogger.notice("received NSPersistentStoreRemoteChange")
             applyRemoteStoreMergeAfterCloudKit()
         }
         .sheet(isPresented: $showAddFeeds) {
@@ -291,9 +294,11 @@ struct ContentView: View {
             )
         }
         .onAppear {
+            syncLogger.notice("content view appear: attaching sync-backed stores")
             catalog.attach(modelContext: modelContext)
             feedFilters.attach(modelContext: modelContext)
             episodePlayback.progressStore.attach(modelContext: modelContext)
+            logCloudSnapshot(reason: "content onAppear attach")
             scheduleTabBarGeometryRefresh()
             episodePlayback.sleepTimerStore = sleepTimer
             episodePlayback.downloadStore = episodeDownloads
@@ -305,15 +310,19 @@ struct ContentView: View {
             episodeDownloads.reapplyRetentionUsingLastFeedCache()
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(2))
+                syncLogger.notice("content view delayed cloud merge firing")
                 applyRemoteStoreMergeAfterCloudKit()
             }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
+                syncLogger.notice("scene phase -> background: flushing playback progress")
                 episodePlayback.flushListeningProgressToStore()
                 try? modelContext.save()
+                logCloudSnapshot(reason: "scene background save")
             }
             if phase == .active {
+                syncLogger.notice("scene phase -> active: applying cloud merge")
                 applyRemoteStoreMergeAfterCloudKit()
             }
         }
@@ -321,10 +330,27 @@ struct ContentView: View {
 
     /// Re-reads SwiftData after CloudKit merges (`NSPersistentStoreRemoteChange` or returning to the app).
     private func applyRemoteStoreMergeAfterCloudKit() {
+        syncLogger.notice("applyRemoteStoreMergeAfterCloudKit begin")
         catalog.refreshFromCloudKitImport(modelContext: modelContext)
         feedFilters.refreshFromCloudKitImport(modelContext: modelContext)
         episodePlayback.progressStore.refreshFromCloudKitImport(modelContext: modelContext)
         episodeDownloads.reapplyRetentionUsingLastFeedCache()
+        logCloudSnapshot(reason: "applyRemoteStoreMergeAfterCloudKit end")
+    }
+
+    private func logCloudSnapshot(reason: String) {
+        let favoritesFD = FetchDescriptor<SavedItem>(predicate: #Predicate { $0.excerpt == "" })
+        let favorites = (try? modelContext.fetchCount(favoritesFD)) ?? -1
+        let progress = (try? modelContext.fetchCount(FetchDescriptor<PlaybackProgressRecord>())) ?? -1
+        let prefs = (try? modelContext.fetchCount(FetchDescriptor<SyncedAppPreferences>())) ?? -1
+        let customFeeds = (try? modelContext.fetchCount(FetchDescriptor<UserCustomFeed>())) ?? -1
+        let hiddenFeeds = (try? modelContext.fetchCount(FetchDescriptor<HiddenBuiltinFeedRecord>())) ?? -1
+        let prefRow = (try? modelContext.fetch(FetchDescriptor<SyncedAppPreferences>()))?.first
+        syncLogger.notice(
+            """
+            content snapshot[\(reason, privacy: .public)] favorites=\(favorites) progress=\(progress) prefs=\(prefs) customFeeds=\(customFeeds) hiddenBuiltinFeeds=\(hiddenFeeds) prefID=\(prefRow?.id ?? "nil", privacy: .public) prefUpdatedAt=\(String(describing: prefRow?.updatedAt), privacy: .public)
+            """
+        )
     }
 
     private var miniPlayerOverlayBottomInset: CGFloat {

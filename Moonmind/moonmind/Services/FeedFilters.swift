@@ -78,6 +78,7 @@ final class FeedFilters: ObservableObject {
             newsletterExclusiveFeedID = feedID
             prefs?.newsletterExclusiveFeedID = feedID
         }
+        prefs?.touch()
         try? modelContext?.save()
     }
 
@@ -89,6 +90,7 @@ final class FeedFilters: ObservableObject {
     func setFeedShowUnplayedOnly(_ value: Bool) {
         feedShowUnplayedOnly = value
         prefs?.feedShowUnplayedOnly = value
+        prefs?.touch()
         try? modelContext?.save()
     }
 
@@ -99,6 +101,7 @@ final class FeedFilters: ObservableObject {
     func setPodcastFeedSortNewestFirst(_ value: Bool) {
         podcastFeedSortNewestFirst = value
         prefs?.podcastFeedSortNewestFirst = value
+        prefs?.touch()
         try? modelContext?.save()
     }
 

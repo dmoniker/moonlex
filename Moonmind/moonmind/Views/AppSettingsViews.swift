@@ -425,6 +425,7 @@ struct AppSettingsSheetView: View {
         let p = SyncedAppPreferences.loadOrInsert(in: modelContext)
         p.autoplayNextInFeed = autoplayNextInFeed
         p.autoplayScopeRaw = autoplayScopeRaw
+        p.touch()
         try? modelContext.save()
     }
 
@@ -433,6 +434,7 @@ struct AppSettingsSheetView: View {
         p.downloadStorageLimitMB = storageLimitMB
         p.downloadRetentionModeRaw = downloadRetentionModeRaw
         p.downloadEpisodesPerShow = max(1, episodesPerShowStored)
+        p.touch()
         try? modelContext.save()
     }
 
