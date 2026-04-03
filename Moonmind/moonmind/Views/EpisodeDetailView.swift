@@ -96,10 +96,6 @@ struct EpisodeDetailView: View {
     @Query private var saved: [SavedItem]
 
     let episode: Episode
-    /// Main Feed tab model: used to resolve Innermost Loop podcast audio for a newsletter post (same normalized `linkURL`).
-    @ObservedObject var podcastHome: HomeViewModel
-    /// When playing the companion podcast from a newsletter, switches to tab 0 so the podcast detail can be presented.
-    var onSelectFeedTab: (() -> Void)? = nil
     let playback: EpisodePlaybackController
     /// Observed separately from `playback` so high‑frequency `currentTime` ticks do not rebuild the detail shell (e.g. sleep timer menu).
     @ObservedObject var progressStore: EpisodePlaybackProgressStore
@@ -130,26 +126,6 @@ struct EpisodeDetailView: View {
     /// Edge-to-edge hero for newsletter posts (see ``newsletterHeroArtwork``).
     private var usesNewsletterHero: Bool {
         episode.feedContentKind == .newsletter && episode.artworkURL != nil
-    }
-
-    private var innermostLoopCompanionPodcast: Episode? {
-        guard episode.feedContentKind == .newsletter,
-              episode.feedID == PodcastFeed.innermostLoopID,
-              episode.audioURL == nil
-        else { return nil }
-        let podcastRows = podcastHome.episodes.filter {
-            $0.feedID == PodcastFeed.innermostLoopPodcastID && $0.audioURL != nil
-        }
-        if let key = episode.normalizedPostLinkKey,
-           let match = podcastRows.first(where: { $0.normalizedPostLinkKey == key }) {
-            return match
-        }
-        // Fallback: Substack usually shares titles; link shapes can still diverge between RSS variants.
-        let cal = Calendar.current
-        return podcastRows.first { ep in
-            guard let dNews = episode.pubDate, let dPod = ep.pubDate else { return false }
-            return ep.title == episode.title && cal.isDate(dNews, inSameDayAs: dPod)
-        }
     }
 
     var body: some View {
@@ -341,27 +317,7 @@ struct EpisodeDetailView: View {
                                         .multilineTextAlignment(.leading)
                                         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                                 }
-                                if let companion = innermostLoopCompanionPodcast {
-                                    Button {
-                                        playCompanionPodcast(companion)
-                                    } label: {
-                                        ZStack {
-                                            Circle()
-                                                .fill(usesNewsletterHero ? Color.white : Color(uiColor: .tertiarySystemFill))
-                                            Image(systemName: "play.fill")
-                                                .font(.system(size: 15, weight: .semibold))
-                                                .foregroundStyle(usesNewsletterHero ? Color.black : Color.primary)
-                                                // Play triangles read left-heavy; nudge for optical center.
-                                                .offset(x: 1.5)
-                                        }
-                                        .frame(width: 44, height: 44)
-                                        .contentShape(Circle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .accessibilityLabel("Play podcast episode")
-                                } else {
-                                    Spacer(minLength: 0)
-                                }
+                                Spacer(minLength: 0)
                             }
                             .padding(.top, 2)
                         }
@@ -474,7 +430,7 @@ struct EpisodeDetailView: View {
     /// Keeps the current player when browsing other episodes or non-audio posts; only syncs metadata when this episode is already loaded.
     private func applyPlaybackSource() {
         guard let url = episodePlaybackURL else { return }
-        guard playback.loadedEpisodeKey == episode.stableKey else { return }
+        guard playback.loadedMediaURL == url else { return }
         _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
     }
 
@@ -482,27 +438,6 @@ struct EpisodeDetailView: View {
         toast = message
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
             toast = nil
-        }
-    }
-
-    private func playCompanionPodcast(_ companion: Episode) {
-        let url = downloads.playbackURL(for: companion) ?? companion.audioURL
-        guard let url else {
-            flash("Couldn’t find audio for this episode")
-            return
-        }
-        let meta = EpisodeNowPlayingMetadata(
-            title: companion.title,
-            showTitle: companion.showTitle,
-            artworkURL: companion.artworkURL
-        )
-        _ = playback.load(url: url, nowPlaying: meta, episodeKey: companion.stableKey)
-        if let selectFeed = onSelectFeedTab {
-            playback.presentPodcastEpisodeInFeedTab(episode: companion, selectFeedTab: selectFeed)
-        }
-        // Defer past tab + navigation updates so `HomeFeedView` can observe `miniPlayerDetailNavigation` / `selectedTab`.
-        DispatchQueue.main.async {
-            playback.play()
         }
     }
 
@@ -520,6 +455,7 @@ struct EpisodeDetailView: View {
             audioURLString: episode.audioURL?.absoluteString,
             episodePubDate: episode.pubDate,
             linkURLString: episode.linkURL?.absoluteString,
+            artworkURLString: episode.artworkURL?.absoluteString,
             excerpt: "",
             note: nil
         )

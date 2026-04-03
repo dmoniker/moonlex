@@ -5,7 +5,6 @@ struct HomeFeedView: View {
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var feedFilters: FeedFilters
     @ObservedObject var model: HomeViewModel
-    @Binding var selectedTab: Int
     @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
@@ -49,21 +48,12 @@ struct HomeFeedView: View {
         }
     }
 
-    private func applyMiniPlayerPodcastNavigation(_ request: AutoplayDetailNavigation?) {
-        guard let request, request.feed == .podcast else { return }
-        var path = NavigationPath()
-        path.append(request.episode)
-        navigationPath = path
-        episodePlayback.consumeMiniPlayerDetailNavigation()
-    }
-
     var body: some View {
         NavigationStack(path: $navigationPath) {
             feedContents
                 .navigationDestination(for: Episode.self) { ep in
                     EpisodeDetailView(
                         episode: ep,
-                        podcastHome: model,
                         playback: episodePlayback,
                         progressStore: episodePlayback.progressStore,
                         sleepTimer: sleepTimer,
@@ -71,26 +61,19 @@ struct HomeFeedView: View {
                     )
                 }
         }
-        .onChange(of: episodePlayback.autoplayDetailNavigation) { _, _ in
-            guard let request = episodePlayback.autoplayDetailNavigation,
-                  request.feed == .podcast
-            else { return }
-            var path = NavigationPath()
-            path.append(request.episode)
-            navigationPath = path
+        .onChange(of: episodePlayback.autoplayDetailNavigation) { _, request in
+            guard let request, request.feed == .podcast else { return }
+            if !navigationPath.isEmpty {
+                navigationPath.removeLast()
+            }
+            navigationPath.append(request.episode)
             episodePlayback.consumeAutoplayDetailNavigation()
         }
-        .onChange(of: episodePlayback.miniPlayerDetailNavigation) { _, _ in
-            guard selectedTab == 0 else { return }
-            applyMiniPlayerPodcastNavigation(episodePlayback.miniPlayerDetailNavigation)
-        }
-        .onAppear {
-            guard selectedTab == 0 else { return }
-            applyMiniPlayerPodcastNavigation(episodePlayback.miniPlayerDetailNavigation)
-        }
-        .onChange(of: selectedTab) { _, tab in
-            guard tab == 0 else { return }
-            applyMiniPlayerPodcastNavigation(episodePlayback.miniPlayerDetailNavigation)
+        .onChange(of: episodePlayback.miniPlayerDetailNavigation) { _, request in
+            guard let request, request.feed == .podcast else { return }
+            navigationPath = NavigationPath()
+            navigationPath.append(request.episode)
+            episodePlayback.consumeMiniPlayerDetailNavigation()
         }
         .onChange(of: navigationPath.count) { _, _ in
             if navigationPath.isEmpty {

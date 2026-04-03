@@ -17,6 +17,8 @@ final class SavedItem {
     var audioURLString: String?
     var episodePubDate: Date?
     var linkURLString: String?
+    /// Artwork as shown when the favorite was saved (episode list may not still contain this item).
+    var artworkURLString: String?
 
     /// Kept empty for episode favorites (legacy rows may still store non-empty values in the database).
     var excerpt: String = ""
@@ -33,6 +35,7 @@ final class SavedItem {
         audioURLString: String?,
         episodePubDate: Date?,
         linkURLString: String?,
+        artworkURLString: String? = nil,
         excerpt: String = "",
         note: String? = nil
     ) {
@@ -46,6 +49,7 @@ final class SavedItem {
         self.audioURLString = audioURLString
         self.episodePubDate = episodePubDate
         self.linkURLString = linkURLString
+        self.artworkURLString = artworkURLString
         self.excerpt = excerpt
         self.note = note
     }

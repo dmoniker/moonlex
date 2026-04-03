@@ -27,16 +27,6 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
         }
     }
 
-    /// Normalized article URL for pairing items across feeds (e.g. Innermost Loop newsletter + podcast).
-    var normalizedPostLinkKey: String? {
-        guard let url = linkURL else { return nil }
-        var c = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        c?.fragment = nil
-        c?.query = nil
-        guard let normalized = c?.url else { return nil }
-        return normalized.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-    }
-
     static func < (lhs: Episode, rhs: Episode) -> Bool {
         let ld = lhs.pubDate ?? .distantPast
         let rd = rhs.pubDate ?? .distantPast
@@ -95,7 +85,7 @@ extension Episode {
         feedURLString = savedItem.feedURLString
         linkURL = savedItem.linkURLString.flatMap { URL(string: $0) }
         descriptionRaw = ""
-        artworkURL = nil
+        artworkURL = savedItem.artworkURLString.flatMap { URL(string: $0) }
         authorName = nil
         authorAvatarURL = nil
         feedContentKind = contentKind

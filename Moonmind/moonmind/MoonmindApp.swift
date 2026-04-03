@@ -166,6 +166,7 @@ struct MoonmindApp: App {
                 audioURLString: item.audioURLString,
                 episodePubDate: item.episodePubDate,
                 linkURLString: item.linkURLString,
+                artworkURLString: item.artworkURLString,
                 excerpt: item.excerpt,
                 note: item.note
             )

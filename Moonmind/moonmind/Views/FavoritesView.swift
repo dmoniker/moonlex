@@ -14,7 +14,6 @@ struct FavoritesView: View {
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var podcastHome: HomeViewModel
     @ObservedObject var newsletterHome: HomeViewModel
-    let onSelectFeedTab: () -> Void
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
     @ObservedObject var episodeDownloads: EpisodeDownloadStore
@@ -34,7 +33,7 @@ struct FavoritesView: View {
                     )
                 } else {
                     List {
-                        Section("Favorites") {
+                        Section {
                             ForEach(items) { item in
                                 Button {
                                     openSavedItem(item)
@@ -50,7 +49,7 @@ struct FavoritesView: View {
                     .miniPlayerChromeScrollTracking(playback: episodePlayback, scrollOffset: $favoritesListScrollY)
                 }
             }
-            .navigationTitle("Saved")
+            .navigationTitle("Favorites")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     SettingsToolbarButton(showSettings: $showAppSettings)
@@ -59,8 +58,6 @@ struct FavoritesView: View {
             .navigationDestination(for: Episode.self) { episode in
                 EpisodeDetailView(
                     episode: episode,
-                    podcastHome: podcastHome,
-                    onSelectFeedTab: onSelectFeedTab,
                     playback: episodePlayback,
                     progressStore: episodePlayback.progressStore,
                     sleepTimer: sleepTimer,
@@ -85,24 +82,25 @@ struct FavoritesView: View {
 
     @ViewBuilder
     private func savedRow(_ item: SavedItem) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
+        let ep = episode(for: item)
+        HStack(alignment: .top, spacing: 10) {
+            PodcastArtworkView(url: ep.artworkURL, size: 64, cornerRadius: 10)
+            VStack(alignment: .leading, spacing: 6) {
                 Text(item.showTitle)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                Spacer()
-                Label("Episode", systemImage: "star.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.yellow)
+                Text(item.displayTitle)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let d = item.episodePubDate {
+                    Text(d.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
             }
-            Text(item.displayTitle)
-                .font(.headline)
-                .foregroundStyle(.primary)
-            if let d = item.episodePubDate {
-                Text(d.formatted(date: .abbreviated, time: .omitted))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -117,10 +115,13 @@ struct FavoritesView: View {
     }
 
     private func episode(for item: SavedItem) -> Episode {
+        let savedArt = item.artworkURLString.flatMap { URL(string: $0) }
         if let ep = podcastHome.episodes.first(where: { $0.stableKey == item.episodeKey }) {
+            if ep.artworkURL == nil, let u = savedArt { return ep.replacingArtwork(with: u) }
             return ep
         }
         if let ep = newsletterHome.episodes.first(where: { $0.stableKey == item.episodeKey }) {
+            if ep.artworkURL == nil, let u = savedArt { return ep.replacingArtwork(with: u) }
             return ep
         }
         return Episode(savedItem: item, contentKind: contentKind(forFeedID: item.feedID))

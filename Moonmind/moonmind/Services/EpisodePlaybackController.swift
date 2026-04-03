@@ -226,13 +226,6 @@ final class EpisodePlaybackController: ObservableObject {
         miniPlayerDetailNavigation = nil
     }
 
-    /// Switch to the Feed tab and push this podcast episode’s detail (e.g. newsletter “play podcast” affordance).
-    @MainActor
-    func presentPodcastEpisodeInFeedTab(episode: Episode, selectFeedTab: () -> Void) {
-        miniPlayerDetailNavigation = AutoplayDetailNavigation(feed: .podcast, episode: episode)
-        selectFeedTab()
-    }
-
     /// Call `selectTab` with `0` (Feed) or `1` (Newsletters), then publishes ``miniPlayerDetailNavigation`` when the episode is in that feed list.
     @MainActor
     func openNowPlayingDetail(selectTab: (Int) -> Void) {

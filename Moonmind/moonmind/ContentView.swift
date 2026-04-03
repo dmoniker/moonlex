@@ -179,7 +179,7 @@ struct ContentView: View {
     @StateObject private var detailBottomChrome = DetailBottomChromeState()
     @State private var showAddFeeds = false
     @State private var showAppSettings = false
-    /// Matches `TabView` tag order: 0 Feed, 1 Newsletters, 2 Saved.
+    /// Matches `TabView` tag order: 0 Feed, 1 Newsletters, 2 Favorites.
     @State private var selectedTab = 0
     /// Measured from the real `UITabBar` frame (floating pills report a smaller value than `49 + safeArea.bottom`).
     @State private var tabBarTopFromWindowBottom: CGFloat?
@@ -191,7 +191,6 @@ struct ContentView: View {
                     catalog: catalog,
                     feedFilters: feedFilters,
                     model: home,
-                    selectedTab: $selectedTab,
                     showAddFeeds: $showAddFeeds,
                     episodePlayback: episodePlayback,
                     sleepTimer: sleepTimer,
@@ -207,8 +206,6 @@ struct ContentView: View {
                     catalog: catalog,
                     feedFilters: feedFilters,
                     model: newsletterHome,
-                    podcastHome: home,
-                    onSelectFeedTab: { selectedTab = 0 },
                     showAddFeeds: $showAddFeeds,
                     episodePlayback: episodePlayback,
                     sleepTimer: sleepTimer,
@@ -224,14 +221,13 @@ struct ContentView: View {
                     catalog: catalog,
                     podcastHome: home,
                     newsletterHome: newsletterHome,
-                    onSelectFeedTab: { selectedTab = 0 },
                     episodePlayback: episodePlayback,
                     sleepTimer: sleepTimer,
                     episodeDownloads: episodeDownloads,
                     showAppSettings: $showAppSettings
                 )
                 .tabItem {
-                    Label("Saved", systemImage: "star.fill")
+                    Label("Favorites", systemImage: "star.fill")
                 }
                 .tag(2)
             }

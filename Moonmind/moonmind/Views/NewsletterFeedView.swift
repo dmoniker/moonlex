@@ -5,8 +5,6 @@ struct NewsletterFeedView: View {
     @ObservedObject var catalog: FeedCatalog
     @ObservedObject var feedFilters: FeedFilters
     @ObservedObject var model: HomeViewModel
-    @ObservedObject var podcastHome: HomeViewModel
-    let onSelectFeedTab: () -> Void
     @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
@@ -22,8 +20,6 @@ struct NewsletterFeedView: View {
                 .navigationDestination(for: Episode.self) { ep in
                     EpisodeDetailView(
                         episode: ep,
-                        podcastHome: podcastHome,
-                        onSelectFeedTab: onSelectFeedTab,
                         playback: episodePlayback,
                         progressStore: episodePlayback.progressStore,
                         sleepTimer: sleepTimer,
@@ -31,22 +27,18 @@ struct NewsletterFeedView: View {
                     )
                 }
         }
-        .onChange(of: episodePlayback.autoplayDetailNavigation) { _, _ in
-            guard let request = episodePlayback.autoplayDetailNavigation,
-                  request.feed == .newsletter
-            else { return }
-            var path = NavigationPath()
-            path.append(request.episode)
-            navigationPath = path
+        .onChange(of: episodePlayback.autoplayDetailNavigation) { _, request in
+            guard let request, request.feed == .newsletter else { return }
+            if !navigationPath.isEmpty {
+                navigationPath.removeLast()
+            }
+            navigationPath.append(request.episode)
             episodePlayback.consumeAutoplayDetailNavigation()
         }
-        .onChange(of: episodePlayback.miniPlayerDetailNavigation) { _, _ in
-            guard let request = episodePlayback.miniPlayerDetailNavigation,
-                  request.feed == .newsletter
-            else { return }
-            var path = NavigationPath()
-            path.append(request.episode)
-            navigationPath = path
+        .onChange(of: episodePlayback.miniPlayerDetailNavigation) { _, request in
+            guard let request, request.feed == .newsletter else { return }
+            navigationPath = NavigationPath()
+            navigationPath.append(request.episode)
             episodePlayback.consumeMiniPlayerDetailNavigation()
         }
         .onChange(of: navigationPath.count) { _, _ in
