@@ -288,9 +288,7 @@ struct ContentView: View {
         .sheet(isPresented: $showAppSettings) {
             AppSettingsSheetView(
                 playback: episodePlayback,
-                downloads: episodeDownloads,
-                catalog: catalog,
-                onFeedsReset: feedsChanged
+                downloads: episodeDownloads
             )
         }
         .onAppear {

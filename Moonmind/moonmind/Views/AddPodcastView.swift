@@ -18,6 +18,7 @@ struct AddPodcastView: View {
     @State private var searchAddError: String?
     @State private var toast: String?
     @State private var showManualAddSheet = false
+    @State private var showResetFeedsConfirm = false
 
     var body: some View {
         Form {
@@ -89,7 +90,7 @@ struct AddPodcastView: View {
 
             Section {
                 if catalog.allFeeds.isEmpty {
-                    Text("No shows yet. Search above, use Add manually for an RSS link, or use Settings → Reset feeds to defaults to restore the built-in list.")
+                    Text("No shows yet. Search above, use Add manually for an RSS link, or reset feeds to defaults below to restore the built-in list.")
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(catalog.allFeeds) { feed in
@@ -115,7 +116,24 @@ struct AddPodcastView: View {
             } header: {
                 Text("Your feeds")
             } footer: {
-                Text("Swipe left to remove any show—including built-ins. To bring back every default show and clear those you added, use Settings.")
+                Text("Swipe left to remove any show—including built-ins.")
+            }
+
+            Section {
+                Button {
+                    showResetFeedsConfirm = true
+                } label: {
+                    Text("Reset feeds to defaults")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.red)
+            } footer: {
+                Text(
+                    "Removes every feed you added and restores all built-in podcasts and newsletters (Moonshots, Lex Fridman, Elon interviews from JRE / Dwarkesh / All-In / WTF, Innermost Loop, and the Innermost Loop newsletter)."
+                )
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             }
         }
         .navigationTitle("Add feeds")
@@ -155,6 +173,23 @@ struct AddPodcastView: View {
                     }
                 }
             )
+        }
+        .confirmationDialog(
+            "Reset feeds to defaults?",
+            isPresented: $showResetFeedsConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Reset feeds", role: .destructive) {
+                let removedCustomIDs = catalog.customFeeds.map(\.id)
+                catalog.resetFeedsToFactoryDefaults()
+                for id in removedCustomIDs {
+                    downloads.removeAllDownloads(forFeedID: id)
+                }
+                onFeedsChanged()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Your added shows will be removed and every built-in feed will appear again.")
         }
     }
 

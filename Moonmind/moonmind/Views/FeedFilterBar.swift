@@ -24,7 +24,7 @@ struct FeedFilterBar: View {
                     chipButton(
                         label: feed.filterChipLabel,
                         selected: on,
-                        accessibilityBase: "\(feed.filterChipLabel) filter"
+                        accessibilityBase: "\(feed.filterChipAccessibilityLabel) filter"
                     ) {
                         filters.selectExclusive(feed.id, scope: scope)
                         onChange()

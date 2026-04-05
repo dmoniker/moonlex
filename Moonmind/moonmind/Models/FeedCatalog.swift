@@ -19,7 +19,21 @@ struct PodcastFeed: Identifiable, Hashable, Codable, Sendable {
 
     var rssURL: URL? { URL(string: rssURLString) }
 
-    var filterChipLabel: String { chipTitle ?? title }
+    /// Roughly matches the longest built-in chip label (“Innermost Loop”); keeps the horizontal chip row readable for user-added feeds with long Apple Podcasts titles.
+    private static let filterChipCharacterLimitCustomFeeds = 18
+
+    /// Visible chip text in the filter bar. Built-ins use ``chipTitle`` when set; custom feeds are truncated to ``filterChipCharacterLimitCustomFeeds`` with an ellipsis.
+    var filterChipLabel: String {
+        let raw = chipTitle ?? title
+        guard !isBuiltin, raw.count > Self.filterChipCharacterLimitCustomFeeds else { return raw }
+        let end = raw.index(raw.startIndex, offsetBy: Self.filterChipCharacterLimitCustomFeeds)
+        let clipped = String(raw[..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = clipped.isEmpty ? String(raw.prefix(Self.filterChipCharacterLimitCustomFeeds)) : clipped
+        return base + "…"
+    }
+
+    /// Full show name for accessibility (chips may show ``filterChipLabel``).
+    var filterChipAccessibilityLabel: String { title }
 
     static let moonshotsID = "builtin.moonshots"
     static let lexID = "builtin.lexfridman"
@@ -249,12 +263,24 @@ final class FeedCatalog: ObservableObject {
         allFeeds.filter { $0.contentKind == .newsletter }
     }
 
+    /// The Elon-merge row stores JRE’s RSS URL as a placeholder only; it does not count as “already having” that show for duplicate checks.
+    private static let builtinFeedIDsIgnoredForRSSDuplicateCheck: Set<String> = [
+        PodcastFeed.elonGuestInterviewsFeedID,
+    ]
+
+    private func rssURLConflictsWithCatalog(_ urlString: String) -> Bool {
+        allFeeds.contains { feed in
+            guard feed.rssURLString == urlString else { return false }
+            return !Self.builtinFeedIDsIgnoredForRSSDuplicateCheck.contains(feed.id)
+        }
+    }
+
     func addCustom(title: String, rssURL: URL) throws {
         guard rssURL.scheme?.hasPrefix("http") == true else {
             throw FeedCatalogError.invalidURL
         }
         let id = "custom.\(UUID().uuidString)"
-        guard !allFeeds.contains(where: { $0.rssURLString == rssURL.absoluteString }) else {
+        guard !rssURLConflictsWithCatalog(rssURL.absoluteString) else {
             throw FeedCatalogError.duplicateFeed
         }
         let kind: FeedContentKind =
