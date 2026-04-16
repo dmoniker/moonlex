@@ -204,7 +204,7 @@ struct AddPodcastView: View {
         searchTask?.cancel()
         let query = searchText
         searchTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(400))
+            try? await Task.sleep(for: .milliseconds(500))
             guard !Task.isCancelled else { return }
 
             let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -220,7 +220,7 @@ struct AddPodcastView: View {
             searchError = nil
             searchAddError = nil
             do {
-                let matches = try await ITunesPodcastSearchService.search(term: query)
+                let matches = try await PodcastDirectorySearchService.search(term: query)
                 guard !Task.isCancelled else { return }
                 searchResults = matches
             } catch {

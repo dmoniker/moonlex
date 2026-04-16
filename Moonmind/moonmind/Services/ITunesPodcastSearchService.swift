@@ -22,8 +22,8 @@ enum ITunesPodcastSearchService {
         guard let url = components.url else { throw ITunesSearchError.badURL }
 
         let (data, response) = try await URLSession.shared.data(from: url)
-        guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
-            throw ITunesSearchError.badResponse
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw ITunesSearchError.badResponse(statusCode: (response as? HTTPURLResponse)?.statusCode)
         }
 
         let decoded = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
@@ -60,7 +60,7 @@ private struct ITunesPodcastResult: Decodable {
 
 enum ITunesSearchError: LocalizedError {
     case badURL
-    case badResponse
+    case badResponse(statusCode: Int?)
 
     var errorDescription: String? {
         switch self {
