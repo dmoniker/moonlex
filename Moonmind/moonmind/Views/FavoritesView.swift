@@ -74,6 +74,12 @@ struct FavoritesView: View {
                 )
             }
         }
+        .onChange(of: episodePlayback.sessionRestoreNavigation) { _, request in
+            guard let request, request.tab == .favorites else { return }
+            navigationPath = NavigationPath()
+            navigationPath.append(request.episode)
+            episodePlayback.consumeSessionRestoreNavigation()
+        }
         .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
         .onAppear {
             episodePlayback.sleepTimerStore = sleepTimer

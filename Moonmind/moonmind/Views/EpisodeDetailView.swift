@@ -92,6 +92,7 @@ private struct ScrollContentInsetAdjustmentBridge: UIViewRepresentable {
 
 struct EpisodeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.moonmindSelectedTab) private var selectedTab
     @EnvironmentObject private var detailBottomChrome: DetailBottomChromeState
     @Query private var saved: [SavedItem]
 
@@ -224,6 +225,11 @@ struct EpisodeDetailView: View {
             }
             .onDisappear {
                 detailBottomChrome.shortEpisodeDetailLocksCompactChrome = false
+                playback.noteEpisodeDetailDismissed(episodeKey: episode.stableKey, selectedTab: selectedTab)
+            }
+            .onAppear {
+                playback.rememberSessionEpisode(episode)
+                playback.noteEpisodeDetailVisible(episodeKey: episode.stableKey, selectedTab: selectedTab)
             }
     }
 
@@ -431,6 +437,7 @@ struct EpisodeDetailView: View {
     private func applyPlaybackSource() {
         guard let url = episodePlaybackURL else { return }
         guard playback.loadedMediaURL == url else { return }
+        playback.rememberSessionEpisode(episode)
         _ = playback.load(url: url, nowPlaying: episodeNowPlayingMeta, episodeKey: episode.stableKey)
     }
 
@@ -711,6 +718,12 @@ private struct EpisodeDetailPlayerCard: View {
                 EpisodeDetailSpeedPicker(episode: episode, playback: playback, downloads: downloads)
             }
             .padding(.top, 16)
+            HStack {
+                Spacer(minLength: 0)
+                AudioRoutePickerControl()
+                Spacer(minLength: 0)
+            }
+            .padding(.top, 4)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)

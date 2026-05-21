@@ -41,6 +41,12 @@ struct NewsletterFeedView: View {
             navigationPath.append(request.episode)
             episodePlayback.consumeMiniPlayerDetailNavigation()
         }
+        .onChange(of: episodePlayback.sessionRestoreNavigation) { _, request in
+            guard let request, request.tab == .newsletters else { return }
+            navigationPath = NavigationPath()
+            navigationPath.append(request.episode)
+            episodePlayback.consumeSessionRestoreNavigation()
+        }
         .onChange(of: navigationPath.count) { _, _ in
             if navigationPath.isEmpty {
                 MiniPlayerChromeScrollCoordinator.applyContentOffsetY(
@@ -165,12 +171,6 @@ struct NewsletterFeedView: View {
                 }
                 SettingsToolbarButton(showSettings: $showAppSettings)
             }
-        }
-        .onAppear {
-            model.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
-        }
-        .task {
-            await model.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)
         }
         .refreshable {
             await model.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)

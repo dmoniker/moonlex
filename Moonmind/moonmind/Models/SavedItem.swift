@@ -61,3 +61,26 @@ final class SavedItem {
         return excerpt.count > 120 ? String(excerpt.prefix(120)) + "…" : excerpt
     }
 }
+
+/// Schema for `default.store` from builds before `favoriteId` (`String`) replaced `id` (`UUID`).
+/// Not included in the app `ModelContainer` schema — only used for one-time legacy migration.
+@Model
+final class LegacySavedItem {
+    var id: UUID = UUID()
+    var createdAt: Date = Date.now
+
+    var episodeKey: String = ""
+    var episodeTitle: String = ""
+    var showTitle: String = ""
+    var feedID: String = ""
+    var feedURLString: String = ""
+
+    var audioURLString: String?
+    var episodePubDate: Date?
+    var linkURLString: String?
+
+    var excerpt: String = ""
+    var note: String?
+
+    init() {}
+}

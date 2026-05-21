@@ -75,6 +75,12 @@ struct HomeFeedView: View {
             navigationPath.append(request.episode)
             episodePlayback.consumeMiniPlayerDetailNavigation()
         }
+        .onChange(of: episodePlayback.sessionRestoreNavigation) { _, request in
+            guard let request, request.tab == .feed else { return }
+            navigationPath = NavigationPath()
+            navigationPath.append(request.episode)
+            episodePlayback.consumeSessionRestoreNavigation()
+        }
         .onChange(of: navigationPath.count) { _, _ in
             if navigationPath.isEmpty {
                 MiniPlayerChromeScrollCoordinator.applyContentOffsetY(
@@ -238,12 +244,6 @@ struct HomeFeedView: View {
 
                 SettingsToolbarButton(showSettings: $showAppSettings)
             }
-        }
-        .onAppear {
-            model.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
-        }
-        .task {
-            await model.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
         }
         .refreshable {
             await model.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)

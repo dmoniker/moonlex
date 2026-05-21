@@ -89,6 +89,9 @@ final class EpisodePlaybackController: ObservableObject {
     /// User tapped the mini player; owning feed tab should reset its stack and push this detail.
     @Published private(set) var miniPlayerDetailNavigation: AutoplayDetailNavigation?
 
+    /// Cold-launch restore should reopen episode detail when the user left the app on the player screen.
+    @Published private(set) var sessionRestoreNavigation: PlaybackSessionRestoreNavigation?
+
     var sleepTimerStore: SleepTimerStore?
     weak var downloadStore: EpisodeDownloadStore?
     weak var feedHomeModel: HomeViewModel?
@@ -110,6 +113,9 @@ final class EpisodePlaybackController: ObservableObject {
     private var resumeSetupComplete = true
     private var lastPeriodicProgressSave = Date.distantPast
     private var progressForwardCancellable: AnyCancellable?
+    private var cachedSessionEpisodeInfo: LoadedEpisodeSessionInfo?
+    private var sessionShowsEpisodeDetail = false
+    private var sessionDetailEpisodeKey: String?
 
     init() {
         skipBackwardIntervals = Self.loadSkipBackwardIntervalsFromDefaults()
@@ -224,6 +230,106 @@ final class EpisodePlaybackController: ObservableObject {
 
     func consumeMiniPlayerDetailNavigation() {
         miniPlayerDetailNavigation = nil
+    }
+
+    func consumeSessionRestoreNavigation() {
+        sessionRestoreNavigation = nil
+    }
+
+    func rememberSessionEpisode(_ episode: Episode) {
+        cachedSessionEpisodeInfo = LoadedEpisodeSessionInfo(episode: episode)
+    }
+
+    @MainActor
+    func noteEpisodeDetailVisible(episodeKey: String, selectedTab: Int) {
+        sessionShowsEpisodeDetail = true
+        sessionDetailEpisodeKey = episodeKey
+        persistPlaybackSession(selectedTab: selectedTab)
+    }
+
+    @MainActor
+    func noteEpisodeDetailDismissed(episodeKey: String, selectedTab: Int) {
+        guard sessionDetailEpisodeKey == episodeKey else { return }
+        sessionShowsEpisodeDetail = false
+        sessionDetailEpisodeKey = nil
+        persistPlaybackSession(selectedTab: selectedTab)
+    }
+
+    @MainActor
+    func persistPlaybackSession(selectedTab: Int) {
+        guard let key = loadedEpisodeKey else {
+            PlaybackSessionStore.clear()
+            return
+        }
+        guard let episodeInfo = resolvedSessionEpisodeInfo(forEpisodeKey: key) else { return }
+        let showsDetail = sessionShowsEpisodeDetail && sessionDetailEpisodeKey == key
+        let snapshot = PlaybackSessionSnapshot(
+            episodeInfo: episodeInfo,
+            selectedTab: PlaybackSessionSnapshot.Tab(rawValue: selectedTab) ?? .feed,
+            showsEpisodeDetail: showsDetail,
+            wasPlaying: isPlaying,
+            savedAt: Date()
+        )
+        PlaybackSessionStore.save(snapshot)
+    }
+
+    @MainActor
+    func restorePersistedSessionIfNeeded(
+        selectedTab: inout Int,
+        downloads: EpisodeDownloadStore,
+        progressStore: EpisodePlaybackProgressStore
+    ) -> Bool {
+        guard loadedMediaURL == nil else { return false }
+        guard let snapshot = PlaybackSessionStore.load() else { return false }
+        let key = snapshot.episodeInfo.episodeKey
+        if progressStore.isMarkedPlayed(forEpisodeKey: key) {
+            PlaybackSessionStore.clear()
+            return false
+        }
+        let episode = resolvedSessionEpisode(for: snapshot.episodeInfo)
+        guard let url = downloads.playbackURL(for: episode) else { return false }
+
+        rememberSessionEpisode(episode)
+        let meta = EpisodeNowPlayingMetadata(
+            title: episode.title,
+            showTitle: episode.showTitle,
+            artworkURL: episode.artworkURL
+        )
+        _ = load(url: url, nowPlaying: meta, episodeKey: episode.stableKey)
+        selectedTab = snapshot.selectedTab.rawValue
+        if snapshot.showsEpisodeDetail {
+            sessionRestoreNavigation = PlaybackSessionRestoreNavigation(tab: snapshot.selectedTab, episode: episode)
+        }
+        if snapshot.wasPlaying {
+            play()
+        }
+        return true
+    }
+
+    @MainActor
+    private func resolvedSessionEpisode(for info: LoadedEpisodeSessionInfo) -> Episode {
+        let key = info.episodeKey
+        if let ep = feedHomeModel?.episodes.first(where: { $0.stableKey == key }) { return ep }
+        if let ep = feedNewsletterModel?.episodes.first(where: { $0.stableKey == key }) { return ep }
+        return info.makeEpisode()
+    }
+
+    @MainActor
+    private func resolvedSessionEpisodeInfo(forEpisodeKey key: String) -> LoadedEpisodeSessionInfo? {
+        if cachedSessionEpisodeInfo?.episodeKey == key {
+            return cachedSessionEpisodeInfo
+        }
+        if let ep = feedHomeModel?.episodes.first(where: { $0.stableKey == key }) {
+            let info = LoadedEpisodeSessionInfo(episode: ep)
+            cachedSessionEpisodeInfo = info
+            return info
+        }
+        if let ep = feedNewsletterModel?.episodes.first(where: { $0.stableKey == key }) {
+            let info = LoadedEpisodeSessionInfo(episode: ep)
+            cachedSessionEpisodeInfo = info
+            return info
+        }
+        return cachedSessionEpisodeInfo
     }
 
     /// Call `selectTab` with `0` (Feed) or `1` (Newsletters), then publishes ``miniPlayerDetailNavigation`` when the episode is in that feed list.
@@ -665,6 +771,7 @@ final class EpisodePlaybackController: ObservableObject {
     @discardableResult
     func startPlayback(episode: Episode, downloads: EpisodeDownloadStore) -> Bool {
         guard let url = downloads.playbackURL(for: episode) else { return false }
+        rememberSessionEpisode(episode)
         let meta = EpisodeNowPlayingMetadata(
             title: episode.title,
             showTitle: episode.showTitle,
@@ -744,11 +851,16 @@ final class EpisodePlaybackController: ObservableObject {
         loadedMediaURL = nil
         loadedEpisodeKey = nil
         miniPlayerDetailNavigation = nil
+        sessionRestoreNavigation = nil
         nowPlayingMetadata = nil
         cancelArtworkFetch()
         nowPlayingArtwork = nil
         currentTime = 0
         duration = 0
+        cachedSessionEpisodeInfo = nil
+        sessionShowsEpisodeDetail = false
+        sessionDetailEpisodeKey = nil
+        PlaybackSessionStore.clear()
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 

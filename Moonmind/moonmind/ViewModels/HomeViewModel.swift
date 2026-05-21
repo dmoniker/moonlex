@@ -11,12 +11,6 @@ final class HomeViewModel: ObservableObject {
 
     init() {
         episodeCacheByFeedID = FeedEpisodeCache.load()
-        if episodeCacheByFeedID[PodcastFeed.elonGuestInterviewsFeedID]?.isEmpty != false {
-            let elon = ElonGuestInterviewEpisodeCache.load()
-            if !elon.isEmpty {
-                episodeCacheByFeedID[PodcastFeed.elonGuestInterviewsFeedID] = elon
-            }
-        }
     }
 
     private static func filterScope(for feeds: [PodcastFeed]) -> FeedFilterBarScope {
@@ -36,8 +30,6 @@ final class HomeViewModel: ObservableObject {
     }
 
     func refresh(feeds: [PodcastFeed], feedFilters: FeedFilters, downloads: EpisodeDownloadStore? = nil) async {
-        applyFilterInstantly(feeds: feeds, feedFilters: feedFilters)
-
         let hadCachedEpisodes = !episodes.isEmpty
         if !hadCachedEpisodes {
             isLoading = true
@@ -136,7 +128,7 @@ final class HomeViewModel: ObservableObject {
         for (feedID, eps) in fetchResults {
             episodeCacheByFeedID[feedID] = eps
         }
-        FeedEpisodeCache.save(episodeCacheByFeedID)
+        persistEpisodeCache()
 
         await reconcileFromCache(
             feeds: feeds,
@@ -178,13 +170,17 @@ final class HomeViewModel: ObservableObject {
 
         downloads?.enqueueRecentEpisodeDownloads(episodeCacheByFeedID: episodeCacheByFeedID)
 
-        FeedEpisodeCache.save(episodeCacheByFeedID)
+        persistEpisodeCache()
 
         if !errors.isEmpty, merged.isEmpty {
             lastError = errors.joined(separator: "\n")
         } else if !errors.isEmpty {
             lastError = "Some feeds failed to load: \(errors.joined(separator: ", "))"
         }
+    }
+
+    private func persistEpisodeCache() {
+        FeedEpisodeCache.save(episodeCacheByFeedID)
     }
 
     private static func mergedEpisodesBeforeHero(

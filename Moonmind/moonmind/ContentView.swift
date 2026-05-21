@@ -9,6 +9,17 @@ enum PlayerChromeAnimation {
     static let morph: Animation = .smooth(duration: 0.55, extraBounce: 0.06)
 }
 
+private struct MoonmindSelectedTabKey: EnvironmentKey {
+    static let defaultValue = 0
+}
+
+extension EnvironmentValues {
+    var moonmindSelectedTab: Int {
+        get { self[MoonmindSelectedTabKey.self] }
+        set { self[MoonmindSelectedTabKey.self] = newValue }
+    }
+}
+
 // MARK: - Scroll offset ↔ compact chrome (feeds, episode detail)
 
 enum MiniPlayerChromeScrollCoordinator {
@@ -265,11 +276,22 @@ struct ContentView: View {
         // anchor to the true bottom and the home-indicator gap is eliminated.
         .ignoresSafeArea(edges: .bottom)
         .environmentObject(detailBottomChrome)
+        .environment(\.moonmindSelectedTab, selectedTab)
         .animation(PlayerChromeAnimation.morph, value: detailBottomChrome.isCompact)
+        .onChange(of: selectedTab) { _, tab in
+            episodePlayback.persistPlaybackSession(selectedTab: tab)
+        }
+        .onChange(of: episodePlayback.isPlaying) { _, _ in
+            if episodePlayback.loadedMediaURL != nil {
+                episodePlayback.persistPlaybackSession(selectedTab: selectedTab)
+            }
+        }
         .onChange(of: episodePlayback.loadedMediaURL) { _, newURL in
             if newURL == nil {
                 detailBottomChrome.isCompact = false
                 detailBottomChrome.shortEpisodeDetailLocksCompactChrome = false
+            } else {
+                episodePlayback.persistPlaybackSession(selectedTab: selectedTab)
             }
             scheduleTabBarGeometryRefresh()
         }
@@ -278,7 +300,9 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)) { _ in
             syncLogger.notice("received NSPersistentStoreRemoteChange")
-            applyRemoteStoreMergeAfterCloudKit()
+            Task { @MainActor in
+                applyRemoteStoreMergeAfterCloudKit()
+            }
         }
         .sheet(isPresented: $showAddFeeds) {
             NavigationStack {
@@ -306,15 +330,23 @@ struct ContentView: View {
                 episodePlayback.migrateStreamToLocalFileIfCurrentlyPlaying(remoteURL: remote, localURL: local)
             }
             episodeDownloads.reapplyRetentionUsingLastFeedCache()
+            reloadHomeFeedsAfterStoresAttached()
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(2))
                 syncLogger.notice("content view delayed cloud merge firing")
                 applyRemoteStoreMergeAfterCloudKit()
             }
         }
+        .onChange(of: feedFilters.podcastExclusiveFeedID) { _, _ in
+            home.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
+        }
+        .onChange(of: feedFilters.newsletterExclusiveFeedID) { _, _ in
+            newsletterHome.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 syncLogger.notice("scene phase -> background: flushing playback progress")
+                episodePlayback.persistPlaybackSession(selectedTab: selectedTab)
                 episodePlayback.flushListeningProgressToStore()
                 try? modelContext.save()
                 logCloudSnapshot(reason: "scene background save")
@@ -322,18 +354,45 @@ struct ContentView: View {
             if phase == .active {
                 syncLogger.notice("scene phase -> active: applying cloud merge")
                 applyRemoteStoreMergeAfterCloudKit()
+                Task { @MainActor in
+                    await restorePlaybackSessionIfNeeded()
+                }
             }
         }
     }
 
     /// Re-reads SwiftData after CloudKit merges (`NSPersistentStoreRemoteChange` or returning to the app).
+    @MainActor
     private func applyRemoteStoreMergeAfterCloudKit() {
         syncLogger.notice("applyRemoteStoreMergeAfterCloudKit begin")
         catalog.refreshFromCloudKitImport(modelContext: modelContext)
         feedFilters.refreshFromCloudKitImport(modelContext: modelContext)
         episodePlayback.progressStore.refreshFromCloudKitImport(modelContext: modelContext)
         episodeDownloads.reapplyRetentionUsingLastFeedCache()
+        home.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
+        newsletterHome.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
         logCloudSnapshot(reason: "applyRemoteStoreMergeAfterCloudKit end")
+    }
+
+    /// Runs after SwiftData-backed catalog/filters attach so the first paint uses synced chip state, not stale UserDefaults.
+    @MainActor
+    private func reloadHomeFeedsAfterStoresAttached() {
+        home.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
+        newsletterHome.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
+        Task {
+            await home.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
+            await newsletterHome.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)
+            await restorePlaybackSessionIfNeeded()
+        }
+    }
+
+    @MainActor
+    private func restorePlaybackSessionIfNeeded() async {
+        _ = episodePlayback.restorePersistedSessionIfNeeded(
+            selectedTab: &selectedTab,
+            downloads: episodeDownloads,
+            progressStore: episodePlayback.progressStore
+        )
     }
 
     private func logCloudSnapshot(reason: String) {

@@ -36,30 +36,56 @@ struct MoonmindApp: App {
             .appendingPathComponent("default.store", isDirectory: false)
     }
 
-    private static let sharedModelContainer: ModelContainer = {
-        let prefersCloud: Bool = {
-            if UserDefaults.standard.object(forKey: MoonmindSyncSettings.preferICloudSyncKey) == nil { return true }
-            return UserDefaults.standard.bool(forKey: MoonmindSyncSettings.preferICloudSyncKey)
-        }()
+    private static let legacyDefaultStoreMigratedKey = "moonmind.legacyDefaultStoreMigrated"
 
-        if !prefersCloud {
-            do {
-                let config = ModelConfiguration(
-                    schema: syncSchema,
-                    url: localFallbackStoreURL,
-                    cloudKitDatabase: .none
-                )
-                let container = try ModelContainer(for: syncSchema, configurations: [config])
-                UserDefaults.standard.set(true, forKey: MoonmindSyncSettings.cloudKitInactiveKey)
-                return container
-            } catch {
-                logSwiftDataContainerFailure(error, label: "SwiftData local-only (\(localFallbackStoreURL.lastPathComponent))")
-                fatalError("SwiftData could not open the on-device store.")
-            }
+    private static let sharedModelContainer: ModelContainer = makeModelContainer()
+
+    private static func prefersICloudSync() -> Bool {
+        if UserDefaults.standard.object(forKey: MoonmindSyncSettings.preferICloudSyncKey) == nil { return true }
+        return UserDefaults.standard.bool(forKey: MoonmindSyncSettings.preferICloudSyncKey)
+    }
+
+    /// Blocks briefly at launch so we never open a CloudKit-backed store when iCloud is not signed in.
+    private static func synchronousCloudKitAccountStatus() -> CKAccountStatus {
+        let container = CKContainer(identifier: MoonmindCloudKit.containerIdentifier)
+        var status: CKAccountStatus = .couldNotDetermine
+        let group = DispatchGroup()
+        group.enter()
+        container.accountStatus { accountStatus, _ in
+            status = accountStatus
+            group.leave()
+        }
+        _ = group.wait(timeout: .now() + 5)
+        return status
+    }
+
+    private static func openLocalOnlyContainer(reason: String) -> ModelContainer {
+        do {
+            let config = ModelConfiguration(
+                schema: syncSchema,
+                url: localFallbackStoreURL,
+                cloudKitDatabase: .none
+            )
+            let container = try ModelContainer(for: syncSchema, configurations: [config])
+            UserDefaults.standard.set(true, forKey: MoonmindSyncSettings.cloudKitInactiveKey)
+            syncLogger.notice("\(reason, privacy: .public) — local-only store at \(localFallbackStoreURL.lastPathComponent, privacy: .public)")
+            return container
+        } catch {
+            logSwiftDataContainerFailure(error, label: "SwiftData local-only (\(localFallbackStoreURL.lastPathComponent))")
+            fatalError("SwiftData could not open the on-device store.")
+        }
+    }
+
+    private static func makeModelContainer() -> ModelContainer {
+        guard prefersICloudSync() else {
+            return openLocalOnlyContainer(reason: "iCloud sync disabled in settings")
+        }
+
+        if synchronousCloudKitAccountStatus() == .noAccount {
+            return openLocalOnlyContainer(reason: "No iCloud account signed in")
         }
 
         do {
-            // Explicit container avoids rare `.automatic` resolution issues; must match `moonmind.entitlements`.
             let config = ModelConfiguration(
                 schema: syncSchema,
                 url: cloudStoreURL,
@@ -69,30 +95,15 @@ struct MoonmindApp: App {
             UserDefaults.standard.set(false, forKey: MoonmindSyncSettings.cloudKitInactiveKey)
             return container
         } catch {
-            logSwiftDataContainerFailure(error, label: "SwiftData + CloudKit (.automatic, \(cloudStoreURL.lastPathComponent))")
-            do {
-                let fallback = ModelConfiguration(
-                    schema: syncSchema,
-                    url: localFallbackStoreURL,
-                    cloudKitDatabase: .none
-                )
-                let container = try ModelContainer(for: syncSchema, configurations: [fallback])
-                UserDefaults.standard.set(true, forKey: MoonmindSyncSettings.cloudKitInactiveKey)
-                print("""
-                moonmind: ⚠️ CloudKit-backed store failed; using LOCAL-ONLY SwiftData at \(localFallbackStoreURL.path).
-                • On device: Settings → Apple ID → iCloud — confirm iCloud is on for this device.
-                • Xcode target Signing & Capabilities: iCloud + CloudKit, container \(MoonmindCloudKit.containerIdentifier) must match the App ID in developer.apple.com (Identifiers → your app → iCloud).
-                • Delete derived/local store files only if you understand data loss: uninstall app or remove the `.store` siblings under Application Support.
-                """)
-                return container
-            } catch {
-                logSwiftDataContainerFailure(error, label: "SwiftData local fallback (\(localFallbackStoreURL.lastPathComponent))")
-                fatalError(
-                    "SwiftData could not open CloudKit store OR local fallback. Read the NSError logs above in the Xcode console."
-                )
-            }
+            logSwiftDataContainerFailure(error, label: "SwiftData + CloudKit (\(cloudStoreURL.lastPathComponent))")
+            print("""
+            moonmind: ⚠️ CloudKit-backed store failed; using LOCAL-ONLY SwiftData at \(localFallbackStoreURL.path).
+            • On device: Settings → Apple ID → iCloud — confirm iCloud is on for this device.
+            • Xcode target Signing & Capabilities: iCloud + CloudKit, container \(MoonmindCloudKit.containerIdentifier) must match the App ID in developer.apple.com (Identifiers → your app → iCloud).
+            """)
+            return openLocalOnlyContainer(reason: "CloudKit store failed to open")
         }
-    }()
+    }
 
     private static func logSwiftDataContainerFailure(_ error: Error, label: String) {
         let ns = error as NSError
@@ -132,31 +143,51 @@ struct MoonmindApp: App {
         .modelContainer(Self.sharedModelContainer)
     }
 
-    /// One-time copy of favorites from the store used before CloudKit + expanded schema.
+    /// One-time copy of favorites from `default.store` (UUID `id`) into the current sync store (`favoriteId` String).
     private static func migrateLegacySavedItemsIfNeeded() {
-        let legacyURL = legacySwiftDataStoreURL
-        guard FileManager.default.fileExists(atPath: legacyURL.path) else { return }
+        guard !UserDefaults.standard.bool(forKey: legacyDefaultStoreMigratedKey) else {
+            scheduleLegacyDefaultStoreRemoval()
+            return
+        }
 
-        let legacySchema = Schema([SavedItem.self])
+        let legacyURL = legacySwiftDataStoreURL
+        guard FileManager.default.fileExists(atPath: legacyURL.path) else {
+            UserDefaults.standard.set(true, forKey: legacyDefaultStoreMigratedKey)
+            return
+        }
+
+        let legacySchema = Schema([LegacySavedItem.self])
         let legacyConfiguration = ModelConfiguration(
             schema: legacySchema,
             url: legacyURL,
             cloudKitDatabase: .none
         )
-        guard let legacyContainer = try? ModelContainer(for: legacySchema, configurations: [legacyConfiguration])
-        else { return }
+        let legacyItems: [LegacySavedItem] = {
+            guard let legacyContainer = try? ModelContainer(for: legacySchema, configurations: [legacyConfiguration])
+            else {
+                syncLogger.error("legacy default.store exists but could not be opened for migration")
+                return []
+            }
+            return (try? legacyContainer.mainContext.fetch(FetchDescriptor<LegacySavedItem>())) ?? []
+        }()
 
-        let legacyContext = legacyContainer.mainContext
-        let legacyItems = (try? legacyContext.fetch(FetchDescriptor<SavedItem>())) ?? []
-        guard !legacyItems.isEmpty else { return }
+        guard !legacyItems.isEmpty else {
+            scheduleLegacyDefaultStoreRemoval()
+            UserDefaults.standard.set(true, forKey: legacyDefaultStoreMigratedKey)
+            return
+        }
 
         let mainContext = Self.sharedModelContainer.mainContext
         let newStoreCount = (try? mainContext.fetchCount(FetchDescriptor<SavedItem>())) ?? 0
-        guard newStoreCount == 0 else { return }
+        guard newStoreCount == 0 else {
+            scheduleLegacyDefaultStoreRemoval()
+            UserDefaults.standard.set(true, forKey: legacyDefaultStoreMigratedKey)
+            return
+        }
 
         for item in legacyItems {
             let copy = SavedItem(
-                favoriteId: item.favoriteId.isEmpty ? UUID().uuidString : item.favoriteId,
+                favoriteId: item.id.uuidString,
                 createdAt: item.createdAt,
                 episodeKey: item.episodeKey,
                 episodeTitle: item.episodeTitle,
@@ -166,13 +197,34 @@ struct MoonmindApp: App {
                 audioURLString: item.audioURLString,
                 episodePubDate: item.episodePubDate,
                 linkURLString: item.linkURLString,
-                artworkURLString: item.artworkURLString,
+                artworkURLString: nil,
                 excerpt: item.excerpt,
                 note: item.note
             )
             mainContext.insert(copy)
         }
         try? mainContext.save()
+        scheduleLegacyDefaultStoreRemoval()
+        UserDefaults.standard.set(true, forKey: legacyDefaultStoreMigratedKey)
+        syncLogger.notice("migrated \(legacyItems.count) SavedItem rows from legacy default.store")
+    }
+
+    /// Delete legacy SQLite files only after the migration `ModelContainer` has been torn down.
+    private static func scheduleLegacyDefaultStoreRemoval() {
+        DispatchQueue.main.async {
+            removeLegacyDefaultStoreFilesIfPresent()
+        }
+    }
+
+    private static func removeLegacyDefaultStoreFilesIfPresent() {
+        let base = legacySwiftDataStoreURL
+        let dir = base.deletingLastPathComponent()
+        let name = base.lastPathComponent
+        for suffix in ["", "-shm", "-wal"] {
+            let url = dir.appendingPathComponent(name + suffix)
+            guard FileManager.default.fileExists(atPath: url.path) else { continue }
+            try? FileManager.default.removeItem(at: url)
+        }
     }
 
     /// After UUID → String migration, rows can briefly have an empty `favoriteId`; ensure each has a unique value before deduping.
@@ -232,11 +284,7 @@ struct MoonmindApp: App {
     }
 
     private static func logCloudKitAccountStatusIfNeeded() {
-        let prefersCloud: Bool = {
-            if UserDefaults.standard.object(forKey: MoonmindSyncSettings.preferICloudSyncKey) == nil { return true }
-            return UserDefaults.standard.bool(forKey: MoonmindSyncSettings.preferICloudSyncKey)
-        }()
-        guard prefersCloud, UserDefaults.standard.bool(forKey: MoonmindSyncSettings.cloudKitInactiveKey) == false else { return }
+        guard prefersICloudSync(), UserDefaults.standard.bool(forKey: MoonmindSyncSettings.cloudKitInactiveKey) == false else { return }
         Task { @MainActor in
             let container = CKContainer(identifier: MoonmindCloudKit.containerIdentifier)
             do {
@@ -245,8 +293,10 @@ struct MoonmindApp: App {
                 switch status {
                 case .available:
                     break
-                case .couldNotDetermine, .restricted, .noAccount, .temporarilyUnavailable:
+                case .couldNotDetermine, .restricted, .temporarilyUnavailable:
                     print("moonmind: iCloud for CloudKit is not fully available (status: \(String(describing: status))). Check Settings → Apple ID → iCloud.")
+                case .noAccount:
+                    break
                 @unknown default:
                     print("moonmind: iCloud account status unknown: \(String(describing: status))")
                 }
