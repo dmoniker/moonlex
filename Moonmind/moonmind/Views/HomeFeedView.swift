@@ -239,6 +239,9 @@ struct HomeFeedView: View {
                 SettingsToolbarButton(showSettings: $showAppSettings)
             }
         }
+        .onAppear {
+            model.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
+        }
         .task {
             await model.refresh(feeds: catalog.podcastFeeds, feedFilters: feedFilters, downloads: episodeDownloads)
         }

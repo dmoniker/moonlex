@@ -10,9 +10,12 @@ final class HomeViewModel: ObservableObject {
     private var episodeCacheByFeedID: [String: [Episode]] = [:]
 
     init() {
-        let elon = ElonGuestInterviewEpisodeCache.load()
-        if !elon.isEmpty {
-            episodeCacheByFeedID[PodcastFeed.elonGuestInterviewsFeedID] = elon
+        episodeCacheByFeedID = FeedEpisodeCache.load()
+        if episodeCacheByFeedID[PodcastFeed.elonGuestInterviewsFeedID]?.isEmpty != false {
+            let elon = ElonGuestInterviewEpisodeCache.load()
+            if !elon.isEmpty {
+                episodeCacheByFeedID[PodcastFeed.elonGuestInterviewsFeedID] = elon
+            }
         }
     }
 
@@ -33,11 +36,14 @@ final class HomeViewModel: ObservableObject {
     }
 
     func refresh(feeds: [PodcastFeed], feedFilters: FeedFilters, downloads: EpisodeDownloadStore? = nil) async {
-        isLoading = true
+        applyFilterInstantly(feeds: feeds, feedFilters: feedFilters)
+
+        let hadCachedEpisodes = !episodes.isEmpty
+        if !hadCachedEpisodes {
+            isLoading = true
+        }
         lastError = nil
         defer { isLoading = false }
-
-        applyFilterInstantly(feeds: feeds, feedFilters: feedFilters)
 
         let filterScope = Self.filterScope(for: feeds)
 
@@ -129,10 +135,8 @@ final class HomeViewModel: ObservableObject {
 
         for (feedID, eps) in fetchResults {
             episodeCacheByFeedID[feedID] = eps
-            if feedID == PodcastFeed.elonGuestInterviewsFeedID {
-                ElonGuestInterviewEpisodeCache.save(eps)
-            }
         }
+        FeedEpisodeCache.save(episodeCacheByFeedID)
 
         await reconcileFromCache(
             feeds: feeds,
@@ -173,6 +177,8 @@ final class HomeViewModel: ObservableObject {
         }
 
         downloads?.enqueueRecentEpisodeDownloads(episodeCacheByFeedID: episodeCacheByFeedID)
+
+        FeedEpisodeCache.save(episodeCacheByFeedID)
 
         if !errors.isEmpty, merged.isEmpty {
             lastError = errors.joined(separator: "\n")

@@ -166,6 +166,9 @@ struct NewsletterFeedView: View {
                 SettingsToolbarButton(showSettings: $showAppSettings)
             }
         }
+        .onAppear {
+            model.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
+        }
         .task {
             await model.refresh(feeds: catalog.newsletterFeeds, feedFilters: feedFilters, downloads: nil)
         }

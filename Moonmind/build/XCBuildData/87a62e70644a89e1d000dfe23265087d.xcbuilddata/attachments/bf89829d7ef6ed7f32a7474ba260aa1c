@@ -1,0 +1,166 @@
+{
+  "" : {
+    "const-values" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary.swiftconstvalues",
+    "dependencies" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary.d",
+    "diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary.dia",
+    "emit-module-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary-emit-module.dia",
+    "pch" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/moonmind-primary.swiftdeps"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/ContentView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Models/CloudSyncModels.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/CloudSyncModels.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/CloudSyncModels.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/CloudSyncModels.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Models/Episode.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/Episode.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/Episode.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/Episode.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Models/FeedCatalog.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedCatalog.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedCatalog.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedCatalog.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Models/SavedItem.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/SavedItem.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/SavedItem.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/SavedItem.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/MoonmindApp.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/MoonmindApp.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/MoonmindApp.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/MoonmindApp.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/ElonGuestEpisodeFilter.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonGuestEpisodeFilter.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonGuestEpisodeFilter.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonGuestEpisodeFilter.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/ElonGuestInterviewEpisodeCache.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonGuestInterviewEpisodeCache.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonGuestInterviewEpisodeCache.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonGuestInterviewEpisodeCache.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/ElonSupplementalInterviews.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonSupplementalInterviews.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonSupplementalInterviews.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ElonSupplementalInterviews.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/EpisodeDownloadStore.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadStore.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/EpisodePlaybackController.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackController.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/EpisodePlaybackProgressStore.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodePlaybackProgressStore.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/FeedEpisodeCache.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedEpisodeCache.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedEpisodeCache.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedEpisodeCache.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/FeedFilters.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilters.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilters.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilters.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/ITunesPodcastSearchService.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ITunesPodcastSearchService.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ITunesPodcastSearchService.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/ITunesPodcastSearchService.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/PodcastArtworkCache.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkCache.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/PodcastDirectorySearchService.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastDirectorySearchService.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastDirectorySearchService.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastDirectorySearchService.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/RSSFeedService.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/RSSFeedService.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/RSSFeedService.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/RSSFeedService.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/SleepTimerStore.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/SleepTimerStore.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Services/String+HTML.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/String+HTML.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/String+HTML.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/String+HTML.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/ViewModels/HomeViewModel.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/HomeViewModel.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/HomeViewModel.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/HomeViewModel.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AddPodcastView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/AddPodcastView.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/AppSettingsViews.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/AppSettingsViews.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/EpisodeDetailView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDetailView.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/EpisodeDownloadAccessory.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/EpisodeDownloadAccessory.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/FavoritesView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FavoritesView.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/FeedFilterBar.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/FeedFilterBar.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/HomeFeedView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/HomeFeedView.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/NewsletterFeedView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/NewsletterFeedView.o"
+  },
+  "/Users/darcymenard/Documents/projects/moonlex/Moonmind/moonmind/Views/PodcastArtworkView.swift" : {
+    "index-unit-output-path" : "/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.o",
+    "llvm-bc" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.bc",
+    "object" : "/Users/darcymenard/Documents/projects/moonlex/Moonmind/build/Moonmind.build/Release-iphoneos/moonmind.build/Objects-normal/arm64/PodcastArtworkView.o"
+  }
+}
