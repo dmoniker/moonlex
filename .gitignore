@@ -1,6 +1,9 @@
 # Xcode
 DerivedData/
+.derivedData/
+Moonmind/build/
 Moonmind/moonmind/.env.local
+Moonmind/moonmind/Config/LocalSecrets.swift
 *.xcuserstate
 *.xcuserdatad/
 xcuserdata/

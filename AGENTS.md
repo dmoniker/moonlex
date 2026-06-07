@@ -1,5 +1,7 @@
 # Agent notes (moonmind + Xcode MCP)
 
+**LunarCast** is a free podcast app for iPhone and iPad, published on the [App Store](https://apps.apple.com/us/app/lunarcast/id6761336207). This repo is its source (internal name: moonmind).
+
 Use this when working from **Cursor** with **Xcode MCP** enabled ([Apple: external agents + Xcode](https://developer.apple.com/documentation/xcode/giving-agentic-coding-tools-access-to-xcode)).
 
 ## Before you use Xcode-backed tools
@@ -14,6 +16,7 @@ Use this when working from **Cursor** with **Xcode MCP** enabled ([Apple: extern
 - **iOS:** 17.0+ · SwiftUI · SwiftData
 - **Bundle ID:** `com.moonmind.moonmind`
 - **RSS sources:** built-in Moonshots + Lex Fridman; user can add more via RSS URL
+- **Secrets:** `Moonmind/moonmind/Config/LocalSecrets.swift` (gitignored) — optional Podcast Index keys for directory search fallback; see `LocalSecrets.example.swift`
 
 ## If something fails
 

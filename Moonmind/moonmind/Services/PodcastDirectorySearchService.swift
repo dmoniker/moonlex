@@ -16,7 +16,7 @@ enum PodcastDirectorySearchService {
             lastError = error
         }
 
-        if !apiKey.isEmpty, !apiSecret.isEmpty {
+        if !LocalSecrets.podcastIndexAPIKey.isEmpty, !LocalSecrets.podcastIndexAPISecret.isEmpty {
             return try await podcastIndexSearch(term: trimmed)
         }
 
@@ -24,13 +24,11 @@ enum PodcastDirectorySearchService {
         return []
     }
 
-    // MARK: - Podcast Index fallback
-
-    // Free keys — sign up at https://podcastindex.org/account (takes 30 seconds)
-    private static let apiKey = "WMEBTXUUW73QUDALWQMZ"      // paste your API Key here
-    private static let apiSecret = "b2qKjYkEChvX5a3BZTTAYY8Dj3L6r4jeDUHR7B#X"   // paste your API Secret here
+    // MARK: - Podcast Index fallback (optional; keys in gitignored LocalSecrets.swift)
 
     private nonisolated static func podcastIndexSearch(term: String) async throws -> [ITunesPodcastMatch] {
+        let apiKey = LocalSecrets.podcastIndexAPIKey
+        let apiSecret = LocalSecrets.podcastIndexAPISecret
         var components = URLComponents(string: "https://api.podcastindex.org/api/1.0/search/byterm")!
         components.queryItems = [
             URLQueryItem(name: "q", value: term),
