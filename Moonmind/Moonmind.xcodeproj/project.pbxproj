@@ -260,13 +260,15 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/moonmind/Config/LocalSecrets.example.swift",
 			);
 			name = "Sync LocalSecrets";
 			outputPaths = (
+				"$(SRCROOT)/moonmind/Config/LocalSecrets.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SECRETS_DIR=\"${SRCROOT}/moonmind/Config\"\nif [ ! -f \"${SECRETS_DIR}/LocalSecrets.swift\" ]; then\n  cp \"${SECRETS_DIR}/LocalSecrets.example.swift\" \"${SECRETS_DIR}/LocalSecrets.swift\"\nfi\n";
+			shellScript = "set -e\nSECRETS_DIR=\"${SRCROOT}/moonmind/Config\"\nEXAMPLE=\"${SECRETS_DIR}/LocalSecrets.example.swift\"\nDEST=\"${SECRETS_DIR}/LocalSecrets.swift\"\nif [ ! -f \"${DEST}\" ]; then\n  if [ ! -f \"${EXAMPLE}\" ]; then\n    echo \"error: missing ${EXAMPLE}\" >&2\n    exit 1\n  fi\n  cp \"${EXAMPLE}\" \"${DEST}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
