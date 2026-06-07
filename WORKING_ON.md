@@ -1,6 +1,6 @@
 # What I’m working on
 
-**Moonmind** is an iOS 17+ app (SwiftUI, SwiftData) for following podcasts and newsletter-style RSS feeds. Built-in sources include Moonshots and Lex Fridman; users can add any feed by URL.
+**LunarCast** ([free on the App Store](https://apps.apple.com/us/app/lunarcast/id6761336207)) is an iOS 17+ podcast app (SwiftUI, SwiftData; internal project name **moonmind**) for following podcasts and newsletter-style RSS feeds. Built-in sources include Moonshots and Lex Fridman; users can add any feed by URL.
 
 Core experience: a tabbed home (Feed, Newsletters, Favorites), episode detail and playback, optional offline downloads, sleep timer, and a mini player. SwiftData persists catalog and user data, with optional **iCloud / CloudKit** sync for saves, custom feeds, playback progress, and preferences.
 
