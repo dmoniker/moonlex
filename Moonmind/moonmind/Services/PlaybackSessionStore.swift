@@ -9,6 +9,8 @@ struct LoadedEpisodeSessionInfo: Codable, Equatable {
     let feedURLString: String
     let feedContentKind: String
     let audioURLString: String?
+    let linkURLString: String?
+    let showLinkURLString: String?
     let artworkURLString: String?
     let pubDateInterval: TimeInterval?
 
@@ -20,6 +22,8 @@ struct LoadedEpisodeSessionInfo: Codable, Equatable {
         feedURLString = episode.feedURLString
         feedContentKind = episode.feedContentKind.rawValue
         audioURLString = episode.audioURL?.absoluteString
+        linkURLString = episode.linkURL?.absoluteString
+        showLinkURLString = episode.showLinkURL?.absoluteString
         artworkURLString = episode.artworkURL?.absoluteString
         pubDateInterval = episode.pubDate?.timeIntervalSince1970
     }
@@ -33,7 +37,8 @@ struct LoadedEpisodeSessionInfo: Codable, Equatable {
             showTitle: showTitle,
             feedID: feedID,
             feedURLString: feedURLString,
-            linkURL: nil,
+            linkURL: linkURLString.flatMap { URL(string: $0) },
+            showLinkURL: showLinkURLString.flatMap { URL(string: $0) },
             descriptionRaw: "",
             artworkURL: artworkURLString.flatMap { URL(string: $0) },
             authorName: nil,

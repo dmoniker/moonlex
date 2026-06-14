@@ -75,6 +75,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
 
     /// Channel `<itunes:author>` (fallback when an item has no creator).
     private var channelItunesAuthorBuf = ""
+    private var channelLinkBuf = ""
 
     /// Show-level artwork (persists for all items in this feed document).
     private var channelArtworkURL: String?
@@ -150,6 +151,9 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             return
         }
         if !inItem {
+            if leaf == "link" {
+                channelLinkBuf += string
+            }
             if leaf == "itunes:author" {
                 channelItunesAuthorBuf += string
             }
@@ -260,6 +264,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
         let (audioString, artFromEnclosure) = Self.classifyEnclosure(url: enclosureURL, typeLower: enclosureTypeLower)
         let audio = audioString.flatMap { URL(string: $0) }
         let page = URL(string: link)
+        let showPage = URL(string: channelLinkBuf.trimmingCharacters(in: .whitespacesAndNewlines))
         let rawArt = itemArtworkURL ?? artFromEnclosure ?? channelArtworkURL
         let trimmedArt = rawArt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let artwork = trimmedArt.isEmpty ? nil : URL(string: trimmedArt)
@@ -289,6 +294,7 @@ private final class RSSParser: NSObject, XMLParserDelegate {
             feedID: feed.id,
             feedURLString: feed.rssURLString,
             linkURL: page,
+            showLinkURL: showPage,
             descriptionRaw: chosenItemDescriptionRaw,
             artworkURL: artwork,
             authorName: authorName,

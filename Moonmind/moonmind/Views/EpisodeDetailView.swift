@@ -136,6 +136,9 @@ struct EpisodeDetailView: View {
             .toolbar(detailBottomChrome.isCompact ? .hidden : .automatic, for: .tabBar)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
+                    if episode.canShare {
+                        EpisodeShareLink(episode: episode)
+                    }
                     if episode.audioURL != nil {
                         if progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) {
                             Button {

@@ -3,7 +3,10 @@ import Foundation
 @MainActor
 final class HomeViewModel: ObservableObject {
     @Published private(set) var episodes: [Episode] = []
+    /// Full-screen spinner only when there is nothing to show yet (first launch / empty cache).
     @Published var isLoading = false
+    /// Background RSS refresh while cached episodes are already on screen.
+    @Published var isRefreshing = false
     @Published var lastError: String?
 
     /// Raw RSS/API episodes per feed (Moonshots & Lex unfiltered). Enables instant chip switches without waiting on the network.
@@ -11,6 +14,15 @@ final class HomeViewModel: ObservableObject {
 
     init() {
         episodeCacheByFeedID = FeedEpisodeCache.load()
+    }
+
+    /// Loads disk cache and hydrates ``episodes`` before the first SwiftUI frame (see ``ContentView`` init).
+    static func warmStarted(feeds: [PodcastFeed], feedFilters: FeedFilters) -> HomeViewModel {
+        let vm = HomeViewModel()
+        if !vm.episodeCacheByFeedID.isEmpty {
+            vm.applyFilterInstantly(feeds: feeds, feedFilters: feedFilters)
+        }
+        return vm
     }
 
     private static func filterScope(for feeds: [PodcastFeed]) -> FeedFilterBarScope {
@@ -31,11 +43,16 @@ final class HomeViewModel: ObservableObject {
 
     func refresh(feeds: [PodcastFeed], feedFilters: FeedFilters, downloads: EpisodeDownloadStore? = nil) async {
         let hadCachedEpisodes = !episodes.isEmpty
-        if !hadCachedEpisodes {
+        if hadCachedEpisodes {
+            isRefreshing = true
+        } else {
             isLoading = true
         }
         lastError = nil
-        defer { isLoading = false }
+        defer {
+            isLoading = false
+            isRefreshing = false
+        }
 
         let filterScope = Self.filterScope(for: feeds)
 
@@ -56,7 +73,6 @@ final class HomeViewModel: ObservableObject {
 
         let enabledRefreshingFeeds = feeds.filter { feedFilters.isOn($0.id, scope: filterScope) }
 
-        var fetchResults: [(String, [Episode])] = []
         var errors: [String] = []
 
         await withTaskGroup(of: Result<(String, [Episode]), Error>.self) { group in
@@ -118,16 +134,17 @@ final class HomeViewModel: ObservableObject {
             for await result in group {
                 switch result {
                 case .success(let pair):
-                    fetchResults.append(pair)
+                    episodeCacheByFeedID[pair.0] = pair.1
+                    publishEpisodesFromCache(feeds: feeds, feedFilters: feedFilters)
+                    if isLoading, !episodes.isEmpty {
+                        isLoading = false
+                    }
                 case .failure(let err):
                     errors.append(err.localizedDescription)
                 }
             }
         }
 
-        for (feedID, eps) in fetchResults {
-            episodeCacheByFeedID[feedID] = eps
-        }
         persistEpisodeCache()
 
         await reconcileFromCache(
@@ -181,6 +198,10 @@ final class HomeViewModel: ObservableObject {
 
     private func persistEpisodeCache() {
         FeedEpisodeCache.save(episodeCacheByFeedID)
+    }
+
+    private func publishEpisodesFromCache(feeds: [PodcastFeed], feedFilters: FeedFilters) {
+        applyFilterInstantly(feeds: feeds, feedFilters: feedFilters)
     }
 
     private static func mergedEpisodesBeforeHero(

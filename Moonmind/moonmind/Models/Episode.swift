@@ -11,6 +11,8 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
     let feedID: String
     let feedURLString: String
     let linkURL: URL?
+    /// Channel or show website from RSS (`<channel><link>`), used when an item has no page URL.
+    let showLinkURL: URL?
     let descriptionRaw: String
     let artworkURL: URL?
     /// Post author when the feed provides it (e.g. RSS `dc:creator`); publication/feed avatar when `authorAvatarURL` is set.
@@ -45,6 +47,7 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
             feedID: feedID,
             feedURLString: feedURLString,
             linkURL: linkURL,
+            showLinkURL: showLinkURL,
             descriptionRaw: descriptionRaw,
             artworkURL: url,
             authorName: authorName,
@@ -64,6 +67,7 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
             feedID: feedID,
             feedURLString: feedURLString,
             linkURL: linkURL,
+            showLinkURL: showLinkURL,
             descriptionRaw: descriptionRaw,
             artworkURL: artworkURL,
             authorName: authorName,
@@ -74,6 +78,53 @@ struct Episode: Identifiable, Hashable, Sendable, Codable {
 }
 
 extension Episode {
+    /// Human-friendly page to share (episode show notes or the podcast website — never a raw audio file).
+    var shareURL: URL? {
+        if let link = linkURL, Self.isShareableWebPage(link) { return link }
+        if let show = showLinkURL, Self.isShareableWebPage(show) { return show }
+        if let builtin = Self.builtinShowLinkURL(forFeedID: feedID), Self.isShareableWebPage(builtin) {
+            return builtin
+        }
+        return nil
+    }
+
+    var canShare: Bool { true }
+
+    /// Title line paired with a shared link (no URL — Messages already receives the link separately).
+    var shareCaption: String {
+        "\(title) — \(showTitle)"
+    }
+
+    /// Plain-text payload when there is no page URL to share.
+    var shareMessage: String {
+        shareCaption
+    }
+
+    private static func isShareableWebPage(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
+            return false
+        }
+        return !isDirectAudioAsset(url)
+    }
+
+    private static func builtinShowLinkURL(forFeedID feedID: String) -> URL? {
+        switch feedID {
+        case PodcastFeed.moonshotsID:
+            return URL(string: "https://www.diamandis.com/podcast")
+        case PodcastFeed.lexID:
+            return URL(string: "https://lexfridman.com/podcast")
+        default:
+            return nil
+        }
+    }
+
+    private static func isDirectAudioAsset(_ url: URL) -> Bool {
+        let ext = url.pathExtension.lowercased()
+        if ["mp3", "m4a", "aac", "wav", "ogg", "opus", "flac", "mp4"].contains(ext) { return true }
+        let host = url.host?.lowercased() ?? ""
+        return host.contains("megaphone.fm") || host.contains("blubrry.com")
+    }
+
     /// Reconstructs a playable episode from a saved item when the episode isn’t currently loaded in a feed list.
     init(savedItem: SavedItem, contentKind: FeedContentKind) {
         stableKey = savedItem.episodeKey
@@ -84,6 +135,7 @@ extension Episode {
         feedID = savedItem.feedID
         feedURLString = savedItem.feedURLString
         linkURL = savedItem.linkURLString.flatMap { URL(string: $0) }
+        showLinkURL = nil
         descriptionRaw = ""
         artworkURL = savedItem.artworkURLString.flatMap { URL(string: $0) }
         authorName = nil

@@ -41,6 +41,12 @@ struct FavoritesView: View {
                                     savedRow(item)
                                 }
                                 .buttonStyle(.plain)
+                                .contextMenu {
+                                    let ep = episode(for: item)
+                                    if ep.canShare {
+                                        EpisodeShareLink(episode: ep)
+                                    }
+                                }
                             }
                             .onDelete(perform: delete)
                         }

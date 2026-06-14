@@ -180,13 +180,13 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
-    @StateObject private var catalog = FeedCatalog()
-    @StateObject private var feedFilters = FeedFilters()
-    @StateObject private var home = HomeViewModel()
+    @StateObject private var catalog: FeedCatalog
+    @StateObject private var feedFilters: FeedFilters
+    @StateObject private var home: HomeViewModel
     @StateObject private var episodePlayback = EpisodePlaybackController()
     @StateObject private var sleepTimer = SleepTimerStore()
     @StateObject private var episodeDownloads = EpisodeDownloadStore()
-    @StateObject private var newsletterHome = HomeViewModel()
+    @StateObject private var newsletterHome: HomeViewModel
     @StateObject private var detailBottomChrome = DetailBottomChromeState()
     @State private var showAddFeeds = false
     @State private var showAppSettings = false
@@ -194,6 +194,17 @@ struct ContentView: View {
     @State private var selectedTab = 0
     /// Measured from the real `UITabBar` frame (floating pills report a smaller value than `49 + safeArea.bottom`).
     @State private var tabBarTopFromWindowBottom: CGFloat?
+
+    init() {
+        let catalog = FeedCatalog()
+        let feedFilters = FeedFilters()
+        _catalog = StateObject(wrappedValue: catalog)
+        _feedFilters = StateObject(wrappedValue: feedFilters)
+        _home = StateObject(wrappedValue: HomeViewModel.warmStarted(feeds: catalog.podcastFeeds, feedFilters: feedFilters))
+        _newsletterHome = StateObject(
+            wrappedValue: HomeViewModel.warmStarted(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
+        )
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
