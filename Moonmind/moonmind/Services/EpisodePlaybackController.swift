@@ -109,6 +109,10 @@ final class EpisodePlaybackController: ObservableObject {
     private var stallObserver: NSObjectProtocol?
     private var statusObservation: NSKeyValueObservation?
     private var interruptionObserver: NSObjectProtocol?
+    private var secondaryAudioHintObserver: NSObjectProtocol?
+    /// Set when the system pauses us (Siri / Announce Notifications / call); cleared on user pause.
+    private var shouldResumeAfterInterruption = false
+    private var shouldResumeAfterSecondaryAudioHint = false
     /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
     private var resumeSetupComplete = true
     private var lastPeriodicProgressSave = Date.distantPast
@@ -135,6 +139,14 @@ final class EpisodePlaybackController: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             self?.handleAudioInterruption(notification)
+        }
+        // Announce Notifications / Siri often duck instead of interrupting; pause so spoken content isn't missed.
+        secondaryAudioHintObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.silenceSecondaryAudioHintNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            self?.handleSecondaryAudioHint(notification)
         }
         configureRemoteCommands()
     }
@@ -724,7 +736,8 @@ final class EpisodePlaybackController: ObservableObject {
     /// - Parameter armSleepTimerIfNeeded: When false (e.g. autoplay), does not start a new countdown if none is active—only explicit user playback should re-arm after the timer has fired.
     func play(armSleepTimerIfNeeded: Bool = true) {
         let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.playback, mode: .default, options: [])
+        // `.spokenAudio` lets Siri / Announce Notifications interrupt (pause) instead of only ducking.
+        try? session.setCategory(.playback, mode: .spokenAudio, options: [])
         try? session.setActive(true)
         if armSleepTimerIfNeeded {
             sleepTimerStore?.armCountdownIfNeeded()
@@ -752,6 +765,16 @@ final class EpisodePlaybackController: ObservableObject {
     }
 
     func pause() {
+        clearSystemAudioResumeIntent()
+        applyPausedState()
+    }
+
+    private func clearSystemAudioResumeIntent() {
+        shouldResumeAfterInterruption = false
+        shouldResumeAfterSecondaryAudioHint = false
+    }
+
+    private func applyPausedState() {
         player?.pause()
         isPlaying = false
         persistListeningProgressIfNeeded()
@@ -1026,9 +1049,41 @@ final class EpisodePlaybackController: ObservableObject {
 
         switch type {
         case .began:
-            pause()
+            shouldResumeAfterInterruption = isPlaying
+            if isPlaying {
+                applyPausedState()
+            }
         case .ended:
+            let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+            let shouldResume = options.contains(.shouldResume) && shouldResumeAfterInterruption
+            shouldResumeAfterInterruption = false
+            if shouldResume {
+                play(armSleepTimerIfNeeded: false)
+            }
+        @unknown default:
             break
+        }
+    }
+
+    private func handleSecondaryAudioHint(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let typeValue = info[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? UInt,
+              let type = AVAudioSession.SilenceSecondaryAudioHintType(rawValue: typeValue)
+        else { return }
+
+        switch type {
+        case .begin:
+            shouldResumeAfterSecondaryAudioHint = isPlaying
+            if isPlaying {
+                applyPausedState()
+            }
+        case .end:
+            let shouldResume = shouldResumeAfterSecondaryAudioHint
+            shouldResumeAfterSecondaryAudioHint = false
+            if shouldResume {
+                play(armSleepTimerIfNeeded: false)
+            }
         @unknown default:
             break
         }
@@ -1065,6 +1120,9 @@ final class EpisodePlaybackController: ObservableObject {
         }
         if let interruptionObserver {
             NotificationCenter.default.removeObserver(interruptionObserver)
+        }
+        if let secondaryAudioHintObserver {
+            NotificationCenter.default.removeObserver(secondaryAudioHintObserver)
         }
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.removeTarget(nil)
