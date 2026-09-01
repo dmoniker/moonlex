@@ -110,9 +110,11 @@ final class EpisodePlaybackController: ObservableObject {
     private var statusObservation: NSKeyValueObservation?
     private var interruptionObserver: NSObjectProtocol?
     private var secondaryAudioHintObserver: NSObjectProtocol?
+    private var enterBackgroundObserver: NSObjectProtocol?
     /// Set when the system pauses us (Siri / Announce Notifications / call); cleared on user pause.
     private var shouldResumeAfterInterruption = false
     private var shouldResumeAfterSecondaryAudioHint = false
+    private var didConfigureAudioSession = false
     /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
     private var resumeSetupComplete = true
     private var lastPeriodicProgressSave = Date.distantPast
@@ -147,6 +149,13 @@ final class EpisodePlaybackController: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             self?.handleSecondaryAudioHint(notification)
+        }
+        enterBackgroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleDidEnterBackground()
         }
         configureRemoteCommands()
     }
@@ -735,10 +744,7 @@ final class EpisodePlaybackController: ObservableObject {
 
     /// - Parameter armSleepTimerIfNeeded: When false (e.g. autoplay), does not start a new countdown if none is active—only explicit user playback should re-arm after the timer has fired.
     func play(armSleepTimerIfNeeded: Bool = true) {
-        let session = AVAudioSession.sharedInstance()
-        // `.spokenAudio` lets Siri / Announce Notifications interrupt (pause) instead of only ducking.
-        try? session.setCategory(.playback, mode: .spokenAudio, options: [])
-        try? session.setActive(true)
+        activatePlaybackSession()
         if armSleepTimerIfNeeded {
             sleepTimerStore?.armCountdownIfNeeded()
         }
@@ -752,6 +758,42 @@ final class EpisodePlaybackController: ObservableObject {
         p.rate = playbackRate
         p.play()
         isPlaying = true
+        pushNowPlayingInfo()
+    }
+
+    /// Long-form podcast playback uses `.default` mode so iOS keeps the app running in the background.
+    /// `.spokenAudio` (used previously for Siri Announce) lets the system suspend the process after a few seconds off-screen.
+    private func activatePlaybackSession() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            if !didConfigureAudioSession || session.category != .playback || session.mode != .default {
+                try session.setCategory(.playback, mode: .default, options: [])
+                didConfigureAudioSession = true
+            }
+            try session.setActive(true)
+        } catch {
+            didConfigureAudioSession = false
+            try? session.setCategory(.playback, mode: .default, options: [])
+            try? session.setActive(true)
+            didConfigureAudioSession = true
+        }
+    }
+
+    private func handleDidEnterBackground() {
+        // A secondary-audio hint during the home/lock gesture can pause us while still `.active`.
+        // Resume so iOS sees continuous playback and does not suspend the process.
+        if shouldResumeAfterSecondaryAudioHint {
+            shouldResumeAfterSecondaryAudioHint = false
+            play(armSleepTimerIfNeeded: false)
+            persistListeningProgressIfNeeded()
+            return
+        }
+        guard isPlaying else { return }
+        // Re-assert the session and player so a brief route/category glitch during the
+        // foreground → background transition does not let iOS suspend us after the buffer drains.
+        activatePlaybackSession()
+        reassertPlaybackIfUserRequestedPlaying()
+        persistListeningProgressIfNeeded()
         pushNowPlayingInfo()
     }
 
@@ -1049,6 +1091,10 @@ final class EpisodePlaybackController: ObservableObject {
 
         switch type {
         case .began:
+            // iOS posts an "interruption" when suspending the app; pausing here kills background audio.
+            if let suspended = info[AVAudioSessionInterruptionWasSuspendedKey] as? Bool, suspended {
+                return
+            }
             shouldResumeAfterInterruption = isPlaying
             if isPlaying {
                 applyPausedState()
@@ -1074,6 +1120,10 @@ final class EpisodePlaybackController: ObservableObject {
 
         switch type {
         case .begin:
+            // Locking the phone / leaving the app often posts this hint. Pausing then lets iOS
+            // suspend the process after a few seconds of buffered audio. Only pause in the foreground
+            // (Siri Announce Notifications while the user is in LunarCast).
+            guard Self.isAppInForeground else { return }
             shouldResumeAfterSecondaryAudioHint = isPlaying
             if isPlaying {
                 applyPausedState()
@@ -1087,6 +1137,10 @@ final class EpisodePlaybackController: ObservableObject {
         @unknown default:
             break
         }
+    }
+
+    private static var isAppInForeground: Bool {
+        UIApplication.shared.applicationState == .active
     }
 
     private func resetPlayer() {
@@ -1123,6 +1177,9 @@ final class EpisodePlaybackController: ObservableObject {
         }
         if let secondaryAudioHintObserver {
             NotificationCenter.default.removeObserver(secondaryAudioHintObserver)
+        }
+        if let enterBackgroundObserver {
+            NotificationCenter.default.removeObserver(enterBackgroundObserver)
         }
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.removeTarget(nil)
