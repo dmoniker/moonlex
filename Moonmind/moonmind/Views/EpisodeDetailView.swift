@@ -714,7 +714,12 @@ private struct EpisodeDetailPlayerCard: View {
                 PodcastArtworkView(url: episode.artworkURL, size: 220, cornerRadius: 14)
                 Spacer(minLength: 0)
             }
-            EpisodeDetailPlayerScrubberBlock(episode: episode, playback: playback, downloads: downloads)
+            EpisodeDetailPlayerScrubberBlock(
+                episode: episode,
+                clock: playback.clock,
+                playback: playback,
+                downloads: downloads
+            )
             HStack(spacing: 12) {
                 EpisodeDetailSleepTimerMenu(episode: episode, sleepTimer: sleepTimer, playback: playback, downloads: downloads)
                 Spacer(minLength: 8)
@@ -737,6 +742,7 @@ private struct EpisodeDetailPlayerCard: View {
 
 private struct EpisodeDetailPlayerScrubberBlock: View {
     let episode: Episode
+    @ObservedObject var clock: PlaybackClock
     @ObservedObject var playback: EpisodePlaybackController
     @ObservedObject var downloads: EpisodeDownloadStore
 
@@ -757,7 +763,7 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
 
     private var detailScrubberCurrentTime: TimeInterval {
         if isBound {
-            let live = playback.currentTime
+            let live = clock.currentTime
             if live > 0.25 || playback.isPlaying { return live }
             if playback.loadedEpisodeKey == episode.stableKey,
                let b = savedBookmark, b.position > 1 {
@@ -773,9 +779,9 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
 
     private var detailScrubberSpan: TimeInterval {
         if isBound {
-            let live = playback.currentTime
-            if playback.duration > 0 {
-                return max(playback.duration, live, detailScrubberCurrentTime, 1)
+            let live = clock.currentTime
+            if clock.duration > 0 {
+                return max(clock.duration, live, detailScrubberCurrentTime, 1)
             }
             if let d = savedBookmark?.duration, d > 0 {
                 return max(d, detailScrubberCurrentTime, 1)
@@ -793,8 +799,8 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
 
     private var detailDurationLabel: String {
         if isBound {
-            if playback.duration > 0 {
-                return EpisodeDetailTimeFormatting.playbackLabel(playback.duration)
+            if clock.duration > 0 {
+                return EpisodeDetailTimeFormatting.playbackLabel(clock.duration)
             }
             if let d = savedBookmark?.duration, d > 0 {
                 return EpisodeDetailTimeFormatting.playbackLabel(d)

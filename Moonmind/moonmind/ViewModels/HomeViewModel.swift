@@ -36,17 +36,27 @@ final class HomeViewModel: ObservableObject {
         let heroFromNewsletter = episodeCacheByFeedID[PodcastFeed.innermostLoopID] ?? []
         let heroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: heroFromNewsletter)
         merged = Self.applyInnermostHeroMap(heroByLink, to: merged)
-        episodes = merged.sorted {
+        replaceEpisodesIfChanged(merged.sorted {
             ($0.pubDate ?? .distantPast) > ($1.pubDate ?? .distantPast)
-        }
+        })
+    }
+
+    private func replaceEpisodesIfChanged(_ next: [Episode]) {
+        let unchanged = episodes.count == next.count
+            && zip(episodes, next).allSatisfy {
+                $0.stableKey == $1.stableKey && $0.artworkURL == $1.artworkURL
+            }
+        guard !unchanged else { return }
+        episodes = next
     }
 
     func refresh(feeds: [PodcastFeed], feedFilters: FeedFilters, downloads: EpisodeDownloadStore? = nil) async {
         lastError = nil
         refreshGeneration += 1
         let generation = refreshGeneration
-        let showingCachedList = !episodes.isEmpty
-        if !showingCachedList {
+        // Only the first launch (empty disk cache) uses a blocking spinner. Chip filters
+        // that miss the cache keep the empty-state layout so navigation stays live.
+        if episodeCacheByFeedID.isEmpty && episodes.isEmpty {
             isLoading = true
         }
 
@@ -68,12 +78,8 @@ final class HomeViewModel: ObservableObject {
         applyFilterInstantly(feeds: feedsCopy, feedFilters: feedFilters)
         isLoading = false
 
-        if !outcome.errors.isEmpty {
-            if episodes.isEmpty {
-                lastError = outcome.errors.joined(separator: "\n")
-            } else {
-                lastError = "Some feeds failed to load: \(outcome.errors.joined(separator: ", "))"
-            }
+        if episodes.isEmpty, !outcome.errors.isEmpty {
+            lastError = outcome.errors.joined(separator: "\n")
         }
 
         let persistSnapshot = episodeCacheByFeedID

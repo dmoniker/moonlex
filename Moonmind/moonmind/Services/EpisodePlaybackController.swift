@@ -1,5 +1,4 @@
 import AVFoundation
-import Combine
 import Foundation
 import MediaPlayer
 import UIKit
@@ -8,6 +7,12 @@ struct EpisodeNowPlayingMetadata: Equatable {
     var title: String
     var showTitle: String
     var artworkURL: URL?
+}
+
+/// Scrubber / lock-screen elapsed time. Isolated so `currentTime` ticks do not rebuild the feed.
+final class PlaybackClock: ObservableObject {
+    @Published var currentTime: TimeInterval = 0
+    @Published var duration: TimeInterval = 0
 }
 
 /// When autoplay advances, the owning feed’s `NavigationStack` should show this episode’s detail (replacing the finished one if still on-screen).
@@ -68,8 +73,23 @@ final class EpisodePlaybackController: ObservableObject {
     private static let resumeSeekTimeout: TimeInterval = 2.5
 
     @Published private(set) var isPlaying = false
-    @Published private(set) var currentTime: TimeInterval = 0
-    @Published private(set) var duration: TimeInterval = 0
+    /// High-frequency timebase. Not `@Published` on this object so feed lists are not rebuilt every tick.
+    private(set) var currentTime: TimeInterval = 0 {
+        didSet {
+            if clock.currentTime != currentTime {
+                clock.currentTime = currentTime
+            }
+        }
+    }
+    private(set) var duration: TimeInterval = 0 {
+        didSet {
+            if clock.duration != duration {
+                clock.duration = duration
+            }
+        }
+    }
+    /// Observed by the now-playing scrubber only.
+    let clock = PlaybackClock()
     @Published private(set) var playbackRate: Float
 
     /// Three speeds: slow, 1×, fast (slow/fast come from Settings).
@@ -125,7 +145,6 @@ final class EpisodePlaybackController: ObservableObject {
     /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
     private var resumeSetupComplete = true
     private var lastPeriodicProgressSave = Date.distantPast
-    private var progressForwardCancellable: AnyCancellable?
     private var cachedSessionEpisodeInfo: LoadedEpisodeSessionInfo?
     private var sessionShowsEpisodeDetail = false
     private var sessionDetailEpisodeKey: String?
@@ -137,10 +156,6 @@ final class EpisodePlaybackController: ObservableObject {
         let tiers = Self.resolvedPlaybackRateTiers()
         let stored = Float(UserDefaults.standard.double(forKey: Self.playbackRateDefaultsKey))
         playbackRate = tiers.first(where: { abs($0 - stored) < 0.001 }) ?? 1.0
-
-        progressForwardCancellable = progressStore.objectWillChange.sink { [weak self] _ in
-            self?.objectWillChange.send()
-        }
 
         interruptionObserver = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
@@ -525,7 +540,7 @@ final class EpisodePlaybackController: ObservableObject {
                 let now = Date()
                 if now.timeIntervalSince(playback.lastPeriodicProgressSave) >= Self.periodicProgressSaveInterval {
                     playback.lastPeriodicProgressSave = now
-                    playback.persistListeningProgressIfNeeded()
+                    playback.persistListeningProgressIfNeeded(notifyProgressStore: false)
                 }
             }
             if playback.isPlaying, let store = playback.sleepTimerStore, store.checkFire() {
@@ -533,7 +548,7 @@ final class EpisodePlaybackController: ObservableObject {
                 store.consumeFiredCountdown()
             }
             if playback.isPlaying {
-                playback.pushNowPlayingInfo()
+                playback.pushNowPlayingElapsedTime()
             }
         }
 
@@ -634,7 +649,7 @@ final class EpisodePlaybackController: ObservableObject {
                 let now = Date()
                 if now.timeIntervalSince(playback.lastPeriodicProgressSave) >= Self.periodicProgressSaveInterval {
                     playback.lastPeriodicProgressSave = now
-                    playback.persistListeningProgressIfNeeded()
+                    playback.persistListeningProgressIfNeeded(notifyProgressStore: false)
                 }
             }
             if playback.isPlaying, let store = playback.sleepTimerStore, store.checkFire() {
@@ -642,7 +657,7 @@ final class EpisodePlaybackController: ObservableObject {
                 store.consumeFiredCountdown()
             }
             if playback.isPlaying {
-                playback.pushNowPlayingInfo()
+                playback.pushNowPlayingElapsedTime()
             }
         }
 
@@ -785,7 +800,7 @@ final class EpisodePlaybackController: ObservableObject {
         return t
     }
 
-    private func persistListeningProgressIfNeeded() {
+    private func persistListeningProgressIfNeeded(notifyProgressStore: Bool = true) {
         guard resumeSetupComplete else { return }
         guard let key = loadedEpisodeKey else { return }
         let t = currentTime
@@ -803,7 +818,12 @@ final class EpisodePlaybackController: ObservableObject {
             return
         }
         let knownDuration = (duration > 0 && duration.isFinite) ? duration : nil
-        progressStore.savePosition(t, lastKnownDuration: knownDuration, forEpisodeKey: key)
+        progressStore.savePosition(
+            t,
+            lastKnownDuration: knownDuration,
+            forEpisodeKey: key,
+            notify: notifyProgressStore
+        )
     }
 
     func setPlaybackRate(_ rate: Float) {
@@ -977,7 +997,7 @@ final class EpisodePlaybackController: ObservableObject {
                     playback.pendingSeekSeconds = nil
                 }
                 if playback.resumeSetupComplete {
-                    playback.persistListeningProgressIfNeeded()
+                    playback.persistListeningProgressIfNeeded(notifyProgressStore: false)
                 }
                 playback.pushNowPlayingInfo()
                 playback.reassertPlaybackIfUserRequestedPlaying()
@@ -1069,6 +1089,20 @@ final class EpisodePlaybackController: ObservableObject {
         format.scale = UIScreen.main.scale
         let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
         return renderer.image { _ in image.draw(in: CGRect(origin: .zero, size: newSize)) }
+    }
+
+    /// Elapsed time only. Avoids rebuilding lock-screen artwork 2.5×/s on the main thread.
+    private func pushNowPlayingElapsedTime() {
+        guard var info = MPNowPlayingInfoCenter.default().nowPlayingInfo, loadedMediaURL != nil else {
+            pushNowPlayingInfo()
+            return
+        }
+        let elapsed = max(0, currentTime)
+        if elapsed.isFinite, !elapsed.isNaN {
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = elapsed
+        }
+        info[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? Double(playbackRate) : 0.0
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 
     private func pushNowPlayingInfo() {

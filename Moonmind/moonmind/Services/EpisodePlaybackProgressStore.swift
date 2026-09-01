@@ -62,7 +62,8 @@ final class EpisodePlaybackProgressStore: ObservableObject {
     func savePosition(
         _ seconds: TimeInterval,
         lastKnownDuration: TimeInterval? = nil,
-        forEpisodeKey stableKey: String
+        forEpisodeKey stableKey: String,
+        notify: Bool = true
     ) {
         guard seconds.isFinite, !seconds.isNaN, seconds > 0 else { return }
         playedEpisodeKeys.remove(stableKey)
@@ -71,7 +72,9 @@ final class EpisodePlaybackProgressStore: ObservableObject {
             lastKnownDurations[stableKey] = d
         }
         persistRecord(forEpisodeKey: stableKey)
-        objectWillChange.send()
+        if notify {
+            objectWillChange.send()
+        }
     }
 
     func removePosition(forEpisodeKey stableKey: String) {

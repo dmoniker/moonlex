@@ -7,8 +7,9 @@ struct HomeFeedView: View {
     @ObservedObject var model: HomeViewModel
     @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
+    @ObservedObject var progressStore: EpisodePlaybackProgressStore
     @ObservedObject var sleepTimer: SleepTimerStore
-    @ObservedObject var episodeDownloads: EpisodeDownloadStore
+    var episodeDownloads: EpisodeDownloadStore
     @Binding var showAppSettings: Bool
 
     @State private var navigationPath = NavigationPath()
@@ -34,7 +35,7 @@ struct HomeFeedView: View {
             guard feedFilters.feedShowUnplayedOnly else { return model.episodes }
             return model.episodes.filter { episode in
                 if episode.audioURL == nil { return true }
-                return !episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey)
+                return !progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey)
             }
         }()
         return filtered.sorted { a, b in
@@ -110,12 +111,15 @@ struct HomeFeedView: View {
 
             FeedFilterBar(feeds: catalog.podcastFeeds, scope: .podcast, filters: feedFilters) {
                 model.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
-                Task {
-                    await model.refresh(
-                        feeds: catalog.podcastFeeds,
-                        feedFilters: feedFilters,
-                        downloads: episodeDownloads
-                    )
+                // Network only when this filter has nothing cached yet (e.g. first Elon tap).
+                if model.episodes.isEmpty {
+                    Task {
+                        await model.refresh(
+                            feeds: catalog.podcastFeeds,
+                            feedFilters: feedFilters,
+                            downloads: episodeDownloads
+                        )
+                    }
                 }
             }
             .padding(.horizontal)
@@ -147,26 +151,19 @@ struct HomeFeedView: View {
                 )
             } else {
                 List {
-                    if let banner = model.lastError {
-                        Section {
-                            Text(banner)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
                     Section {
                         ForEach(displayedEpisodes) { ep in
                             NavigationLink(value: ep) {
                                 EpisodeRow(
                                     episode: ep,
                                     downloads: episodeDownloads,
-                                    progressStore: episodePlayback.progressStore,
+                                    progressStore: progressStore,
                                     playback: episodePlayback
                                 )
                             }
                             .contextMenu {
                                 if ep.audioURL != nil {
-                                    if episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
+                                    if progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
                                         Button {
                                             episodePlayback.markEpisodeUnplayed(episodeKey: ep.stableKey)
                                         } label: {
@@ -186,7 +183,7 @@ struct HomeFeedView: View {
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 if ep.audioURL != nil {
-                                    if episodePlayback.progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
+                                    if progressStore.isMarkedPlayed(forEpisodeKey: ep.stableKey) {
                                         Button {
                                             episodePlayback.markEpisodeUnplayed(episodeKey: ep.stableKey)
                                         } label: {
@@ -263,24 +260,37 @@ private enum EpisodePlayIndicatorState: Equatable {
     case played
 }
 
-private func playIndicatorState(episode: Episode, progress: EpisodePlaybackProgressStore, playback: EpisodePlaybackController)
+private func staticPlayIndicatorState(episode: Episode, progress: EpisodePlaybackProgressStore)
     -> EpisodePlayIndicatorState {
     guard episode.audioURL != nil else { return .hidden }
     if progress.isMarkedPlayed(forEpisodeKey: episode.stableKey) { return .played }
-
-    let minResume: TimeInterval = 3
-    if playback.loadedEpisodeKey == episode.stableKey,
-       playback.duration > 0, playback.duration.isFinite,
-       playback.currentTime >= minResume {
-        let frac = CGFloat(playback.currentTime / playback.duration)
-        return .partial(fraction: min(1, max(0, frac)))
-    }
-
     if progress.position(forEpisodeKey: episode.stableKey) != nil {
         return .partial(fraction: nil)
     }
-
     return .unplayed
+}
+
+private struct EpisodePlayStatusLiveIndicator: View {
+    let episode: Episode
+    @ObservedObject var clock: PlaybackClock
+    let progressStore: EpisodePlaybackProgressStore
+
+    var body: some View {
+        EpisodePlayStatusIndicator(state: liveState)
+    }
+
+    private var liveState: EpisodePlayIndicatorState {
+        if progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey) { return .played }
+        let minResume: TimeInterval = 3
+        if clock.duration > 0, clock.duration.isFinite, clock.currentTime >= minResume {
+            let frac = CGFloat(clock.currentTime / clock.duration)
+            return .partial(fraction: min(1, max(0, frac)))
+        }
+        if progressStore.position(forEpisodeKey: episode.stableKey) != nil {
+            return .partial(fraction: nil)
+        }
+        return .unplayed
+    }
 }
 
 private struct EpisodePlayStatusIndicator: View {
@@ -337,17 +347,23 @@ private struct EpisodePlayStatusIndicator: View {
 
 private struct EpisodeRow: View {
     let episode: Episode
-    @ObservedObject var downloads: EpisodeDownloadStore
-    @ObservedObject var progressStore: EpisodePlaybackProgressStore
-    @ObservedObject var playback: EpisodePlaybackController
-
-    private var indicatorState: EpisodePlayIndicatorState {
-        playIndicatorState(episode: episode, progress: progressStore, playback: playback)
-    }
+    let downloads: EpisodeDownloadStore
+    let progressStore: EpisodePlaybackProgressStore
+    let playback: EpisodePlaybackController
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            EpisodePlayStatusIndicator(state: indicatorState)
+            Group {
+                if playback.loadedEpisodeKey == episode.stableKey {
+                    EpisodePlayStatusLiveIndicator(
+                        episode: episode,
+                        clock: playback.clock,
+                        progressStore: progressStore
+                    )
+                } else {
+                    EpisodePlayStatusIndicator(state: staticPlayIndicatorState(episode: episode, progress: progressStore))
+                }
+            }
             PodcastArtworkView(url: episode.artworkURL, size: 64, cornerRadius: 10)
             VStack(alignment: .leading, spacing: 6) {
                 Text(episode.showTitle)

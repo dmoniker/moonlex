@@ -8,7 +8,7 @@ struct NewsletterFeedView: View {
     @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var sleepTimer: SleepTimerStore
-    @ObservedObject var episodeDownloads: EpisodeDownloadStore
+    var episodeDownloads: EpisodeDownloadStore
     @Binding var showAppSettings: Bool
 
     @State private var navigationPath = NavigationPath()
@@ -64,12 +64,14 @@ struct NewsletterFeedView: View {
         VStack(alignment: .leading, spacing: 0) {
             FeedFilterBar(feeds: catalog.newsletterFeeds, scope: .newsletter, filters: feedFilters) {
                 model.applyFilterInstantly(feeds: catalog.newsletterFeeds, feedFilters: feedFilters)
-                Task {
-                    await model.refresh(
-                        feeds: catalog.newsletterFeeds,
-                        feedFilters: feedFilters,
-                        downloads: nil
-                    )
+                if model.episodes.isEmpty {
+                    Task {
+                        await model.refresh(
+                            feeds: catalog.newsletterFeeds,
+                            feedFilters: feedFilters,
+                            downloads: nil
+                        )
+                    }
                 }
             }
             .padding(.horizontal)
@@ -91,13 +93,6 @@ struct NewsletterFeedView: View {
                 )
             } else {
                 List {
-                    if let banner = model.lastError {
-                        Section {
-                            Text(banner)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
                     Section {
                         ForEach(model.episodes) { ep in
                             NavigationLink(value: ep) {

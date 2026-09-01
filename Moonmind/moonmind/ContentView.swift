@@ -215,6 +215,7 @@ struct ContentView: View {
                     model: home,
                     showAddFeeds: $showAddFeeds,
                     episodePlayback: episodePlayback,
+                    progressStore: episodePlayback.progressStore,
                     sleepTimer: sleepTimer,
                     episodeDownloads: episodeDownloads,
                     showAppSettings: $showAppSettings
