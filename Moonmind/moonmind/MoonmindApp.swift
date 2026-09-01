@@ -331,7 +331,6 @@ struct MoonmindApp: App {
             Task { @MainActor in
                 let ctx = Self.sharedModelContainer.mainContext
                 SyncedAppPreferences.mergeDuplicatesIfNeeded(in: ctx)
-                try? ctx.save()
                 Self.logCloudSnapshot(reason: "cloud import event")
             }
         }

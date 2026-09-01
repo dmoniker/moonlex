@@ -211,9 +211,11 @@ final class FeedCatalog: ObservableObject {
     private func dedupeCatalogRows(in context: ModelContext) {
         let customs = (try? context.fetch(FetchDescriptor<UserCustomFeed>(sortBy: [SortDescriptor(\.addedAt)]))) ?? []
         var seenCustom = Set<String>()
+        var didDelete = false
         for row in customs {
             if seenCustom.insert(row.id).inserted == false {
                 context.delete(row)
+                didDelete = true
             }
         }
         let hidden = (try? context.fetch(FetchDescriptor<HiddenBuiltinFeedRecord>())) ?? []
@@ -221,9 +223,12 @@ final class FeedCatalog: ObservableObject {
         for row in hidden {
             if seenHidden.insert(row.feedID).inserted == false {
                 context.delete(row)
+                didDelete = true
             }
         }
-        try? context.save()
+        if didDelete {
+            try? context.save()
+        }
         reloadFromSwiftData(using: context)
     }
 
@@ -335,11 +340,17 @@ final class FeedCatalog: ObservableObject {
         let customs = (try? context.fetch(customFD)) ?? []
         let hiddenRows = (try? context.fetch(hiddenFD)) ?? []
         var seen = Set<String>()
-        customFeeds = []
+        var nextCustom: [PodcastFeed] = []
         for row in customs where seen.insert(row.id).inserted {
-            customFeeds.append(row.asPodcastFeed())
+            nextCustom.append(row.asPodcastFeed())
         }
-        hiddenBuiltinFeedIDs = Set(hiddenRows.map(\.feedID))
+        let nextHidden = Set(hiddenRows.map(\.feedID))
+        if customFeeds != nextCustom {
+            customFeeds = nextCustom
+        }
+        if hiddenBuiltinFeedIDs != nextHidden {
+            hiddenBuiltinFeedIDs = nextHidden
+        }
     }
 
     private func fetchCustomFeed(id: String, in context: ModelContext) throws -> UserCustomFeed? {

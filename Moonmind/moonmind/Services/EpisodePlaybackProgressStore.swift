@@ -32,11 +32,16 @@ final class EpisodePlaybackProgressStore: ObservableObject {
     /// Reload cache after CloudKit merges `PlaybackProgressRecord` rows (mirrors `attach` without re-running legacy migration).
     func refreshFromCloudKitImport(modelContext: ModelContext) {
         self.modelContext = modelContext
+        let oldPositions = positions
+        let oldDurations = lastKnownDurations
+        let oldPlayed = playedEpisodeKeys
         playedEpisodeKeys = []
         positions = [:]
         lastKnownDurations = [:]
         reloadFromSwiftData(using: modelContext)
-        objectWillChange.send()
+        if oldPositions != positions || oldDurations != lastKnownDurations || oldPlayed != playedEpisodeKeys {
+            objectWillChange.send()
+        }
     }
 
     func position(forEpisodeKey stableKey: String) -> TimeInterval? {

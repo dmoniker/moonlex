@@ -53,10 +53,18 @@ final class FeedFilters: ObservableObject {
         self.modelContext = modelContext
         let p = SyncedAppPreferences.loadOrInsert(in: modelContext)
         prefs = p
-        podcastExclusiveFeedID = p.podcastExclusiveFeedID
-        newsletterExclusiveFeedID = p.newsletterExclusiveFeedID
-        feedShowUnplayedOnly = p.feedShowUnplayedOnly
-        podcastFeedSortNewestFirst = p.podcastFeedSortNewestFirst
+        if podcastExclusiveFeedID != p.podcastExclusiveFeedID {
+            podcastExclusiveFeedID = p.podcastExclusiveFeedID
+        }
+        if newsletterExclusiveFeedID != p.newsletterExclusiveFeedID {
+            newsletterExclusiveFeedID = p.newsletterExclusiveFeedID
+        }
+        if feedShowUnplayedOnly != p.feedShowUnplayedOnly {
+            feedShowUnplayedOnly = p.feedShowUnplayedOnly
+        }
+        if podcastFeedSortNewestFirst != p.podcastFeedSortNewestFirst {
+            podcastFeedSortNewestFirst = p.podcastFeedSortNewestFirst
+        }
         Self.applyAutoplayFromSyncedPreferences(p)
         SyncedAppPreferences.applyDownloadRetentionFromSyncedPreferences(p)
     }

@@ -194,6 +194,9 @@ struct ContentView: View {
     @State private var selectedTab = 0
     /// Measured from the real `UITabBar` frame (floating pills report a smaller value than `49 + safeArea.bottom`).
     @State private var tabBarTopFromWindowBottom: CGFloat?
+    /// CloudKit posts many `NSPersistentStoreRemoteChange` events in a burst; applying each one rebuilds the feed.
+    @State private var cloudKitMergeTask: Task<Void, Never>?
+    @State private var isApplyingCloudKitMerge = false
 
     init() {
         let catalog = FeedCatalog()
@@ -311,10 +314,7 @@ struct ContentView: View {
             scheduleTabBarGeometryRefresh()
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)) { _ in
-            syncLogger.notice("received NSPersistentStoreRemoteChange")
-            Task { @MainActor in
-                applyRemoteStoreMergeAfterCloudKit()
-            }
+            scheduleCoalescedCloudKitMerge()
         }
         .sheet(isPresented: $showAddFeeds) {
             NavigationStack {
@@ -343,11 +343,7 @@ struct ContentView: View {
             }
             episodeDownloads.reapplyRetentionUsingLastFeedCache()
             reloadHomeFeedsAfterStoresAttached()
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(2))
-                syncLogger.notice("content view delayed cloud merge firing")
-                applyRemoteStoreMergeAfterCloudKit()
-            }
+            scheduleCoalescedCloudKitMerge(delayNanoseconds: 2_000_000_000)
         }
         .onChange(of: feedFilters.podcastExclusiveFeedID) { _, _ in
             home.applyFilterInstantly(feeds: catalog.podcastFeeds, feedFilters: feedFilters)
@@ -365,7 +361,7 @@ struct ContentView: View {
             }
             if phase == .active {
                 syncLogger.notice("scene phase -> active: applying cloud merge")
-                applyRemoteStoreMergeAfterCloudKit()
+                scheduleCoalescedCloudKitMerge()
                 Task { @MainActor in
                     await restorePlaybackSessionIfNeeded()
                 }
@@ -373,11 +369,26 @@ struct ContentView: View {
         }
     }
 
+    /// Coalesce CloudKit import storms so the feed is not rebuilt on every remote-change ping.
+    @MainActor
+    private func scheduleCoalescedCloudKitMerge(delayNanoseconds: UInt64 = 800_000_000) {
+        cloudKitMergeTask?.cancel()
+        cloudKitMergeTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: delayNanoseconds)
+            guard !Task.isCancelled else { return }
+            applyRemoteStoreMergeAfterCloudKit()
+        }
+    }
+
     /// Re-reads SwiftData after CloudKit merges (`NSPersistentStoreRemoteChange` or returning to the app).
     @MainActor
     private func applyRemoteStoreMergeAfterCloudKit() {
+        guard !isApplyingCloudKitMerge else { return }
+        isApplyingCloudKitMerge = true
+        defer { isApplyingCloudKitMerge = false }
         syncLogger.notice("applyRemoteStoreMergeAfterCloudKit begin")
-        episodePlayback.flushListeningProgressToStore()
+        // Do not flush listening progress here: a SwiftData write retriggers NSPersistentStoreRemoteChange
+        // and rebuilds the feed in a loop (seen as a console flood of received NSPersistentStoreRemoteChange).
         catalog.refreshFromCloudKitImport(modelContext: modelContext)
         feedFilters.refreshFromCloudKitImport(modelContext: modelContext)
         episodePlayback.progressStore.refreshFromCloudKitImport(modelContext: modelContext)
