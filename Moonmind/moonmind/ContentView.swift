@@ -314,7 +314,10 @@ struct ContentView: View {
             scheduleTabBarGeometryRefresh()
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)) { _ in
-            scheduleCoalescedCloudKitMerge()
+            // CloudKit posts this on a background queue; hopping avoids "Publishing changes from background threads".
+            Task { @MainActor in
+                scheduleCoalescedCloudKitMerge()
+            }
         }
         .sheet(isPresented: $showAddFeeds) {
             NavigationStack {
