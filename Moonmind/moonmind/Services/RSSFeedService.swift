@@ -20,16 +20,14 @@ enum RSSFeedService {
         }
     }
 
-    static func loadEpisodes(for feed: PodcastFeed, options: FetchOptions = .standard) async throws -> [Episode] {
-        guard let url = feed.rssURL else { throw RSSError.badURL }
-        let (data, response) = try await URLSession.shared.data(from: url)
-        guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
-            throw RSSError.badResponse
-        }
-        // XMLParser is CPU-heavy; keep it off the main actor so the feed UI and player stay responsive.
-        return try await Task.detached(priority: .utility) {
-            let parser = RSSParser(data: data, feed: feed, options: options)
-            return try parser.parse()
+    nonisolated static func loadEpisodes(for feed: PodcastFeed, options: FetchOptions = .standard) async throws -> [Episode] {
+        try await Task.detached(priority: .utility) {
+            guard let url = feed.rssURL else { throw RSSError.badURL }
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
+                throw RSSError.badResponse
+            }
+            return try RSSParser(data: data, feed: feed, options: options).parse()
         }.value
     }
 

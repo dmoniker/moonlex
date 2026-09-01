@@ -31,7 +31,13 @@ final class HomeViewModel: ObservableObject {
 
     /// Recomputes the list from the in-memory cache only (synchronous).
     func applyFilterInstantly(feeds: [PodcastFeed], feedFilters: FeedFilters) {
-        lastError = nil
+        if lastError != nil {
+            lastError = nil
+        }
+        rebuildEpisodesFromCache(feeds: feeds, feedFilters: feedFilters)
+    }
+
+    private func rebuildEpisodesFromCache(feeds: [PodcastFeed], feedFilters: FeedFilters) {
         var merged = Self.mergedEpisodesBeforeHero(from: episodeCacheByFeedID, feeds: feeds, feedFilters: feedFilters)
         let heroFromNewsletter = episodeCacheByFeedID[PodcastFeed.innermostLoopID] ?? []
         let heroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: heroFromNewsletter)
@@ -51,12 +57,11 @@ final class HomeViewModel: ObservableObject {
     }
 
     func refresh(feeds: [PodcastFeed], feedFilters: FeedFilters, downloads: EpisodeDownloadStore? = nil) async {
-        lastError = nil
         refreshGeneration += 1
         let generation = refreshGeneration
         // Only the first launch (empty disk cache) uses a blocking spinner. Chip filters
         // that miss the cache keep the empty-state layout so navigation stays live.
-        if episodeCacheByFeedID.isEmpty && episodes.isEmpty {
+        if episodeCacheByFeedID.isEmpty && episodes.isEmpty && !isLoading {
             isLoading = true
         }
 
@@ -75,11 +80,16 @@ final class HomeViewModel: ObservableObject {
             episodeCacheByFeedID[id] = eps
         }
 
-        applyFilterInstantly(feeds: feedsCopy, feedFilters: feedFilters)
-        isLoading = false
+        rebuildEpisodesFromCache(feeds: feedsCopy, feedFilters: feedFilters)
+        if isLoading {
+            isLoading = false
+        }
 
-        if episodes.isEmpty, !outcome.errors.isEmpty {
-            lastError = outcome.errors.joined(separator: "\n")
+        let nextError: String? = (episodes.isEmpty && !outcome.errors.isEmpty)
+            ? outcome.errors.joined(separator: "\n")
+            : nil
+        if lastError != nextError {
+            lastError = nextError
         }
 
         let persistSnapshot = episodeCacheByFeedID
@@ -90,7 +100,8 @@ final class HomeViewModel: ObservableObject {
         if let downloads {
             let downloadSnapshot = persistSnapshot
             Task { @MainActor in
-                await Task.yield()
+                // Let the user keep scrolling after launch before prefetch starts hitting the network.
+                try? await Task.sleep(for: .seconds(2))
                 downloads.enqueueRecentEpisodeDownloads(episodeCacheByFeedID: downloadSnapshot)
             }
         }

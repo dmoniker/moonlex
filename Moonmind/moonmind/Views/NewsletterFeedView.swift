@@ -7,7 +7,7 @@ struct NewsletterFeedView: View {
     @ObservedObject var model: HomeViewModel
     @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
-    @ObservedObject var sleepTimer: SleepTimerStore
+    var sleepTimer: SleepTimerStore
     var episodeDownloads: EpisodeDownloadStore
     @Binding var showAppSettings: Bool
 

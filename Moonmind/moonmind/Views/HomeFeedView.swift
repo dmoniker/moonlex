@@ -8,7 +8,7 @@ struct HomeFeedView: View {
     @Binding var showAddFeeds: Bool
     @ObservedObject var episodePlayback: EpisodePlaybackController
     @ObservedObject var progressStore: EpisodePlaybackProgressStore
-    @ObservedObject var sleepTimer: SleepTimerStore
+    var sleepTimer: SleepTimerStore
     var episodeDownloads: EpisodeDownloadStore
     @Binding var showAppSettings: Bool
 
@@ -31,22 +31,17 @@ struct HomeFeedView: View {
     }
 
     private var displayedEpisodes: [Episode] {
-        let filtered: [Episode] = {
-            guard feedFilters.feedShowUnplayedOnly else { return model.episodes }
-            return model.episodes.filter { episode in
+        let base: [Episode]
+        if feedFilters.feedShowUnplayedOnly {
+            base = model.episodes.filter { episode in
                 if episode.audioURL == nil { return true }
                 return !progressStore.isMarkedPlayed(forEpisodeKey: episode.stableKey)
             }
-        }()
-        return filtered.sorted { a, b in
-            let da = a.pubDate ?? .distantPast
-            let db = b.pubDate ?? .distantPast
-            if feedFilters.podcastFeedSortNewestFirst {
-                return da > db
-            } else {
-                return da < db
-            }
+        } else {
+            base = model.episodes
         }
+        // `model.episodes` is already newest-first; don't re-sort the full feed on every frame.
+        return feedFilters.podcastFeedSortNewestFirst ? base : Array(base.reversed())
     }
 
     var body: some View {
