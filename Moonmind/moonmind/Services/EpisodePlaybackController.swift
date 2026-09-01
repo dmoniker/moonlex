@@ -62,7 +62,10 @@ final class EpisodePlaybackController: ObservableObject {
 
     private static let minResumeSeconds: TimeInterval = 3
     private static let nearEndClearSeconds: TimeInterval = 15
-    private static let periodicProgressSaveInterval: TimeInterval = 12
+    private static let periodicProgressSaveInterval: TimeInterval = 5
+    /// Exact-frame seeks hang on many podcast CDNs and freeze the player until a route change.
+    private static let seekTolerance = CMTime(seconds: 1, preferredTimescale: 600)
+    private static let resumeSeekTimeout: TimeInterval = 2.5
 
     @Published private(set) var isPlaying = false
     @Published private(set) var currentTime: TimeInterval = 0
@@ -110,11 +113,15 @@ final class EpisodePlaybackController: ObservableObject {
     private var statusObservation: NSKeyValueObservation?
     private var interruptionObserver: NSObjectProtocol?
     private var secondaryAudioHintObserver: NSObjectProtocol?
-    private var enterBackgroundObserver: NSObjectProtocol?
+    private var routeChangeObserver: NSObjectProtocol?
     /// Set when the system pauses us (Siri / Announce Notifications / call); cleared on user pause.
     private var shouldResumeAfterInterruption = false
     private var shouldResumeAfterSecondaryAudioHint = false
     private var didConfigureAudioSession = false
+    private var loadGeneration: UInt64 = 0
+    private var pendingSeekSeconds: TimeInterval?
+    private var resumeSeekTimeoutWork: DispatchWorkItem?
+    private var readyStatusHandledGeneration: UInt64?
     /// Avoid saving `0` while a resume seek is still in flight for a newly loaded item.
     private var resumeSetupComplete = true
     private var lastPeriodicProgressSave = Date.distantPast
@@ -150,12 +157,12 @@ final class EpisodePlaybackController: ObservableObject {
         ) { [weak self] notification in
             self?.handleSecondaryAudioHint(notification)
         }
-        enterBackgroundObserver = NotificationCenter.default.addObserver(
-            forName: UIApplication.didEnterBackgroundNotification,
-            object: nil,
+        routeChangeObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance(),
             queue: .main
-        ) { [weak self] _ in
-            self?.handleDidEnterBackground()
+        ) { [weak self] notification in
+            self?.handleRouteChange(notification)
         }
         configureRemoteCommands()
     }
@@ -417,9 +424,9 @@ final class EpisodePlaybackController: ObservableObject {
         return nil
     }
 
-    /// Listen Notes and some ad/CDN hops reject AVFoundation’s default user agent (stall after a few seconds or silent decode).
+    /// Listen Notes and many ad/CDN hops reject AVFoundation’s default user agent (stall after a few seconds or silent decode).
     private static func playerItem(for url: URL) -> AVPlayerItem {
-        guard url.isFileURL == false, Self.needsBrowserLikeAssetHeaders(for: url) else {
+        guard url.isFileURL == false else {
             return AVPlayerItem(url: url)
         }
         let headers: [String: String] = [
@@ -430,18 +437,6 @@ final class EpisodePlaybackController: ObservableObject {
         let opts: [String: Any] = ["AVURLAssetHTTPHeaderFieldsKey": headers]
         let asset = AVURLAsset(url: url, options: opts)
         return AVPlayerItem(asset: asset)
-    }
-
-    private static func needsBrowserLikeAssetHeaders(for url: URL) -> Bool {
-        let h = url.host?.lowercased() ?? ""
-        if h.contains("megaphone.fm") { return true }
-        if h.contains("omny.fm") || h.contains("omnycontent.com") { return true }
-        if h.contains("podtrac.com") { return true }
-        if h.contains("art19.com") { return true }
-        if h.contains("spotifycdn.com") || h.contains("spotify.com") { return true }
-        if h.contains("simplecast.com") { return true }
-        if h.contains("anchor.fm") { return true }
-        return false
     }
 
     /// Returns `true` if the current item was replaced (new URL or cleared). Caller can use this to reset episode-scoped UI state.
@@ -460,7 +455,7 @@ final class EpisodePlaybackController: ObservableObject {
 
         if let loaded = loadedMediaURL, loaded == url, player != nil {
             if let episodeKey { loadedEpisodeKey = episodeKey }
-            resumeSetupComplete = true
+            finishResumeSetup()
             player?.defaultRate = playbackRate
             if isPlaying { player?.rate = playbackRate }
             if let np = nowPlaying {
@@ -476,8 +471,11 @@ final class EpisodePlaybackController: ObservableObject {
         }
 
         persistListeningProgressIfNeeded()
-        resumeSetupComplete = false
+        loadGeneration += 1
+        let generation = loadGeneration
+        pendingSeekSeconds = nil
         resetPlayer()
+        beginResumeSetup()
         currentTime = 0
         duration = 0
         loadedMediaURL = url
@@ -494,54 +492,7 @@ final class EpisodePlaybackController: ObservableObject {
         p.defaultRate = playbackRate
         p.automaticallyWaitsToMinimizeStalling = true
         player = p
-
-        statusObservation = item.observe(\.status, options: [.new]) { [weak self] observed, _ in
-            guard let playback = self else { return }
-            if observed.status == .failed {
-                DispatchQueue.main.async {
-                    playback.isPlaying = false
-                    playback.statusObservation?.invalidate()
-                    playback.statusObservation = nil
-                    playback.pushNowPlayingInfo()
-                }
-                return
-            }
-            guard observed.status == .readyToPlay else { return }
-            let durationUpdate: TimeInterval? = {
-                let d = observed.duration
-                return (d.isNumeric && d.seconds.isFinite) ? d.seconds : nil
-            }()
-            DispatchQueue.main.async { [playback, durationUpdate] in
-                if let s = durationUpdate {
-                    playback.duration = s
-                }
-                let key = episodeKey
-                let knownDuration = playback.duration
-                let resume = playback.resolvedResumePosition(episodeKey: key, knownDuration: knownDuration)
-                if resume > 0.5 {
-                    let cm = CMTime(seconds: resume, preferredTimescale: 600)
-                    p.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
-                        DispatchQueue.main.async {
-                            guard let playback = self else { return }
-                            if finished {
-                                playback.currentTime = resume
-                            }
-                            playback.statusObservation?.invalidate()
-                            playback.statusObservation = nil
-                            playback.resumeSetupComplete = true
-                            playback.pushNowPlayingInfo()
-                            playback.reassertPlaybackIfUserRequestedPlaying()
-                        }
-                    }
-                } else {
-                    playback.statusObservation?.invalidate()
-                    playback.statusObservation = nil
-                    playback.resumeSetupComplete = true
-                    playback.pushNowPlayingInfo()
-                    playback.reassertPlaybackIfUserRequestedPlaying()
-                }
-            }
-        }
+        attachStatusObservation(to: item, player: p, episodeKey: episodeKey, generation: generation)
 
         endObserver = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
@@ -635,13 +586,15 @@ final class EpisodePlaybackController: ObservableObject {
                     playback.duration = d
                 }
                 let cm = CMTime(seconds: resumeTime, preferredTimescale: 600)
-                p.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero) { finished in
-                    guard finished else { return }
+                p.seek(to: cm, toleranceBefore: Self.seekTolerance, toleranceAfter: Self.seekTolerance) { finished in
                     DispatchQueue.main.async { [weak playback] in
                         guard let playback else { return }
-                        playback.currentTime = resumeTime
+                        if finished {
+                            playback.currentTime = resumeTime
+                        }
                         if shouldResumePlaying {
-                            playback.play()
+                            playback.isPlaying = true
+                            playback.reassertPlaybackIfUserRequestedPlaying()
                         } else {
                             playback.pushNowPlayingInfo()
                         }
@@ -706,6 +659,122 @@ final class EpisodePlaybackController: ObservableObject {
         a.absoluteString == b.absoluteString
     }
 
+    private func beginResumeSetup() {
+        resumeSetupComplete = false
+        resumeSeekTimeoutWork?.cancel()
+        let generation = loadGeneration
+        let work = DispatchWorkItem { [weak self] in
+            guard let playback = self, playback.loadGeneration == generation, !playback.resumeSetupComplete else { return }
+            playback.finishResumeSetup()
+            playback.pushNowPlayingInfo()
+            playback.reassertPlaybackIfUserRequestedPlaying()
+        }
+        resumeSeekTimeoutWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.resumeSeekTimeout, execute: work)
+    }
+
+    private func finishResumeSetup() {
+        resumeSeekTimeoutWork?.cancel()
+        resumeSeekTimeoutWork = nil
+        resumeSetupComplete = true
+    }
+
+    private func seekOnPlayer(_ player: AVPlayer, to seconds: TimeInterval, completion: ((Bool) -> Void)? = nil) {
+        player.currentItem?.cancelPendingSeeks()
+        let cm = CMTime(seconds: max(0, seconds), preferredTimescale: 600)
+        guard let completion else {
+            player.seek(to: cm, toleranceBefore: Self.seekTolerance, toleranceAfter: Self.seekTolerance)
+            return
+        }
+        player.seek(to: cm, toleranceBefore: Self.seekTolerance, toleranceAfter: Self.seekTolerance) { finished in
+            DispatchQueue.main.async { completion(finished) }
+        }
+    }
+
+    private func attachStatusObservation(
+        to item: AVPlayerItem,
+        player: AVPlayer,
+        episodeKey: String?,
+        generation: UInt64,
+        forcedSeek: TimeInterval? = nil
+    ) {
+        let deliver: (AVPlayerItem) -> Void = { [weak self] observed in
+            self?.handleItemStatus(
+                observed,
+                player: player,
+                episodeKey: episodeKey,
+                generation: generation,
+                forcedSeek: forcedSeek
+            )
+        }
+        statusObservation?.invalidate()
+        statusObservation = item.observe(\.status, options: [.new]) { observed, _ in
+            if Thread.isMainThread {
+                deliver(observed)
+            } else {
+                DispatchQueue.main.async { deliver(observed) }
+            }
+        }
+        readyStatusHandledGeneration = nil
+        if item.status != .unknown {
+            deliver(item)
+        }
+    }
+
+    private func handleItemStatus(
+        _ observed: AVPlayerItem,
+        player: AVPlayer,
+        episodeKey: String?,
+        generation: UInt64,
+        forcedSeek: TimeInterval?
+    ) {
+        guard loadGeneration == generation else { return }
+        if observed.status == .failed {
+            readyStatusHandledGeneration = generation
+            isPlaying = false
+            statusObservation?.invalidate()
+            statusObservation = nil
+            finishResumeSetup()
+            pushNowPlayingInfo()
+            return
+        }
+        guard observed.status == .readyToPlay else { return }
+        guard readyStatusHandledGeneration != generation else { return }
+        readyStatusHandledGeneration = generation
+
+        if let s = durationIfReady(observed) {
+            duration = s
+        }
+        let target: TimeInterval = {
+            if let forcedSeek { return max(0, forcedSeek) }
+            if let pending = pendingSeekSeconds { return pending }
+            return resolvedResumePosition(episodeKey: episodeKey, knownDuration: duration)
+        }()
+
+        let finish: () -> Void = { [weak self] in
+            guard let playback = self, playback.loadGeneration == generation else { return }
+            playback.statusObservation?.invalidate()
+            playback.statusObservation = nil
+            playback.finishResumeSetup()
+            playback.pushNowPlayingInfo()
+            playback.reassertPlaybackIfUserRequestedPlaying()
+        }
+
+        if target > 0.5 {
+            seekOnPlayer(player, to: target) { [weak self] finished in
+                guard let playback = self, playback.loadGeneration == generation else { return }
+                if finished {
+                    playback.currentTime = target
+                    playback.pendingSeekSeconds = nil
+                }
+                finish()
+            }
+        } else {
+            pendingSeekSeconds = nil
+            finish()
+        }
+    }
+
     private func resolvedResumePosition(episodeKey: String?, knownDuration: TimeInterval) -> TimeInterval {
         guard let key = episodeKey, let saved = progressStore.position(forEpisodeKey: key) else { return 0 }
         var t = saved
@@ -721,6 +790,10 @@ final class EpisodePlaybackController: ObservableObject {
         guard let key = loadedEpisodeKey else { return }
         let t = currentTime
         guard t.isFinite, !t.isNaN else { return }
+        // A 0 clock is usually "seek hasn't landed yet"; wiping here dropped real bookmarks.
+        if t < 0.5 {
+            return
+        }
         if t < Self.minResumeSeconds {
             progressStore.removePosition(forEpisodeKey: key)
             return
@@ -761,40 +834,51 @@ final class EpisodePlaybackController: ObservableObject {
         pushNowPlayingInfo()
     }
 
-    /// Long-form podcast playback uses `.default` mode so iOS keeps the app running in the background.
-    /// `.spokenAudio` (used previously for Siri Announce) lets the system suspend the process after a few seconds off-screen.
+    /// Activates the session without re-setting category after the first successful configure.
+    /// Re-setting category/mode while playing (especially on a route change when leaving the app)
+    /// tears down the audio graph; iOS then suspends us after the remaining buffer plays out.
     private func activatePlaybackSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-            if !didConfigureAudioSession || session.category != .playback || session.mode != .default {
-                try session.setCategory(.playback, mode: .default, options: [])
+            if !didConfigureAudioSession {
+                try session.setCategory(.playback, mode: .spokenAudio, options: [])
                 didConfigureAudioSession = true
             }
             try session.setActive(true)
         } catch {
             didConfigureAudioSession = false
-            try? session.setCategory(.playback, mode: .default, options: [])
+            try? session.setCategory(.playback, mode: .spokenAudio, options: [])
             try? session.setActive(true)
             didConfigureAudioSession = true
         }
     }
 
-    private func handleDidEnterBackground() {
-        // A secondary-audio hint during the home/lock gesture can pause us while still `.active`.
-        // Resume so iOS sees continuous playback and does not suspend the process.
-        if shouldResumeAfterSecondaryAudioHint {
-            shouldResumeAfterSecondaryAudioHint = false
-            play(armSleepTimerIfNeeded: false)
-            persistListeningProgressIfNeeded()
-            return
+    /// Headphones unplug pauses (system convention). Do not reconfigure the session here — that
+    /// is what stopped background playback after the last change.
+    private func handleRouteChange(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let value = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: value)
+        else { return }
+
+        switch reason {
+        case .oldDeviceUnavailable:
+            let previous = info[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription
+            let hadHeadphones = previous?.outputs.contains(where: {
+                $0.portType == .headphones || $0.portType == .headsetMic
+            }) ?? false
+            if hadHeadphones, isPlaying {
+                applyPausedState()
+            } else if isPlaying {
+                reassertPlaybackIfUserRequestedPlaying()
+            }
+        case .newDeviceAvailable:
+            if isPlaying {
+                reassertPlaybackIfUserRequestedPlaying()
+            }
+        default:
+            break
         }
-        guard isPlaying else { return }
-        // Re-assert the session and player so a brief route/category glitch during the
-        // foreground → background transition does not let iOS suspend us after the buffer drains.
-        activatePlaybackSession()
-        reassertPlaybackIfUserRequestedPlaying()
-        persistListeningProgressIfNeeded()
-        pushNowPlayingInfo()
     }
 
     /// Call after the current item becomes ready or after a seek so an early `play()` actually starts decoding.
@@ -864,7 +948,7 @@ final class EpisodePlaybackController: ObservableObject {
         let d = duration
         if d > 0, d.isFinite {
             let cm = CMTime(seconds: d, preferredTimescale: 600)
-            player?.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero)
+            player?.seek(to: cm, toleranceBefore: Self.seekTolerance, toleranceAfter: Self.seekTolerance)
             currentTime = d
         }
         pushNowPlayingInfo()
@@ -884,10 +968,21 @@ final class EpisodePlaybackController: ObservableObject {
 
     func seek(to time: TimeInterval) {
         let t = max(0, time)
-        let cm = CMTime(seconds: t, preferredTimescale: 600)
-        player?.seek(to: cm, toleranceBefore: .zero, toleranceAfter: .zero)
+        pendingSeekSeconds = t
         currentTime = t
-        if resumeSetupComplete {
+        if let p = player {
+            seekOnPlayer(p, to: t) { [weak self] finished in
+                guard let playback = self else { return }
+                if finished {
+                    playback.pendingSeekSeconds = nil
+                }
+                if playback.resumeSetupComplete {
+                    playback.persistListeningProgressIfNeeded()
+                }
+                playback.pushNowPlayingInfo()
+                playback.reassertPlaybackIfUserRequestedPlaying()
+            }
+        } else if resumeSetupComplete {
             persistListeningProgressIfNeeded()
         }
         pushNowPlayingInfo()
@@ -1144,10 +1239,13 @@ final class EpisodePlaybackController: ObservableObject {
     }
 
     private func resetPlayer() {
+        resumeSeekTimeoutWork?.cancel()
+        resumeSeekTimeoutWork = nil
         if let obs = timeObserver, let p = player {
             p.removeTimeObserver(obs)
         }
         timeObserver = nil
+        statusObservation?.invalidate()
         statusObservation = nil
         if let endObserver {
             NotificationCenter.default.removeObserver(endObserver)
@@ -1163,6 +1261,7 @@ final class EpisodePlaybackController: ObservableObject {
 
     deinit {
         artworkFetchTask?.cancel()
+        resumeSeekTimeoutWork?.cancel()
         if let obs = timeObserver, let p = player {
             p.removeTimeObserver(obs)
         }
@@ -1178,8 +1277,8 @@ final class EpisodePlaybackController: ObservableObject {
         if let secondaryAudioHintObserver {
             NotificationCenter.default.removeObserver(secondaryAudioHintObserver)
         }
-        if let enterBackgroundObserver {
-            NotificationCenter.default.removeObserver(enterBackgroundObserver)
+        if let routeChangeObserver {
+            NotificationCenter.default.removeObserver(routeChangeObserver)
         }
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.removeTarget(nil)

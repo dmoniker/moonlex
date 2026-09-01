@@ -740,6 +740,9 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
     @ObservedObject var playback: EpisodePlaybackController
     @ObservedObject var downloads: EpisodeDownloadStore
 
+    @State private var isScrubbing = false
+    @State private var scrubTime: TimeInterval = 0
+
     /// SF Symbols only ship decorated skip glyphs for a limited set of durations.
     /// For custom values, compose the plain skip symbol with an overlaid number.
     private static let nativeSkipGlyphSeconds = Set([10, 15, 30, 45, 60])
@@ -836,30 +839,30 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
         let span = detailScrubberSpan
         let back = playback.skipBackwardIntervals
         let fwd = playback.skipForwardIntervals
+        let displayedTime = isScrubbing ? scrubTime : detailScrubberCurrentTime
         VStack(alignment: .leading, spacing: 12) {
             Slider(
                 value: Binding(
-                    get: { min(max(detailScrubberCurrentTime, 0), span) },
+                    get: { min(max(displayedTime, 0), span) },
                     set: { newTime in
-                        if isBound {
-                            playback.seek(to: newTime)
-                        } else {
-                            guard EpisodeDetailPlaybackBinder.loadThisEpisodeIfNeeded(
-                                episode: episode,
-                                playback: playback,
-                                downloads: downloads
-                            ) else { return }
-                            playback.seek(to: newTime)
-                            playback.play()
-                        }
+                        scrubTime = newTime
                     }
                 ),
-                in: 0 ... span
+                in: 0 ... span,
+                onEditingChanged: { editing in
+                    if editing {
+                        scrubTime = detailScrubberCurrentTime
+                        isScrubbing = true
+                    } else {
+                        commitScrub(to: scrubTime)
+                        isScrubbing = false
+                    }
+                }
             )
             .tint(.accentColor)
 
             HStack {
-                Text(EpisodeDetailTimeFormatting.playbackLabel(detailScrubberCurrentTime))
+                Text(EpisodeDetailTimeFormatting.playbackLabel(displayedTime))
                 Spacer(minLength: 8)
                 Text(detailDurationLabel)
             }
@@ -910,6 +913,20 @@ private struct EpisodeDetailPlayerScrubberBlock: View {
                 }
                 .frame(maxWidth: .infinity)
             }
+        }
+    }
+
+    private func commitScrub(to newTime: TimeInterval) {
+        if isBound {
+            playback.seek(to: newTime)
+        } else {
+            guard EpisodeDetailPlaybackBinder.loadThisEpisodeIfNeeded(
+                episode: episode,
+                playback: playback,
+                downloads: downloads
+            ) else { return }
+            playback.seek(to: newTime)
+            playback.play()
         }
     }
 

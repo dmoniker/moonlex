@@ -376,6 +376,7 @@ struct ContentView: View {
     @MainActor
     private func applyRemoteStoreMergeAfterCloudKit() {
         syncLogger.notice("applyRemoteStoreMergeAfterCloudKit begin")
+        episodePlayback.flushListeningProgressToStore()
         catalog.refreshFromCloudKitImport(modelContext: modelContext)
         feedFilters.refreshFromCloudKitImport(modelContext: modelContext)
         episodePlayback.progressStore.refreshFromCloudKitImport(modelContext: modelContext)
