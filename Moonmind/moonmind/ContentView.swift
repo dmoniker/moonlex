@@ -328,7 +328,7 @@ struct ContentView: View {
             )
         }
         .onAppear {
-            syncLogger.notice("content view appear: attaching sync-backed stores")
+            syncLogger.notice("content view appear: attaching sync-backed stores (silent feed refresh, coalesced CloudKit merge)")
             catalog.attach(modelContext: modelContext)
             feedFilters.attach(modelContext: modelContext)
             episodePlayback.progressStore.attach(modelContext: modelContext)
