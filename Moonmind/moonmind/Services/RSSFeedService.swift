@@ -26,8 +26,11 @@ enum RSSFeedService {
         guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
             throw RSSError.badResponse
         }
-        let parser = RSSParser(data: data, feed: feed, options: options)
-        return try parser.parse()
+        // XMLParser is CPU-heavy; keep it off the main actor so the feed UI and player stay responsive.
+        return try await Task.detached(priority: .utility) {
+            let parser = RSSParser(data: data, feed: feed, options: options)
+            return try parser.parse()
+        }.value
     }
 
     /// Backward-compatible convenience.

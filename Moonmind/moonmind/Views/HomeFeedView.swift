@@ -147,17 +147,6 @@ struct HomeFeedView: View {
                 )
             } else {
                 List {
-                    if model.isRefreshing {
-                        Section {
-                            HStack(spacing: 8) {
-                                ProgressView()
-                                    .controlSize(.small)
-                                Text("Updating feeds…")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
                     if let banner = model.lastError {
                         Section {
                             Text(banner)

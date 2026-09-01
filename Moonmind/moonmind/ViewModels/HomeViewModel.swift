@@ -5,12 +5,12 @@ final class HomeViewModel: ObservableObject {
     @Published private(set) var episodes: [Episode] = []
     /// Full-screen spinner only when there is nothing to show yet (first launch / empty cache).
     @Published var isLoading = false
-    /// Background RSS refresh while cached episodes are already on screen.
-    @Published var isRefreshing = false
     @Published var lastError: String?
 
     /// Raw RSS/API episodes per feed (Moonshots & Lex unfiltered). Enables instant chip switches without waiting on the network.
     private var episodeCacheByFeedID: [String: [Episode]] = [:]
+    /// Drops stale RSS results when the user changes filters mid-refresh.
+    private var refreshGeneration: UInt64 = 0
 
     init() {
         episodeCacheByFeedID = FeedEpisodeCache.load()
@@ -42,38 +42,82 @@ final class HomeViewModel: ObservableObject {
     }
 
     func refresh(feeds: [PodcastFeed], feedFilters: FeedFilters, downloads: EpisodeDownloadStore? = nil) async {
-        let hadCachedEpisodes = !episodes.isEmpty
-        if hadCachedEpisodes {
-            isRefreshing = true
-        } else {
-            isLoading = true
-        }
         lastError = nil
-        defer {
-            isLoading = false
-            isRefreshing = false
+        refreshGeneration += 1
+        let generation = refreshGeneration
+        let showingCachedList = !episodes.isEmpty
+        if !showingCachedList {
+            isLoading = true
         }
 
         let filterScope = Self.filterScope(for: feeds)
+        let enabledIDs = Set(feeds.filter { feedFilters.isOn($0.id, scope: filterScope) }.map(\.id))
+        let feedsCopy = feeds
+        let cacheSnapshot = episodeCacheByFeedID
 
-        let moonshotsChip = feedFilters.isOn(PodcastFeed.moonshotsID, scope: filterScope)
-        let lexChip = feedFilters.isOn(PodcastFeed.lexID, scope: filterScope)
-        let elonChip = feedFilters.isOn(PodcastFeed.elonGuestInterviewsFeedID, scope: filterScope)
+        let outcome = await Task.detached(priority: .utility) {
+            await Self.fetchRefreshOutcome(feeds: feedsCopy, enabledIDs: enabledIDs, existingCache: cacheSnapshot)
+        }.value
+
+        guard generation == refreshGeneration else { return }
+
+        for (id, eps) in outcome.updates {
+            episodeCacheByFeedID[id] = eps
+        }
+
+        applyFilterInstantly(feeds: feedsCopy, feedFilters: feedFilters)
+        isLoading = false
+
+        if !outcome.errors.isEmpty {
+            if episodes.isEmpty {
+                lastError = outcome.errors.joined(separator: "\n")
+            } else {
+                lastError = "Some feeds failed to load: \(outcome.errors.joined(separator: ", "))"
+            }
+        }
+
+        let persistSnapshot = episodeCacheByFeedID
+        Task.detached(priority: .utility) {
+            FeedEpisodeCache.save(persistSnapshot)
+        }
+
+        if let downloads {
+            let downloadSnapshot = persistSnapshot
+            Task { @MainActor in
+                await Task.yield()
+                downloads.enqueueRecentEpisodeDownloads(episodeCacheByFeedID: downloadSnapshot)
+            }
+        }
+    }
+
+    private struct FeedRefreshOutcome: Sendable {
+        var updates: [String: [Episode]]
+        var errors: [String]
+    }
+
+    /// Network + XML parse. Must not hop to the main actor; callers publish UI afterwards.
+    nonisolated private static func fetchRefreshOutcome(
+        feeds: [PodcastFeed],
+        enabledIDs: Set<String>,
+        existingCache: [String: [Episode]]
+    ) async -> FeedRefreshOutcome {
+        let moonshotsChip = enabledIDs.contains(PodcastFeed.moonshotsID)
+        let lexChip = enabledIDs.contains(PodcastFeed.lexID)
+        let elonChip = enabledIDs.contains(PodcastFeed.elonGuestInterviewsFeedID)
         let podcastCatalogRefresh = feeds.contains { $0.contentKind == .podcast }
         let activeNonSpecial = feeds.filter { feed in
             feed.id != PodcastFeed.moonshotsID
                 && feed.id != PodcastFeed.lexID
                 && feed.id != PodcastFeed.elonGuestInterviewsFeedID
-                && feedFilters.isOn(feed.id, scope: filterScope)
-        }
-        guard elonChip || moonshotsChip || lexChip || !activeNonSpecial.isEmpty else {
-            episodes = []
-            return
+                && enabledIDs.contains(feed.id)
         }
 
-        let enabledRefreshingFeeds = feeds.filter { feedFilters.isOn($0.id, scope: filterScope) }
-
+        var updates: [String: [Episode]] = [:]
         var errors: [String] = []
+
+        guard elonChip || moonshotsChip || lexChip || !activeNonSpecial.isEmpty else {
+            return FeedRefreshOutcome(updates: [:], errors: [])
+        }
 
         await withTaskGroup(of: Result<(String, [Episode]), Error>.self) { group in
             if podcastCatalogRefresh, let moon = feeds.first(where: { $0.id == PodcastFeed.moonshotsID }) {
@@ -134,74 +178,29 @@ final class HomeViewModel: ObservableObject {
             for await result in group {
                 switch result {
                 case .success(let pair):
-                    episodeCacheByFeedID[pair.0] = pair.1
-                    publishEpisodesFromCache(feeds: feeds, feedFilters: feedFilters)
-                    if isLoading, !episodes.isEmpty {
-                        isLoading = false
-                    }
+                    updates[pair.0] = pair.1
                 case .failure(let err):
                     errors.append(err.localizedDescription)
                 }
             }
         }
 
-        persistEpisodeCache()
+        var mergedCache = existingCache
+        for (id, eps) in updates {
+            mergedCache[id] = eps
+        }
 
-        await reconcileFromCache(
-            feeds: feeds,
-            feedFilters: feedFilters,
-            enabledRefreshingFeeds: enabledRefreshingFeeds,
-            podcastCatalogRefresh: podcastCatalogRefresh,
-            errors: errors,
-            downloads: downloads
-        )
-    }
-
-    private func reconcileFromCache(
-        feeds: [PodcastFeed],
-        feedFilters: FeedFilters,
-        enabledRefreshingFeeds: [PodcastFeed],
-        podcastCatalogRefresh: Bool,
-        errors: [String],
-        downloads: EpisodeDownloadStore?
-    ) async {
-        var merged = Self.mergedEpisodesBeforeHero(from: episodeCacheByFeedID, feeds: feeds, feedFilters: feedFilters)
-
-        var heroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: episodeCacheByFeedID[PodcastFeed.innermostLoopID] ?? [])
-
+        var heroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: mergedCache[PodcastFeed.innermostLoopID] ?? [])
         if heroByLink.isEmpty,
            podcastCatalogRefresh,
-           merged.contains(where: { $0.feedID == PodcastFeed.innermostLoopPodcastID }),
-           !enabledRefreshingFeeds.contains(where: { $0.id == PodcastFeed.innermostLoopID }),
+           enabledIDs.contains(PodcastFeed.innermostLoopPodcastID),
+           !enabledIDs.contains(PodcastFeed.innermostLoopID),
            let newsFeed = PodcastFeed.builtins.first(where: { $0.id == PodcastFeed.innermostLoopID }),
            let newsEps = try? await RSSFeedService.loadEpisodes(for: newsFeed) {
-            heroByLink = Self.innermostNewsletterHeroByNormalizedLink(from: newsEps)
-            episodeCacheByFeedID[PodcastFeed.innermostLoopID] = newsEps
+            updates[PodcastFeed.innermostLoopID] = newsEps
         }
 
-        merged = Self.applyInnermostHeroMap(heroByLink, to: merged)
-
-        episodes = merged.sorted {
-            ($0.pubDate ?? .distantPast) > ($1.pubDate ?? .distantPast)
-        }
-
-        downloads?.enqueueRecentEpisodeDownloads(episodeCacheByFeedID: episodeCacheByFeedID)
-
-        persistEpisodeCache()
-
-        if !errors.isEmpty, merged.isEmpty {
-            lastError = errors.joined(separator: "\n")
-        } else if !errors.isEmpty {
-            lastError = "Some feeds failed to load: \(errors.joined(separator: ", "))"
-        }
-    }
-
-    private func persistEpisodeCache() {
-        FeedEpisodeCache.save(episodeCacheByFeedID)
-    }
-
-    private func publishEpisodesFromCache(feeds: [PodcastFeed], feedFilters: FeedFilters) {
-        applyFilterInstantly(feeds: feeds, feedFilters: feedFilters)
+        return FeedRefreshOutcome(updates: updates, errors: errors)
     }
 
     private static func mergedEpisodesBeforeHero(
@@ -265,7 +264,7 @@ final class HomeViewModel: ObservableObject {
     }
 
     /// Parallel RSS fetch: each source is filtered to Elon-as-guest only.
-    private static func fetchElonGuestInterviewEpisodesFromRSS() async -> Result<[Episode], Error> {
+    nonisolated private static func fetchElonGuestInterviewEpisodesFromRSS() async -> Result<[Episode], Error> {
         await withTaskGroup(of: Result<[Episode], Error>.self) { group in
             let elonSourceOpts = RSSFeedService.FetchOptions.rollingFiveYears()
             for source in PodcastFeed.elonInterviewRSSSourceFeeds {
@@ -299,8 +298,7 @@ final class HomeViewModel: ObservableObject {
         }
     }
 
-    /// Builds `link` → hero image from Innermost Loop newsletter RSS (`image/jpeg` enclosures).
-    private static func innermostNewsletterHeroByNormalizedLink(from episodes: [Episode]) -> [String: URL] {
+    nonisolated private static func innermostNewsletterHeroByNormalizedLink(from episodes: [Episode]) -> [String: URL] {
         var heroByLink: [String: URL] = [:]
         for ep in episodes where ep.feedID == PodcastFeed.innermostLoopID {
             guard let key = normalizedPostLinkKey(ep.linkURL), let art = ep.artworkURL else { continue }
@@ -320,7 +318,7 @@ final class HomeViewModel: ObservableObject {
         }
     }
 
-    private static func normalizedPostLinkKey(_ url: URL?) -> String? {
+    nonisolated private static func normalizedPostLinkKey(_ url: URL?) -> String? {
         guard let url else { return nil }
         var c = URLComponents(url: url, resolvingAgainstBaseURL: false)
         c?.fragment = nil

@@ -91,17 +91,6 @@ struct NewsletterFeedView: View {
                 )
             } else {
                 List {
-                    if model.isRefreshing {
-                        Section {
-                            HStack(spacing: 8) {
-                                ProgressView()
-                                    .controlSize(.small)
-                                Text("Updating posts…")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
                     if let banner = model.lastError {
                         Section {
                             Text(banner)
